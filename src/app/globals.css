@@ -49,6 +49,54 @@ body {
   line-height: 0.95;
 }
 
+/* ── Testimonials V2 ─────────────────────────────────────────────── */
+
+/* Dual marquee: constant motion → linear, off the main thread */
+@keyframes marquee-left-v2 {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-right-v2 {
+  from { transform: translate3d(-50%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+.marquee-left-v2 {
+  animation: marquee-left-v2 40s linear infinite;
+  will-change: transform;
+}
+
+.marquee-right-v2 {
+  animation: marquee-right-v2 40s linear infinite;
+  will-change: transform;
+}
+
+/* Pause the drift while the pointer inspects a card (fine pointers only) */
+@media (hover: hover) and (pointer: fine) {
+  .marquee-track-v2:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* Fade the outer 10% of each row so cards dissolve into the vault dark */
+.fade-edges-v2 {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
