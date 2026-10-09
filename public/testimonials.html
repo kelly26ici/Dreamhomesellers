@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testimonials — Dual Infinite Carousel</title>
+
+  <!-- Inter from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          keyframes: {
+            'marquee-left': {
+              '0%': { transform: 'translateX(0)' },
+              '100%': { transform: 'translateX(-50%)' },
+            },
+            'marquee-right': {
+              '0%': { transform: 'translateX(-50%)' },
+              '100%': { transform: 'translateX(0)' },
+            },
+          },
+          animation: {
+            'marquee-left': 'marquee-left 40s linear infinite',
+            'marquee-right': 'marquee-right 40s linear infinite',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    }
+
+    ::selection {
+      background-color: #bfdbfe; /* blue-200 */
+    }
+
+    /* Fading edges on the carousel container */
+    .fade-edges {
+      -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    }
+
+    /* Card wrapper: 24px total gap between cards (12px padding per side) */
+    .card-wrapper {
+      display: flex;
+      padding: 0 12px;
+    }
+
+    /* Track hover pauses the marquee */
+    .carousel-track:hover {
+      animation-play-state: paused;
+    }
+
+    /* Card sizing: 380px desktop, 320px on small screens */
+    .testimonial-card {
+      width: 380px;
+    }
+    @media (max-width: 639px) {
+      .testimonial-card {
+        width: 320px;
+      }
+    }
+  </style>
+</head>
+
+<body class="antialiased">
+
+  <!-- Wrapper Section -->
+  <section class="bg-white py-20 md:py-28 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Header and Text Block -->
+      <div class="text-center mb-16">
+
+        <!-- Top Pill (Trust Badge) -->
+        <div class="inline-flex items-center gap-3 px-1.5 py-1.5 pr-5 rounded-full bg-[#0a0a0a] text-white text-sm md:text-base font-medium shadow-xl shadow-gray-200 transition-transform duration-300 hover:scale-105 mb-8">
+          <span class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shadow-[0_0_10px_rgba(37,99,235,0.6)]">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.46L12 16.9l-6 3.75 1.5-6.46-5-4.36 6.6-.57L12 2z"/>
+            </svg>
+          </span>
+          <span>Loved by teams at fast-growing companies</span>
+        </div>
+
+        <!-- Main Heading -->
+        <h2 class="text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-tight text-gray-900 text-center max-w-4xl mx-auto mb-12">
+          Don't take our word for it — take theirs
+        </h2>
+      </div>
+
+      <!-- Carousels Block -->
+      <div class="w-full fade-edges pb-8">
+
+        <!-- Row 1: Marquee Left -->
+        <div class="carousel-row mb-6">
+          <div id="track-1" class="carousel-track flex w-max animate-marquee-left"></div>
+        </div>
+
+        <!-- Row 2: Marquee Right -->
+        <div class="carousel-row">
+          <div id="track-2" class="carousel-track flex w-max animate-marquee-right"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const TESTIMONIALS_ROW_1 = [
+      {
+        quote: "The platform paid for itself in the first month. Our team's velocity doubled and the reporting finally gives us clarity on what matters.",
+        name: "Sarah Chen",
+        role: "VP of Engineering, Northwind",
+        avatar: "https://i.pravatar.cc/150?img=47",
+      },
+      {
+        quote: "I've rolled out a lot of software over the years. This was the smoothest adoption we've ever had — the team actually enjoys using it.",
+        name: "Marcus Webb",
+        role: "CTO, Helios Labs",
+        avatar: "https://i.pravatar.cc/150?img=12",
+      },
+      {
+        quote: "Support responds in minutes, not days. When we hit an edge case during migration they were on a call with us the same afternoon.",
+        name: "Priya Raman",
+        role: "Head of Product, Fable",
+        avatar: "https://i.pravatar.cc/150?img=32",
+      },
+      {
+        quote: "We replaced four separate tools with this one. The integration story is genuinely the best I've seen in this category.",
+        name: "Daniel Okafor",
+        role: "Engineering Manager, Vertex",
+        avatar: "https://i.pravatar.cc/150?img=15",
+      },
+      {
+        quote: "The analytics surfaced insights we didn't even know to look for. It changed how we plan our quarter, not just how we track it.",
+        name: "Elena Kovacs",
+        role: "COO, Brightline",
+        avatar: "https://i.pravatar.cc/150?img=45",
+      },
+    ];
+
+    const TESTIMONIALS_ROW_2 = [
+      {
+        quote: "Onboarding took one afternoon. By the end of the week every department had adopted it without a single training session.",
+        name: "James Holt",
+        role: "Director of Ops, Cobalt",
+        avatar: "https://i.pravatar.cc/150?img=33",
+      },
+      {
+        quote: "Reliable, fast, and thoughtfully designed. It's rare that a tool this powerful feels this simple day to day.",
+        name: "Amara Diallo",
+        role: "Lead Designer, Loomfield",
+        avatar: "https://i.pravatar.cc/150?img=20",
+      },
+      {
+        quote: "We run mission-critical workloads on it and haven't had a single incident in eight months. That speaks louder than any feature list.",
+        name: "Tomás Ferreira",
+        role: "SRE Lead, Atlas Systems",
+        avatar: "https://i.pravatar.cc/150?img=59",
+      },
+      {
+        quote: "The API design is a masterclass. Our integration was done in two days and it has been flawless through every version since.",
+        name: "Hannah Lyle",
+        role: "Staff Engineer, Nimbus",
+        avatar: "https://i.pravatar.cc/150?img=26",
+      },
+      {
+        quote: "It scaled with us from five people to two hundred without us ever having to think about it. That's the highest praise I can give.",
+        name: "Ravi Deshmukh",
+        role: "Founder, Kestrel",
+        avatar: "https://i.pravatar.cc/150?img=13",
+      },
+    ];
+
+    function createCard(testimonial) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card-wrapper';
+      wrapper.innerHTML = `
+        <div class="testimonial-card flex flex-col justify-between h-full bg-gradient-to-br from-[#f8fafc] to-[#f1f5f9] rounded-3xl p-8 md:p-10 border border-gray-100 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md">
+          <div>
+            <svg class="w-10 h-10 text-blue-600 opacity-90 mb-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.325-.428-.767-.788-1.327-1.078-.56-.29-1.24-.463-2.04-.518v1.273c.676.06 1.177.244 1.502.553.325.31.487.72.487 1.23 0 .297-.053.552-.159.766a1.74 1.74 0 0 1-.416.553 3.87 3.87 0 0 1-.566.445 6.11 6.11 0 0 1-.688.375c-.29.14-.572.28-.846.42a5.6 5.6 0 0 0-.772.494 2.37 2.37 0 0 0-.642.674c-.174.262-.26.576-.26.94 0 .297.053.552.159.766.106.214.242.396.408.545.166.15.357.274.574.374.217.1.44.18.671.24V15.757zM19 15.757c0-.88-.23-1.618-.69-2.217-.325-.428-.767-.788-1.327-1.078-.56-.29-1.24-.463-2.04-.518v1.273c.676.06 1.177.244 1.502.553.325.31.487.72.487 1.23 0 .297-.053.552-.159.766a1.74 1.74 0 0 1-.416.553 3.87 3.87 0 0 1-.566.445 6.11 6.11 0 0 1-.688.375c-.29.14-.572.28-.846.42a5.6 5.6 0 0 0-.772.494 2.37 2.37 0 0 0-.642.674c-.174.262-.26.576-.26.94 0 .297.053.552.159.766.106.214.242.396.408.545.166.15.357.274.574.374.217.1.44.18.671.24V15.757z"/>
+            </svg>
+            <p class="text-gray-700 text-[1.1rem] font-medium leading-relaxed mb-8">${testimonial.quote}</p>
+          </div>
+          <div class="flex items-center gap-4">
+            <img src="${testimonial.avatar}" alt="${testimonial.name}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+            <div>
+              <p class="font-bold text-gray-900 text-base">${testimonial.name}</p>
+              <p class="text-sm text-gray-500 font-medium">${testimonial.role}</p>
+            </div>
+          </div>
+        </div>
+      `;
+      return wrapper;
+    }
+
+    function populateTrack(trackId, testimonials) {
+      const track = document.getElementById(trackId);
+      // Append the array twice so the -50% CSS animation loops seamlessly
+      [...testimonials, ...testimonials].forEach((t) => {
+        track.appendChild(createCard(t));
+      });
+
+      // Mobile touch interactions: pause the marquee during touch
+      track.addEventListener('touchstart', () => {
+        track.style.animationPlayState = 'paused';
+      }, { passive: true });
+
+      track.addEventListener('touchend', () => {
+        track.style.animationPlayState = 'running';
+      }, { passive: true });
+    }
+
+    populateTrack('track-1', TESTIMONIALS_ROW_1);
+    populateTrack('track-2', TESTIMONIALS_ROW_2);
+  </script>
+</body>
+</html>
