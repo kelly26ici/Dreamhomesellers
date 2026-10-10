@@ -1,11 +1,4 @@
-"use client";
-
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const SHOWCASE = [
   {
@@ -41,39 +34,9 @@ const SHOWCASE = [
 ];
 
 export default function PropertyShowcase() {
-  const rootRef = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const root = rootRef.current;
-    const track = trackRef.current;
-    if (!root || !track) return;
-    const ctx = gsap.context(() => {
-      const getDistance = () =>
-        Math.max(track.scrollWidth - window.innerWidth, 0);
-      if (getDistance() <= 0) return;
-      gsap.to(track, {
-        x: () => -getDistance(),
-        ease: "none",
-        scrollTrigger: {
-          trigger: root,
-          start: "top top",
-          end: () => `+=${getDistance()}`,
-          pin: true,
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
-      });
-    }, root);
-    return () => ctx.revert();
-  }, []);
-
   return (
-    <section ref={rootRef} className="relative overflow-hidden">
-      <div
-        ref={trackRef}
-        className="flex h-screen items-center gap-6 px-6 will-change-transform lg:px-12"
-      >
+    <section className="mx-auto max-w-[1440px] px-6 py-24 lg:px-12">
+      <div className="flex gap-6 overflow-x-auto pb-6 [scrollbar-color:var(--gold)_transparent] [scrollbar-width:thin]">
         <div className="w-[min(90vw,480px)] shrink-0">
           <h2 className="font-display text-5xl tracking-wide text-white md:text-6xl">
             THE COLLECTION
@@ -86,7 +49,7 @@ export default function PropertyShowcase() {
         {SHOWCASE.map((item) => (
           <figure
             key={item.title}
-            className="group relative h-[70vh] w-[80vw] shrink-0 overflow-hidden md:w-[60vw] lg:w-[44vw]"
+            className="group relative h-[60vh] min-h-[28rem] w-[80vw] shrink-0 overflow-hidden md:w-[60vw] lg:w-[44vw]"
           >
             <Image
               src={item.image}
