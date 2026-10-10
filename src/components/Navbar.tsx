@@ -113,6 +113,12 @@ export default function Navbar() {
             <Search className="h-5 w-5" />
           </button>
           <Link
+            href="/simon"
+            className="hidden text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold sm:block"
+          >
+            Simon
+          </Link>
+          <Link
             href="/login"
             className="hidden text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold sm:block"
           >
@@ -153,6 +159,13 @@ export default function Navbar() {
               </li>
             ))}
             <li className="border-t border-white/10 pt-2">
+              <Link
+                href="/simon"
+                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold hover:text-champagne"
+                onClick={() => setMenuOpen(false)}
+              >
+                Simon
+              </Link>
               <Link
                 href="/login"
                 className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold hover:text-champagne"
