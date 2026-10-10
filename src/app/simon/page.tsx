@@ -33,7 +33,8 @@ export default async function SimonPage() {
         src={simonUrl}
         title="Simon, LUXONN property concierge"
         className="min-h-0 flex-1 border-0"
-        allow="clipboard-read; clipboard-write"
+        sandbox="allow-forms allow-popups allow-same-origin allow-scripts"
+        allow="clipboard-write"
       />
     </main>
   );
