@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -204,6 +204,10 @@ function Track({
 export default function TestimonialsV2() {
   const rootRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
+  // Mount gate: SSR and the first client render must agree (no canvas on
+  // either), or React 19 flags a hydration mismatch for reduced-motion users.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
@@ -325,7 +329,7 @@ export default function TestimonialsV2() {
         <div className="absolute left-1/2 top-0 h-[60vh] w-[80vw] -translate-x-1/2 rounded-full bg-gold/[0.07] blur-[120px]" />
       </div>
 
-      {!reduceMotion && (
+      {mounted && !reduceMotion && (
         <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
           <Canvas
             dpr={[1, 1.5]}

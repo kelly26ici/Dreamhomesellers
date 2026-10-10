@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import { useReducedMotion } from "framer-motion";
@@ -18,6 +18,10 @@ export function LoginAmbient({
   className?: string;
 }) {
   const reduceMotion = useReducedMotion();
+  // Mount gate: SSR and the first client render must agree (no canvas on
+  // either), or React 19 flags a hydration mismatch for reduced-motion users.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <div
@@ -27,7 +31,7 @@ export function LoginAmbient({
       <div className="absolute left-1/2 top-[-25%] h-[70vh] w-[85vw] -translate-x-1/2 rounded-full bg-gold/[0.07] blur-[120px]" />
       <div className="absolute bottom-[-30%] right-[-15%] h-[55vh] w-[55vw] rounded-full bg-champagne/[0.04] blur-[100px]" />
 
-      {!reduceMotion && (
+      {mounted && !reduceMotion && (
         <Canvas
           dpr={[1, 1.5]}
           camera={{ position: [0, 0, 10], fov: 60 }}
