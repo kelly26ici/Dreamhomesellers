@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { Search, Menu } from "lucide-react";
+import Link from "next/link";
 import { useLenis } from "lenis/react";
 
 const NAV_LINKS = [
@@ -111,6 +112,12 @@ export default function Navbar() {
           >
             <Search className="h-5 w-5" />
           </button>
+          <Link
+            href="/login"
+            className="hidden text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold sm:block"
+          >
+            Sign In
+          </Link>
           <button
             ref={magnetRef}
             type="button"
@@ -145,6 +152,15 @@ export default function Navbar() {
                 </button>
               </li>
             ))}
+            <li className="border-t border-white/10 pt-2">
+              <Link
+                href="/login"
+                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold hover:text-champagne"
+                onClick={() => setMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            </li>
           </ul>
         </div>
       )}
