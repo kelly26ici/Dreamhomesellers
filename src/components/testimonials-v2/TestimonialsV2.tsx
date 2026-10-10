@@ -170,27 +170,33 @@ function Card({ item }: { item: Testimonial }) {
 function Track({
   items,
   direction,
+  index,
 }: {
   items: Testimonial[];
   direction: "left" | "right";
+  index: 1 | 2;
 }) {
   const doubled = [...items, ...items];
   return (
-    <div
-      data-v2="track"
-      className={`marquee-track-v2 flex w-max ${
-        direction === "left" ? "marquee-left-v2" : "marquee-right-v2"
-      }`}
-      onTouchStart={(e) => {
-        (e.currentTarget as HTMLElement).style.animationPlayState = "paused";
-      }}
-      onTouchEnd={(e) => {
-        (e.currentTarget as HTMLElement).style.animationPlayState = "running";
-      }}
-    >
-      {doubled.map((item, i) => (
-        <Card key={`${item.name}-${i}`} item={item} />
-      ))}
+    // Wrapper carries the GSAP entrance tween; the inner div carries the
+    // CSS marquee animation. Both animate `transform`, and CSS animations
+    // override inline styles — same element would make the GSAP tween dead.
+    <div data-v2={`track-${index}`}>
+      <div
+        className={`marquee-track-v2 flex w-max ${
+          direction === "left" ? "marquee-left-v2" : "marquee-right-v2"
+        }`}
+        onTouchStart={(e) => {
+          (e.currentTarget as HTMLElement).style.animationPlayState = "paused";
+        }}
+        onTouchEnd={(e) => {
+          (e.currentTarget as HTMLElement).style.animationPlayState = "running";
+        }}
+      >
+        {doubled.map((item, i) => (
+          <Card key={`${item.name}-${i}`} item={item} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -222,6 +228,15 @@ export default function TestimonialsV2() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    if (reduceMotion) {
+      // Reveal everything instantly; skip entrance tweens entirely.
+      gsap.set(
+        '[data-v2="heading"], [data-v2="subline"], [data-v2="track-container"], [data-v2="track-1"], [data-v2="track-2"], [data-v2="ambient"]',
+        { opacity: 1, y: 0, yPercent: 0, clipPath: "inset(0 0 0% 0)" }
+      );
+      gsap.set('[data-v2="ambient"]', { opacity: 0.55 });
+      return;
+    }
     const ctx = gsap.context(() => {
       gsap.fromTo(
         '[data-v2="heading"]',
@@ -259,7 +274,7 @@ export default function TestimonialsV2() {
         }
       );
       gsap.fromTo(
-        '[data-v2="track"]:nth-of-type(1)',
+        '[data-v2="track-1"]',
         { x: -140, opacity: 0 },
         {
           x: 0,
@@ -271,7 +286,7 @@ export default function TestimonialsV2() {
         }
       );
       gsap.fromTo(
-        '[data-v2="track"]:nth-of-type(2)',
+        '[data-v2="track-2"]',
         { x: 140, opacity: 0 },
         {
           x: 0,
@@ -294,7 +309,7 @@ export default function TestimonialsV2() {
       );
     }, root);
     return () => ctx.revert();
-  }, []);
+  }, [reduceMotion]);
 
   return (
     <section
@@ -358,9 +373,9 @@ export default function TestimonialsV2() {
               data-v2="track-container"
               className="fade-edges-v2 w-full pb-8 opacity-0"
             >
-              <Track items={TESTIMONIALS_ROW_1} direction="left" />
+              <Track items={TESTIMONIALS_ROW_1} direction="left" index={1} />
               <div className="h-6" />
-              <Track items={TESTIMONIALS_ROW_2} direction="right" />
+              <Track items={TESTIMONIALS_ROW_2} direction="right" index={2} />
             </div>
           </motion.div>
         </div>
