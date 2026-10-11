@@ -8,12 +8,13 @@ This directory is the portable, repository-owned record for LUXONN. It is intend
 2. [Target marketplace architecture](architecture/marketplace-target.md) — the approved destination and system boundaries.
 3. [Decision log](architecture/decisions.md) — durable decisions already made.
 4. [Security and data boundaries](architecture/security-data-boundaries.md) — field classifications, trust rules, and the authorization model that marketplace work must preserve.
-5. [Simon service boundary](agent-service/simon-boundary.md) — native chat target, agent roles, retrieval, memory, and media intelligence.
-6. [Marketplace roadmap](plans/marketplace-roadmap.md) — phases and exit criteria.
-7. [Implementation sequence](plans/implementation-sequence.md) — the gated build order and its first task.
-8. [Schema and authorization discovery brief](plans/schema-discovery-brief.md) — the verified inventory of the inherited Supabase, Storage, and Qdrant state that migration and contract work starts from.
-9. [Open questions](plans/open-questions.md) — decisions still awaiting the owner.
-10. [Handoff protocol](HANDOFF.md) — how future agents keep this record current.
+5. [Domain contracts](architecture/contracts.md) — the Phase 0 contract of record: TypeScript domain types with field classifications, Python pydantic mirrors, lifecycle behavior, and the inherited-column disposition.
+6. [Simon service boundary](agent-service/simon-boundary.md) — native chat target, agent roles, retrieval, memory, and media intelligence.
+7. [Marketplace roadmap](plans/marketplace-roadmap.md) — phases and exit criteria.
+8. [Implementation sequence](plans/implementation-sequence.md) — the gated build order and its first task.
+9. [Schema and authorization discovery brief](plans/schema-discovery-brief.md) — the verified inventory of the inherited Supabase, Storage, and Qdrant state that migration and contract work starts from.
+10. [Open questions](plans/open-questions.md) — decisions still awaiting the owner.
+11. [Handoff protocol](HANDOFF.md) — how future agents keep this record current.
 
 ## Scope and safety
 
