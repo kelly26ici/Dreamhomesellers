@@ -49,6 +49,8 @@
 | Agent persistence | In-memory checkpoints | Persistent Postgres checkpointer, optional Redis cache |
 | Circular gallery | Animal demo only | Curated collections, shortlists, similar-property surfaces |
 
+The verified inventory of the inherited Supabase schema, key posture, Storage, and Qdrant state — the factual baseline for all migration and contract work — is in the [schema and authorization discovery brief](../plans/schema-discovery-brief.md).
+
 ## Files that remain intentionally untouched
 
 - `Simon.env` is local secret material and is ignored. Never inspect or copy it.

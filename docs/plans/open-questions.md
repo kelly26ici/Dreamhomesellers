@@ -24,3 +24,11 @@ Decisions the owner must still make. Each item names the stakes, the options, an
 **Stakes:** Direct Postgres unlocks transaction-safe listing operations and a Postgres-backed LangGraph checkpointer; LangSmith is the observability backbone; Tavily is the grounded web-search tool; the dead Gemini key removes one of four model fallbacks.
 
 **Recommendation:** Provide all four when convenient. The Gemini key matters most for fallback resilience; the DB password matters most for the Phase 1 listing lifecycle.
+
+## 9. Unknown external writer of the non-marketplace tables
+
+**Question:** What is the component outside the simon repository that writes `conversation_messages`, `customer_profiles`, `property_submissions`, `request_outbox`, `mpesa_transactions`, and `schema_migrations` — and must it keep running during the migration?
+
+**Stakes:** The [discovery brief](schema-discovery-brief.md) (sections 2 and 7) found six relations carrying rows that nothing in the audited source writes, so some other deployed service holds write credentials to the production database. Its identity, hosting, and credential scope are unknown — meaning the real set of credential holders is unknown. Any change to legacy tables before it is identified risks breaking a live integration nobody has audited (WhatsApp concierge, M-Pesa callbacks, and migration tooling are the likeliest candidates), and its credentials interact with the Phase 1 RLS plan.
+
+**Recommendation:** Identify it from owner knowledge or Supabase logs (brief, verification backlog item 16) before any Phase 1 migration is applied. Until then, keep every legacy table untouched, per [ADR-015](../architecture/decisions.md).
