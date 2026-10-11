@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LUXONN
 
-## Getting Started
+LUXONN is a Kenya-focused premium property marketplace. It is evolving from a visual real-estate showcase into a trusted marketplace where authenticated owners submit listings, buyers discover published inventory, and Simon helps people make grounded property decisions.
 
-First, run the development server:
+The product is intentionally not minimal: its dark/gold visual system, rich motion, 3D, and editorial property experience remain part of the product direction. The marketplace must pair that visual ambition with trustworthy publication, permissions, and property data.
+
+## Current state
+
+The Next.js application currently provides the LUXONN marketing experience and a transitional Chainlit-based Simon integration. It does **not** yet include marketplace authentication, listing lifecycle management, canonical buyer search, native Simon chat, media processing, or moderation.
+
+Read the portable project knowledge base before making product or architecture changes:
+
+- [Current state](docs/architecture/current-state.md)
+- [Target marketplace architecture](docs/architecture/marketplace-target.md)
+- [Decision log](docs/architecture/decisions.md)
+- [Marketplace roadmap](docs/plans/marketplace-roadmap.md)
+- [Simon service boundary](docs/agent-service/simon-boundary.md)
+- [Cross-agent handoff protocol](docs/HANDOFF.md)
+
+## Repository layout
+
+```text
+src/                 Next.js application and LUXONN UI
+public/              static public assets
+docs/                portable architecture, decisions, plans, and handoff record
+.claude/launch.json  local Claude Code preview configuration
+```
+
+The current Python Simon prototype is a **separate sibling project** at `../simon`. It is not vendored here. The target keeps Simon in Python while replacing the public Chainlit iframe with native LUXONN UI backed by a typed Python service boundary.
+
+## Local development
+
+Install dependencies, then run the development server:
+
+```bash
+npm install
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Build the production application:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run linting:
 
-## Learn More
+```bash
+npm run lint
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Configuration and secrets
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`Simon.env`, `.env*`, API keys, database credentials, and private service URLs are intentionally ignored and must never be committed, copied into documentation, or printed. The legacy Simon embed reads its service URL from server-side configuration; the eventual native Simon integration will use authenticated, typed API calls instead.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Product invariants
 
-## Deploy on Vercel
+- LUXONN is Kenya-first. Existing international showcase material is not real marketplace inventory.
+- Anonymous visitors may browse, search, compare, and use Simon. Owners must authenticate to create or manage listings.
+- Supabase Postgres is the canonical record for listing visibility, price, availability, moderation, identity, and permissions.
+- Supabase Storage owns property media. Qdrant is a buyer-safe derived discovery index, never canonical truth.
+- An AI model, browser state, vector result, or generated image caption cannot publish a listing, disclose restricted data, or decide a commercial fact.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Working with agents
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Start with [`AGENTS.md`](AGENTS.md) for project-wide instructions used by Codex, OpenCode, and other compatible agents.
+- Claude Code should also read [`CLAUDE.md`](CLAUDE.md).
+- All agents should begin architecture work from [`docs/README.md`](docs/README.md).
+- Do not copy global machine configuration, desktop session state, generated worktrees, or secrets into this repository.
