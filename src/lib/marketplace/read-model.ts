@@ -94,7 +94,7 @@ export const PAGE_SIZE = 12;
 export interface PublishedListingCard {
   readonly listingId: string;
   readonly listingKind: ListingKind;
-  readonly revisionId: string;
+  readonly revisionId: RevisionId;
   readonly title: string;
   readonly description: string;
   /** ADR-001 money: decimal string + explicit currency. */
@@ -257,7 +257,9 @@ export async function fetchPublishedGrid(
       return {
         listingId: row.listing_id,
         listingKind: row.listing_kind as ListingKind,
-        revisionId: r.revision_id,
+        // PostgREST returns a plain string; this IS a revision id, so the
+        // brand boundary is here (one cast at the raw->domain edge).
+        revisionId: r.revision_id as RevisionId,
         title: r.title,
         description: r.description,
         priceAmount: r.price_amount,
