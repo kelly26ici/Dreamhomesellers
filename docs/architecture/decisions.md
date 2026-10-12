@@ -218,3 +218,17 @@ Browsing, search, and comparison remain anonymous with generous rate limits (che
 - Viewing requests store verified contact details and a stated purpose; unverified contact cannot create owner-visible requests.
 - The ADR-003 split stands: cross-device saves, alerts, appointment management, documents, and offers require an account.
 
+## ADR-017 — The marketplace runs on the fresh dream-home-sellers Supabase project; the inherited project is an import source only
+
+**Date:** 2026-10-12  
+**Status:** accepted (owner decision, overnight handoff)
+
+LUXONN production data lives in the new Supabase project `nokarvewyorsupraufdg` (organization "dream home sellers", region eu-west-1 Ireland), which the owner created fresh and verified empty on 2026-10-12 (REST OpenAPI: zero tables, only the platform RPC `rls_auto_enable`). The inherited project `ahylzmgsfeghojpleozg` (Samantha workspace) becomes a read-only import source per ADR-015 — its data, its unknown external writer, and its operational risk stay isolated from the marketplace database.
+
+**Consequences**
+
+- Phase 1 migration 0001 applies to the new project's clean schema — no additive-only constraint applies there (it exists to protect the legacy project during import, not the new one).
+- Open question 9 (the unknown external writer) no longer blocks new-project migrations; it constrains only reads and the audited import path from the legacy project.
+- Connection settings for the new project live in `.env.local` (gitignored). Client code uses the publishable key; server code uses the secret key; RLS remains the authorization boundary — the service-role path is for admin/import tooling only, never request-handling code.
+- Direct Postgres from the current network remains impossible until a Supavisor pooler is enabled on the new project (both projects' `db.*` hosts are IPv6-only on this IPv4-only network); until then the working paths are REST, the dashboard SQL editor, and the Supabase MCP server (registered 2026-10-12, pending owner `claude /mcp` authentication).
+

@@ -1,17 +1,21 @@
 # Phase 1 migration runbook — applying 0001_tenancy_and_lifecycle
 
-**Audience:** the owner (Kelly). Written 2026-10-12 by the overnight agent session.
-**Scope:** how to apply `supabase/migrations/0001_tenancy_and_lifecycle.sql` to the production Supabase project, verify it, and roll back if needed. No agent will ever apply this — application is deliberately an owner action (ADR-015 posture; also enforced by the discovery brief's finding that an unknown external service writes to this database).
+**Audience:** the owner (Kelly). Written 2026-10-12 by the overnight agent session; updated the same night for ADR-017 (fresh project).
+**Scope:** how to apply `supabase/migrations/0001_tenancy_and_lifecycle.sql` to the **new** production Supabase project, verify it, and roll back if needed. No agent will ever apply this — application is deliberately an owner action.
+
+## Target project (ADR-017)
+
+The marketplace database is the fresh project in the "dream home sellers" organization — project ref `nokarvewyorsupraufdg`, region eu-west-1 (Ireland), verified empty on 2026-10-12 (REST OpenAPI showed zero tables). The inherited Samantha-workspace project is an import source only and is never the target of this migration.
 
 ## Why you, and why the SQL editor
 
-- **Network fact (probed 2026-10-12):** this project's Postgres endpoints are IPv6-only and your network is IPv4-only. Direct `psql`/asyncpg connections cannot work from this machine at all. The dashboard SQL editor goes over HTTPS and is the one path that works.
-- **Safety fact:** the migration is additive-only — it creates 16 new tables, 3 enum types, and 3 helper functions, and never touches any of the 15 inherited relations (open question 9: an unidentified external service writes to some of them; we do not risk breaking it).
+- **Network fact (probed 2026-10-12):** both projects' direct `db.*` hosts are IPv6-only and your network is IPv4-only; no Supavisor pooler is enabled yet on the new project (enabling one in Dashboard → Database → Connection Pooling would create the IPv4 path). The dashboard SQL editor goes over HTTPS and works tonight.
+- **Safety fact:** the target schema is empty — the migration cannot collide with anything or lose any data by construction. (The additive-only constraint in the migration's header exists to protect the *legacy* project during future import work; on the fresh project it is trivially satisfied.)
 - **Credential rule:** never apply with the service-role key in a script; the dashboard session is your own owner identity.
 
 ## Pre-flight (2 minutes)
 
-1. Open the Supabase dashboard → your project (`ahylzmgsfeghojpleozg`).
+1. Open the Supabase dashboard → the dream-home-sellers project (`nokarvewyorsupraufdg`).
 2. **Connect the Supabase MCP server** (you mentioned you will) — optional, but it lets the next agent session inspect schema state read-only instead of asking you.
 3. Take the one-line backup the dashboard offers (Database → Backups) if you are within the free-tier window where that exists; otherwise note that all 16 tables are new names — the migration cannot lose existing data by construction, and rolling back is `DROP TABLE ... CASCADE` on new names only (script below).
 4. Read the migration file once: `supabase/migrations/0001_tenancy_and_lifecycle.sql`. Every table has a comment tying it to its ADR and the contracts doc.
