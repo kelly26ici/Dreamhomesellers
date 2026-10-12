@@ -1173,6 +1173,17 @@ GRANT SELECT (revision_id, listing_id, title, description, property_type,
               land_size_raw, area, city, town, county, country, amenities,
               furnished, published_at)
   ON public.listing_revisions TO anon, authenticated;
+-- PostgREST relational embeds along listings_published_revision_fk must
+-- reference the FK column itself, a generated column outside the public-class
+-- list above. It projects (revision_id, listing_id) — both already public —
+-- and is non-NULL only for published revisions, so it adds no new surface.
+-- Without this grant every buyer-side embed of the published revision fails
+-- with 42501. (Note: a listing_revisions -> listing_media embed remains
+-- impossible for anon because listing_media's composite FK
+-- listing_media_revision_same_org_fk would expose organization_id, which
+-- stays restricted; the read model fetches media as a second query.)
+GRANT SELECT (published_ref_revision_id)
+  ON public.listing_revisions TO anon, authenticated;
 
 REVOKE SELECT ON public.listing_media FROM anon, authenticated;
 GRANT SELECT (media_id, revision_id, position, kind, is_featured, derivative_paths)
