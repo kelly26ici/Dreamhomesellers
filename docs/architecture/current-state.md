@@ -1,4 +1,4 @@
-# Current state — 2026-10-11
+# Current state — 2026-10-12
 
 ## Repository ownership
 
@@ -8,7 +8,9 @@
 
 ## Production database (ADR-017, 2026-10-12)
 
-LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufdg` (dream-home-sellers organization, eu-west-1), created empty and verified so on 2026-10-12. The inherited project `ahylzmgsfeghojpleozg` (Samantha workspace) is a read-only import source per ADR-015. The Supabase MCP server is registered for the new project; connection settings are in `.env.local` (gitignored).
+LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufdg` (dream-home-sellers organization, eu-west-1). The inherited project `ahylzmgsfeghojpleozg` (Samantha workspace) is a read-only import source per ADR-015. The Supabase MCP server is registered for the new project; connection settings are in `.env.local` (gitignored).
+
+**Phase 1 schema is APPLIED and verified (2026-10-12).** Migration `0001_tenancy_and_lifecycle` went live through the Supabase MCP `apply_migration` after the owner confirmed IPv4 direct-DB access is a paid pooler feature: 18/18 tables, 18/18 RLS-enabled, 18/18 FORCE RLS, and the `anon`/`authenticated` runtime smoke test passes. Post-apply hardening (trigger-function `search_path` pins; the `is_org_internal` SECURITY DEFINER helper replacing an inline subquery in `listing_public_read` that broke anonymous reads under the column grants) is applied, mirrored into the migration file, and committed. Remaining security-lint findings are intentional: five service-lane tables are default-deny (RLS on, zero policies), and the RLS helper functions must keep client EXECUTE because policies evaluate with the caller's privileges. The application narrative and verification queries are in the [Phase 1 migration runbook](../plans/phase1-migration-runbook.md).
 
 ## What works now
 
