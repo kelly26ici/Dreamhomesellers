@@ -13,8 +13,9 @@ This directory is the portable, repository-owned record for LUXONN. It is intend
 7. [Marketplace roadmap](plans/marketplace-roadmap.md) — phases and exit criteria.
 8. [Implementation sequence](plans/implementation-sequence.md) — the gated build order and its first task.
 9. [Schema and authorization discovery brief](plans/schema-discovery-brief.md) — the verified inventory of the inherited Supabase, Storage, and Qdrant state that migration and contract work starts from.
-10. [Open questions](plans/open-questions.md) — decisions still awaiting the owner.
-11. [Handoff protocol](HANDOFF.md) — how future agents keep this record current.
+10. [Phase 1 migration runbook](plans/phase1-migration-runbook.md) — how the owner applies the Phase 1 schema migration through the dashboard SQL editor, verifies it, and rolls back.
+11. [Open questions](plans/open-questions.md) — decisions still awaiting the owner.
+12. [Handoff protocol](HANDOFF.md) — how future agents keep this record current.
 
 ## Scope and safety
 

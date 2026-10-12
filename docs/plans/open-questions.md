@@ -16,10 +16,10 @@ Decisions the owner must still make. Each item names the stakes, the options, an
 
 **Question:** Which of these will the owner provide?
 
-- `SUPABASE_DB_PASSWORD` — enables direct async Postgres access for the Simon service (currently the service uses Supabase REST only)
-- `LANGSMITH_API_KEY` — enables LangSmith tracing (wired, dormant without the key)
-- `TAVILY_API_KEY` — enables web search as an agent tool (design already accounts for it)
-- A valid `GEMINI_API_KEY` — the current key was tested live and returns `ACCESS_TOKEN_TYPE_UNSUPPORTED`; NVIDIA remains the working primary, but the Gemini fallback is currently dead
+- `SUPABASE_DB_PASSWORD` — enables direct async Postgres access for the Simon service (currently the service uses Supabase REST only). **Password candidates were provided 2026-10-12, but a probe found the project's database endpoints are IPv6-only (direct `db.*` host has no A record; no Supavisor pooler A record exists in any probed region) while the current network is IPv4-only — so no direct Postgres connection is possible from this machine regardless of password. All database work must go through the dashboard SQL editor (HTTPS) until the network or an IPv4 endpoint (e.g. a pooler created later) changes.**
+- `LANGSMITH_API_KEY` — **provided 2026-10-12 and wired into `simon/.env` + `Simon.env` (tracing activates on Simon restart), but the key is rejected server-side (403 on all LangSmith API endpoints via CLI auth). Needs rotation or workspace-scope fix in the LangSmith console.**
+- `TAVILY_API_KEY` — **not present in `Simon.env` (checked by name only, 2026-10-12); the key the owner mentioned was not found there. Still needed.**
+- A valid `GEMINI_API_KEY` — the current key was tested live and returns `ACCESS_TOKEN_TYPE_UNSUPPORTED`; NVIDIA remains the working primary, but the Gemini fallback is currently dead. **Name present in `Simon.env`; validity unchanged.**
 
 **Stakes:** Direct Postgres unlocks transaction-safe listing operations and a Postgres-backed LangGraph checkpointer; LangSmith is the observability backbone; Tavily is the grounded web-search tool; the dead Gemini key removes one of four model fallbacks.
 
