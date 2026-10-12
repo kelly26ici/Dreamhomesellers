@@ -4,10 +4,13 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { MapPin, Tag, Ruler } from "lucide-react";
 
+// Facts mirror the verified published record (demo listing b01: the Karen
+// villa) — real LUXONN numbers, not invented ones. The hero is decorative;
+// wiring these live is future work once the media pipeline lands.
 const FLOATING_CARDS = [
-  { icon: MapPin, label: "Location", value: "Palm Jumeirah, Dubai" },
-  { icon: Tag, label: "Price", value: "$14,200,000" },
-  { icon: Ruler, label: "Sq Ft", value: "12,500" },
+  { icon: MapPin, label: "Location", value: "Karen, Nairobi" },
+  { icon: Tag, label: "Price", value: "Ksh 145,000,000" },
+  { icon: Ruler, label: "Interior", value: "620 m²" },
 ];
 
 export default function Hero() {
@@ -95,17 +98,17 @@ export default function Hero() {
 
           <p data-hero="subtext" className="max-w-xl text-lg text-muted">
             Where architectural mastery meets quiet privilege. A private
-            collection of the world&rsquo;s most exceptional residences,
+            collection of Kenya&rsquo;s most exceptional residences,
             curated for those who accept nothing less.
           </p>
 
           <div className="flex flex-col gap-4 sm:flex-row">
             <a
               data-hero="cta"
-              href="#properties"
+              href="/properties"
               className="border border-gold bg-gold px-8 py-4 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)]"
             >
-              Explore Collection
+              Explore the Collection
             </a>
             <a
               data-hero="cta"

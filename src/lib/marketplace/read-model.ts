@@ -164,6 +164,70 @@ const REVISION_COLUMNS = [
 ].join(',');
 
 /**
+ * Raw PostgREST row shape for a published listing joined to its revision.
+ * The embed is verified live (many-to-one !inner returns an object, not an
+ * array) but sits outside the type-parser's reach, so callers bridge via
+ * unknown casts and this is the single place the runtime shape is declared.
+ */
+interface PublishedRow {
+  listing_id: string;
+  listing_kind: string;
+  published_revision: {
+    revision_id: string;
+    title: string;
+    description: string;
+    property_type: string;
+    property_subtype: string | null;
+    availability: string;
+    price_amount: string;
+    price_currency: string;
+    price_period: string;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    square_meters: number | null;
+    lot_size_sqm: number | null;
+    area: string;
+    city: string;
+    county: string | null;
+    country: string;
+    amenities: string[] | null;
+    furnished: boolean | null;
+    published_at: string | null;
+  } | null;
+}
+
+/** Map one raw row to the domain card. The single raw->domain boundary. */
+function toCard(row: PublishedRow): PublishedListingCard {
+  const r = row.published_revision!;
+  return {
+    listingId: row.listing_id,
+    listingKind: row.listing_kind as ListingKind,
+    // PostgREST returns a plain string; this IS a revision id, so the
+    // brand boundary is here (one cast at the raw->domain edge).
+    revisionId: r.revision_id as RevisionId,
+    title: r.title,
+    description: r.description,
+    priceAmount: r.price_amount,
+    priceCurrency: r.price_currency,
+    pricePeriod: r.price_period,
+    propertyType: r.property_type,
+    propertySubtype: r.property_subtype,
+    availability: r.availability,
+    bedrooms: r.bedrooms,
+    bathrooms: r.bathrooms,
+    squareMeters: r.square_meters,
+    lotSizeSqm: r.lot_size_sqm,
+    area: r.area,
+    city: r.city,
+    county: r.county,
+    country: r.country,
+    amenities: r.amenities ?? [],
+    furnished: r.furnished,
+    publishedAt: r.published_at,
+  };
+}
+
+/**
  * Query the published grid. Filters that live on the revision are applied
  * through the !inner embed (a true join: parents without a published
  * revision cannot exist in the result, and embedded filters then filter
@@ -252,35 +316,7 @@ export async function fetchPublishedGrid(
 
   const cards: PublishedListingCard[] = (data ?? [])
     .filter((row) => row.published_revision !== null)
-    .map((row) => {
-      const r = row.published_revision!;
-      return {
-        listingId: row.listing_id,
-        listingKind: row.listing_kind as ListingKind,
-        // PostgREST returns a plain string; this IS a revision id, so the
-        // brand boundary is here (one cast at the raw->domain edge).
-        revisionId: r.revision_id as RevisionId,
-        title: r.title,
-        description: r.description,
-        priceAmount: r.price_amount,
-        priceCurrency: r.price_currency,
-        pricePeriod: r.price_period,
-        propertyType: r.property_type,
-        propertySubtype: r.property_subtype,
-        availability: r.availability,
-        bedrooms: r.bedrooms,
-        bathrooms: r.bathrooms,
-        squareMeters: r.square_meters,
-        lotSizeSqm: r.lot_size_sqm,
-        area: r.area,
-        city: r.city,
-        county: r.county,
-        country: r.country,
-        amenities: r.amenities ?? [],
-        furnished: r.furnished,
-        publishedAt: r.published_at,
-      };
-    });
+    .map(toCard);
 
   // Media as a second query, stitched by revision_id (see module header).
   const mediaByRevision = await fetchMediaForRevisions(
@@ -417,61 +453,42 @@ export async function fetchPublishedListing(
     throw new Error(`Listing detail query failed: ${error.message}`);
   }
 
-  const row = ((data ?? [])[0] ?? null) as unknown as
-    | { listing_id: string; listing_kind: string; published_revision: unknown }
-    | null;
+  const row = ((data ?? [])[0] ?? null) as unknown as PublishedRow | null;
   if (!row || row.published_revision === null) return null;
 
-  const r = row.published_revision as {
-    revision_id: string;
-    title: string;
-    description: string;
-    property_type: string;
-    property_subtype: string | null;
-    availability: string;
-    price_amount: string;
-    price_currency: string;
-    price_period: string;
-    bedrooms: number | null;
-    bathrooms: number | null;
-    square_meters: number | null;
-    lot_size_sqm: number | null;
-    area: string;
-    city: string;
-    county: string | null;
-    country: string;
-    amenities: string[] | null;
-    furnished: boolean | null;
-    published_at: string | null;
-  };
-
-  const card: PublishedListingCard = {
-    listingId: row.listing_id,
-    listingKind: row.listing_kind as ListingKind,
-    revisionId: r.revision_id as RevisionId,
-    title: r.title,
-    description: r.description,
-    priceAmount: r.price_amount,
-    priceCurrency: r.price_currency,
-    pricePeriod: r.price_period,
-    propertyType: r.property_type,
-    propertySubtype: r.property_subtype,
-    availability: r.availability,
-    bedrooms: r.bedrooms,
-    bathrooms: r.bathrooms,
-    squareMeters: r.square_meters,
-    lotSizeSqm: r.lot_size_sqm,
-    area: r.area,
-    city: r.city,
-    county: r.county,
-    country: r.country,
-    amenities: r.amenities ?? [],
-    furnished: r.furnished,
-    publishedAt: r.published_at,
-  };
+  const card = toCard(row);
 
   const mediaByRevision = await fetchMediaForRevisions(supabase, [
     card.revisionId,
   ]);
   return { card, media: mediaByRevision.get(card.revisionId) ?? [] };
+}
+
+/**
+ * The N most recently published listings for homepage merchandising
+ * (FeaturedProperties / PropertyShowcase). Same published-only guarantee
+ * as the grid: `listings` root, lifecycle_state='published', !inner embed,
+ * RLS-enforced. Price/currency/period ride the revision embed so the UI
+ * can format ADR-001 money strings.
+ */
+export async function fetchPublishedFeatured(
+  limit = 3,
+): Promise<readonly PublishedListingCard[]> {
+  const supabase = anonClient();
+  const { data, error } = await supabase
+    .from('listings')
+    .select(
+      `listing_id, listing_kind, published_revision:${PUBLISHED_REVISION_FK}(${REVISION_COLUMNS})`,
+    )
+    .eq('lifecycle_state', 'published')
+    .order('published_at', { ascending: false, referencedTable: 'published_revision', nullsFirst: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Featured listings query failed: ${error.message}`);
+  }
+
+  return ((data ?? []) as unknown as PublishedRow[])
+    .filter((row) => row.published_revision !== null)
+    .map(toCard);
 }

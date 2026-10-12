@@ -15,9 +15,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "LUXONN — Luxury Real Estate",
+  title: "LUXONN — Luxury Real Estate, Kenya",
   description:
-    "LUXONN curates the world's most exceptional residences. Discover architectural masterpieces in Dubai, New York, and Miami.",
+    "LUXONN curates Kenya's most exceptional residences. Discover verified architectural masterpieces across Nairobi and beyond.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

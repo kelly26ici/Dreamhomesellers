@@ -1,38 +1,30 @@
 "use client";
 
+/**
+ * Homepage featured-properties section (client island for GSAP reveal).
+ *
+ * Data comes from the server via props — the page awaits
+ * fetchPublishedFeatured() and hands down verified published cards. With
+ * Phase 3 not yet run the demo rows have no imagery, so each card renders
+ * the honest media-pending state instead of a stock photo; when media
+ * lands, imagery goes live in this one component.
+ */
+
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Image from "next/image";
 import { MapPin } from "lucide-react";
+import Link from "next/link";
+import { formatListingPrice } from "@/lib/marketplace/format-money";
+import type { PublishedListingCard } from "@/lib/marketplace/read-model";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const PROPERTIES = [
-  {
-    title: "Skyline Penthouse",
-    location: "Dubai, UAE",
-    price: "$14.2M",
-    image:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80",
-  },
-  {
-    title: "Fifth Avenue Duplex",
-    location: "New York, USA",
-    price: "$22.5M",
-    image:
-      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1600&q=80",
-  },
-  {
-    title: "Oceanfront Villa",
-    location: "Miami, USA",
-    price: "$18.7M",
-    image:
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80",
-  },
-];
-
-export default function FeaturedProperties() {
+export default function FeaturedProperties({
+  properties,
+}: {
+  readonly properties: readonly PublishedListingCard[];
+}) {
   const rootRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -69,36 +61,51 @@ export default function FeaturedProperties() {
           FEATURED PROPERTIES
         </h2>
         <p className="max-w-2xl text-muted">
-          Three addresses that define their skylines. Each residence is
-          privately presented to pre-qualified clients.
+          The latest verified additions to the Kenyan collection. Each
+          listing is published from the LUXONN record — price and facts
+          exactly as verified.
         </p>
       </div>
 
       <div className="grid gap-8 md:grid-cols-3">
-        {PROPERTIES.map((property) => (
+        {properties.map((property) => (
           <article
-            key={property.title}
+            key={property.listingId}
             data-featured="card"
             className="group relative h-[520px] overflow-hidden border border-white/10 transition-colors duration-500 hover:border-gold/60"
           >
-            <Image
-              src={property.image}
-              alt={`${property.title}, ${property.location}`}
-              fill
-              sizes="(max-width: 768px) 100vw, 33vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-2 text-center">
+              <span
+                aria-hidden
+                className="font-display text-5xl tracking-wide text-gold/40"
+              >
+                LUXONN
+              </span>
+              <span className="px-6 text-xs tracking-[0.2em] text-muted">
+                IMAGERY PENDING
+              </span>
+            </div>
+            <Link
+              href={`/property/${property.listingId}`}
+              className="absolute inset-0 z-10"
+              aria-label={property.title}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 translate-y-6 p-6 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+            <div className="absolute inset-x-0 bottom-0 translate-y-6 bg-gradient-to-t from-black/90 to-transparent p-6 pt-16 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
               <p className="text-xs tracking-[0.2em] text-gold">
-                {property.price}
+                {formatListingPrice(
+                  property.priceAmount,
+                  property.priceCurrency,
+                  property.pricePeriod,
+                )}
               </p>
               <h3 className="mt-1 font-display text-2xl tracking-wide text-white">
                 {property.title}
               </h3>
               <p className="mt-2 flex items-center gap-2 text-sm text-muted">
                 <MapPin className="h-4 w-4 text-gold" aria-hidden />
-                {property.location}
+                {[property.area, property.city, property.county]
+                  .filter(Boolean)
+                  .join(", ")}
               </p>
             </div>
           </article>
