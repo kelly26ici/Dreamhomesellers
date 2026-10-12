@@ -383,3 +383,95 @@ export async function fetchPublishedTypes(): Promise<string[]> {
   }
   return [...types].sort();
 }
+
+/**
+ * One published listing by id, for the /property/[listingId] detail page.
+ * Returns null unless the listing is published AND its published revision
+ * is buyer-visible (RLS enforces both); the page maps null to notFound().
+ * ADR-014 holds by construction: the selected columns contain only
+ * area-level location — no address field exists on the revision.
+ */
+export async function fetchPublishedListing(
+  listingId: string,
+): Promise<{
+  readonly card: PublishedListingCard;
+  readonly media: readonly PublicMediaRow[];
+} | null> {
+  // Guard the shape cheaply: anything that isn't a plausible UUID can't be
+  // a listing id, and PostgREST would 400 on a malformed filter value.
+  const uuidLike =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidLike.test(listingId)) return null;
+
+  const supabase = anonClient();
+  const { data, error } = await supabase
+    .from('listings')
+    .select(
+      `listing_id, listing_kind, published_revision:${PUBLISHED_REVISION_FK}(${REVISION_COLUMNS})`,
+    )
+    .eq('listing_id', listingId)
+    .eq('lifecycle_state', 'published')
+    .limit(1);
+
+  if (error) {
+    throw new Error(`Listing detail query failed: ${error.message}`);
+  }
+
+  const row = ((data ?? [])[0] ?? null) as unknown as
+    | { listing_id: string; listing_kind: string; published_revision: unknown }
+    | null;
+  if (!row || row.published_revision === null) return null;
+
+  const r = row.published_revision as {
+    revision_id: string;
+    title: string;
+    description: string;
+    property_type: string;
+    property_subtype: string | null;
+    availability: string;
+    price_amount: string;
+    price_currency: string;
+    price_period: string;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    square_meters: number | null;
+    lot_size_sqm: number | null;
+    area: string;
+    city: string;
+    county: string | null;
+    country: string;
+    amenities: string[] | null;
+    furnished: boolean | null;
+    published_at: string | null;
+  };
+
+  const card: PublishedListingCard = {
+    listingId: row.listing_id,
+    listingKind: row.listing_kind as ListingKind,
+    revisionId: r.revision_id as RevisionId,
+    title: r.title,
+    description: r.description,
+    priceAmount: r.price_amount,
+    priceCurrency: r.price_currency,
+    pricePeriod: r.price_period,
+    propertyType: r.property_type,
+    propertySubtype: r.property_subtype,
+    availability: r.availability,
+    bedrooms: r.bedrooms,
+    bathrooms: r.bathrooms,
+    squareMeters: r.square_meters,
+    lotSizeSqm: r.lot_size_sqm,
+    area: r.area,
+    city: r.city,
+    county: r.county,
+    country: r.country,
+    amenities: r.amenities ?? [],
+    furnished: r.furnished,
+    publishedAt: r.published_at,
+  };
+
+  const mediaByRevision = await fetchMediaForRevisions(supabase, [
+    card.revisionId,
+  ]);
+  return { card, media: mediaByRevision.get(card.revisionId) ?? [] };
+}
