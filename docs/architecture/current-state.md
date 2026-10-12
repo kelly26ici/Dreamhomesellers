@@ -6,6 +6,10 @@
 
 `../simon` is a separate Python 3.13 service repository. It contains the current LangChain/Chainlit Simon prototype and shares the intended Supabase/Qdrant property infrastructure. It is not yet a native LUXONN backend API.
 
+## Production database (ADR-017, 2026-10-12)
+
+LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufdg` (dream-home-sellers organization, eu-west-1), created empty and verified so on 2026-10-12. The inherited project `ahylzmgsfeghojpleozg` (Samantha workspace) is a read-only import source per ADR-015. The Supabase MCP server is registered for the new project; connection settings are in `.env.local` (gitignored).
+
 ## What works now
 
 - Dark/gold LUXONN visual system using Bebas Neue and Inter.
