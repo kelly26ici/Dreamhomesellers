@@ -1,78 +1,65 @@
--- LUXONN Phase 1 migration 0001: tenancy, revisioned listing lifecycle, moderation,
--- viewing requests, handoffs, outbox, audit — and Row Level Security on all of it.
+-- LUXONN Phase 1 migration 0001 (hardened, v2): tenancy, revisioned listing
+-- lifecycle, moderation, viewing requests, handoffs, outbox, audit — and Row
+-- Level Security on all of it.
 --
 -- Contract of record: docs/architecture/contracts.md (commit 8961619).
 -- ADRs: 001 (Kenya-first), 005 (revisioned lifecycle), 012 (org tenancy),
--- 013 (founder moderation), 014 (location disclosure), 015 (additive-only import),
--- 016 (anonymous limits).
+-- 013 (founder moderation), 014 (location disclosure), 015 (staging posture),
+-- 016 (anonymous limits), 017 (fresh dream-home-sellers project target).
 --
--- HARD CONSTRAINTS
---   * Additive only: no legacy table (properties, property_images, agents,
---     scheduled_viewings, property_inquiries, property_submissions,
---     property_moderation_events, property_reports, conversation_*,
---     customer_profiles, bot_settings, request_outbox, mpesa_transactions,
---     schema_migrations) is created, altered, dropped, or named by a policy.
---     Rationale: the discovery brief found six legacy relations with rows
---     written by an unknown external component (open question 9); touching
---     them risks breaking a live integration nobody has audited.
+-- This version folds in the six-lens adversarial review (2026-10-12) and the
+-- Supabase Postgres best-practices audit:
+--   * helper functions moved BELOW the tables they reference (check_function_bodies)
+--   * all policy helpers are SECURITY DEFINER with pinned search_path (kills the
+--     membership/platform-role policy recursion found by the RLS and safety lenses)
+--   * composite (id, organization_id) FK chain — a child row can only reference
+--     a parent in the SAME organization (tenancy lens criticals)
+--   * published_revision_id can only name a published revision of the SAME listing
+--     (generated column + composite FK — lifecycle/RLS lens pointer-poisoning)
+--   * state/pointer columns guarded: transitions and the public pointer are domain
+--     commands only (luxonn.domain_command GUC), frozen revisions immutable
+--   * media rows cannot move between revisions; AI-evidence satellites are
+--     service-lane only (no client write policies)
+--   * client column grants: anonymous sees only public-class columns; reporters'
+--     personal fields never reach the reported org
+--   * FORCE ROW LEVEL SECURITY on every table (postgres owner bypass closed)
+--   * policy helpers wrapped in (SELECT ...) inside policies — evaluated once per
+--     statement (initplan), not per row (Supabase RLS performance rule)
+--   * AI satellites carry their contract versioning anchors (embedding_version,
+--     recipe_version, content_hash, vector_dimension; dossier_version;
+--     observation_version) with corrected UNIQUE constraints
+--   * no schema-level defaults for product vocabularies (ADR-001: KES/Kenya/
+--     one_time/solo are server-side product defaults, never column DEFAULTs)
+--   * audit_records append-only is trigger-enforced; outbox carries a dedupe key
+--     and a buyer-safety payload CHECK
+--
+-- HARD CONSTRAINTS (unchanged)
+--   * Additive only: no legacy relation is created, altered, or dropped. The
+--     ADR-017 target is the verified-empty dream-home-sellers project; the
+--     additive-only posture additionally protects the legacy import source.
 --   * Never applied by an agent, never run with the service-role key.
---     Application is an owner action per the runbook.
---   * Every table below enables RLS and carries at least one policy; the
---     default posture is deny (RLS on, no policy = no rows).
---   * Money is a decimal string + explicit currency (ADR-001): numeric columns
---     never exist without their currency column, and price_per_sqm is never
---     stored (derived at read time).
+--     Application is an owner action per docs/plans/phase1-migration-runbook.md.
+--   * Money is a decimal string + explicit currency (ADR-001): price_per_sqm is
+--     never stored (derived at read time); currency/country/period values come
+--     from the domain layer, not from DEFAULTs.
 --
 -- NOTE ON auth.users: Supabase projects have an auth schema managed by the
--- platform. Membership.user_id references auth.users(id) with ON DELETE
--- CASCADE so removing a user removes their tenancy linkage automatically.
+-- platform. user_id references auth.users(id) ON DELETE CASCADE so removing a
+-- user removes their tenancy linkage automatically.
+--
+-- VALIDATION: this exact file was applied, verified, rolled back, and re-applied
+-- on a scratch PostgreSQL 18.6 cluster (2026-10-12) before commit.
 
 BEGIN;
 
 -- ============================================================
--- Shared helpers
--- ============================================================
-
--- Current Supabase auth user id as uuid, or NULL when unauthenticated.
-CREATE OR REPLACE FUNCTION public.current_app_user_id()
-RETURNS uuid
-LANGUAGE sql
-STABLE
-AS $$
-  SELECT NULLIF(auth.jwt() ->> 'sub', '')::uuid
-$$;
-
--- All organizations the current user is a member of (0/1/many).
-CREATE OR REPLACE FUNCTION public.current_user_org_ids()
-RETURNS SETOF uuid
-LANGUAGE sql
-STABLE
-AS $$
-  SELECT organization_id
-  FROM public.owner_organizations_memberships
-  WHERE user_id = public.current_app_user_id()
-$$;
-
--- Current user's platform role ('moderator'/'admin'), or NULL.
-CREATE OR REPLACE FUNCTION public.current_platform_role()
-RETURNS text
-LANGUAGE sql
-STABLE
-AS $$
-  SELECT role
-  FROM public.platform_roles
-  WHERE user_id = public.current_app_user_id()
-  LIMIT 1
-$$;
-
--- ============================================================
--- 0. Tenancy (ADR-012)
+-- 0a. Tenancy (ADR-012)
 -- ============================================================
 
 CREATE TABLE public.owner_organizations (
   organization_id   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   display_name      text NOT NULL,
-  kind              text NOT NULL DEFAULT 'solo'
+  kind              text NOT NULL
                     CHECK (kind IN ('solo', 'agency', 'brokerage', 'developer')),
   is_internal       boolean NOT NULL DEFAULT false,
   public_bio        text,
@@ -95,7 +82,7 @@ CREATE TABLE public.owner_organizations_memberships (
   UNIQUE (organization_id, user_id)
 );
 
-CREATE INDEX ON public.owner_organizations_memberships (user_id);
+CREATE INDEX owner_org_memberships_user_idx ON public.owner_organizations_memberships (user_id);
 
 CREATE TABLE public.platform_roles (
   platform_role_id  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -106,7 +93,79 @@ CREATE TABLE public.platform_roles (
 );
 
 COMMENT ON TABLE public.platform_roles IS
-  'Platform staff roles (flagged recommendation, contracts §16.3). Moderators are platform staff, never owner-org members; this is the recommended shape so moderation cannot inherit owner-org privileges.';
+  'Platform staff roles (flagged recommendation, contracts §16.3). Moderators are platform staff, never owner-org members.';
+
+-- ============================================================
+-- 0b. Helper functions — AFTER the tables they reference.
+--     (check_function_bodies=on validates SQL bodies at CREATE time; the
+--     original draft forward-referenced these tables and failed at line 54 —
+--     migration-safety lens, empirically reproduced.)
+--     All are SECURITY DEFINER with pinned search_path: the definer (postgres,
+--     the table owner) bypasses RLS, which breaks the policy-recursion cycle
+--     the RLS lens found (a policy on T calling a helper that selects T).
+--     Policies wrap every call in (SELECT ...) so it evaluates once per
+--     statement (initplan), not once per row (Supabase RLS performance rule).
+-- ============================================================
+
+-- Current Supabase auth user id as uuid, or NULL when unauthenticated.
+CREATE OR REPLACE FUNCTION public.current_app_user_id()
+RETURNS uuid
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT NULLIF(auth.jwt() ->> 'sub', '')::uuid
+$$;
+
+-- All organizations the current user is a member of (0/1/many).
+CREATE OR REPLACE FUNCTION public.current_user_org_ids()
+RETURNS SETOF uuid
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT organization_id
+  FROM public.owner_organizations_memberships
+  WHERE user_id = public.current_app_user_id()
+$$;
+
+-- Current user's platform role ('moderator'/'admin'), or NULL.
+-- A user may hold both roles; ordering makes resolution deterministic
+-- ('admin' sorts before 'moderator' — contracts-parity lens F8).
+CREATE OR REPLACE FUNCTION public.current_platform_role()
+RETURNS text
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT role
+  FROM public.platform_roles
+  WHERE user_id = public.current_app_user_id()
+  ORDER BY role
+  LIMIT 1
+$$;
+
+-- Org-admin check as a SECURITY DEFINER helper: the definer bypasses RLS, so
+-- the membership query inside cannot re-enter the policy being evaluated
+-- (migration-safety lens F2; replaces the self-referential EXISTS).
+CREATE OR REPLACE FUNCTION public.is_org_admin(org_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.owner_organizations_memberships
+    WHERE organization_id = org_id
+      AND user_id = public.current_app_user_id()
+      AND member_role IN ('owner', 'admin')
+  )
+$$;
 
 -- ============================================================
 -- 1. Property — stable physical asset (ADR-014 restricted set)
@@ -127,11 +186,15 @@ CREATE TABLE public.properties_lux (
   updated_at        timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX ON public.properties_lux (organization_id);
+CREATE INDEX properties_lux_org_idx ON public.properties_lux (organization_id);
 -- Import dedupe: (source, external_id) unique among rows where both present.
 CREATE UNIQUE INDEX properties_lux_source_external_dedupe
   ON public.properties_lux (source, external_id)
   WHERE source IS NOT NULL AND external_id IS NOT NULL;
+
+-- Composite-org anchor for child FKs (tenancy lens F2).
+ALTER TABLE public.properties_lux
+  ADD CONSTRAINT properties_lux_id_org_key UNIQUE (property_id, organization_id);
 
 COMMENT ON TABLE public.properties_lux IS
   'Physical asset record carrying the ADR-014 restricted set. Public content lives on ListingRevision; exact address/coordinates never appear in public revisions, read models, Qdrant, or Simon context.';
@@ -148,24 +211,33 @@ CREATE TABLE public.listings (
   listing_id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id         uuid NOT NULL REFERENCES public.properties_lux(property_id),
   organization_id     uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
-  listing_kind        text NOT NULL,             -- provisional: sale/rent/shortlet; freezes Phase 1 via pg_enum audit
+  listing_kind        text NOT NULL CHECK (listing_kind <> ''),
   lifecycle_state     public.listing_lifecycle_state NOT NULL DEFAULT 'draft',
   published_revision_id uuid,                    -- sole public authority; set only at PUBLISHING->PUBLISHED
   created_via         text NOT NULL CHECK (created_via IN ('owner', 'import')),
   created_at          timestamptz NOT NULL DEFAULT now(),
   updated_at          timestamptz NOT NULL DEFAULT now(),
   withdrawn_at        timestamptz,
-  closed_at           timestamptz,
-  CHECK (listing_kind <> '')
+  closed_at           timestamptz
 );
 
-CREATE INDEX ON public.listings (organization_id);
-CREATE INDEX ON public.listings (lifecycle_state);
+ALTER TABLE public.listings
+  ADD CONSTRAINT listings_property_same_org_fk
+  FOREIGN KEY (property_id, organization_id)
+  REFERENCES public.properties_lux (property_id, organization_id);
+
+-- Composite anchor for child tables (revisions, cases, viewing requests,
+-- handoffs reference listings (listing_id, organization_id)).
+ALTER TABLE public.listings
+  ADD CONSTRAINT listings_id_org_key UNIQUE (listing_id, organization_id);
+
+CREATE INDEX listings_org_idx ON public.listings (organization_id);
+CREATE INDEX listings_lifecycle_idx ON public.listings (lifecycle_state);
 -- Buyer search helper: published listings only (visibility gate per contracts §11).
 CREATE INDEX listings_published ON public.listings (listing_id) WHERE lifecycle_state = 'published';
 
 COMMENT ON TABLE public.listings IS
-  'Commercial offer; buyer-addressable entity. lifecycle_state mirrors the working revision before first publication, then stays published through correction cycles until withdrawal/closure (contracts §11). published_revision_id is the sole public authority pointer.';
+  'Commercial offer; buyer-addressable entity. lifecycle_state mirrors the working revision before first publication, then stays published through correction cycles until withdrawal/closure (contracts §11). published_revision_id is the sole public authority pointer, settable only by the publish domain command.';
 
 -- ============================================================
 -- 3. ListingRevision — immutable content snapshot (ADR-005)
@@ -179,7 +251,7 @@ CREATE TABLE public.listing_revisions (
   revision_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   listing_id        uuid NOT NULL REFERENCES public.listings(listing_id) ON DELETE CASCADE,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
-  base_revision_id  uuid,                        -- self-FK added below (forward reference)
+  base_revision_id  uuid,                        -- self-FK added below (correction lineage)
   revision_state    public.revision_state NOT NULL DEFAULT 'draft',
   -- public content (contracts §4): derived from the published revision only
   title             text NOT NULL,
@@ -188,8 +260,8 @@ CREATE TABLE public.listing_revisions (
   property_subtype  text,
   availability      text NOT NULL,               -- provisional; 'available' is the only verified member
   price_amount      numeric(18,2) NOT NULL,      -- decimal string in TS contracts; numeric here. Never a float in application code.
-  price_currency    text NOT NULL DEFAULT 'KES', -- product default, not schema constant; never hardcoded in queries
-  price_period      text NOT NULL DEFAULT 'one_time',  -- provisional; freezes Phase 1
+  price_currency    text NOT NULL,               -- no DEFAULT: product default is applied by the server (ADR-001)
+  price_period      text NOT NULL,               -- no DEFAULT: ditto
   bedrooms          integer,
   bathrooms         integer,
   square_meters     double precision,
@@ -203,7 +275,7 @@ CREATE TABLE public.listing_revisions (
   city              text NOT NULL,
   town              text,
   county            text,
-  country           text NOT NULL DEFAULT 'Kenya',
+  country           text NOT NULL,               -- no DEFAULT (ADR-001)
   amenities         text[] NOT NULL DEFAULT '{}',
   furnished         boolean,
   created_by        uuid REFERENCES auth.users(id),   -- owning-org member; null for import rows
@@ -213,22 +285,62 @@ CREATE TABLE public.listing_revisions (
   published_at      timestamptz                  -- buyer-facing age displays derive from this
 );
 
--- Self-reference (correction lineage: base_revision_id -> published revision).
+-- Composite-org anchors (tenancy lens F2) and correction lineage.
+ALTER TABLE public.listing_revisions
+  ADD CONSTRAINT listing_revisions_listing_same_org_fk
+  FOREIGN KEY (listing_id, organization_id)
+  REFERENCES public.listings (listing_id, organization_id);
+
+ALTER TABLE public.listing_revisions
+  ADD CONSTRAINT listing_revisions_id_org_key UNIQUE (revision_id, organization_id);
+
 ALTER TABLE public.listing_revisions
   ADD CONSTRAINT listing_revisions_base_fk
   FOREIGN KEY (base_revision_id) REFERENCES public.listing_revisions(revision_id);
 
--- The public-authority pointer, added after both tables exist.
+-- No self-lineage (lifecycle lens F5). Deeper cycles are prevented by the
+-- base-must-be-published rule below plus the frozen-state guard.
+ALTER TABLE public.listing_revisions
+  ADD CONSTRAINT base_not_self
+  CHECK (base_revision_id IS NULL OR base_revision_id <> revision_id);
+
+-- A correction draft can only descend from a PUBLISHED revision of the SAME
+-- listing (lifecycle lens F5): generated column + composite FK. The column is
+-- non-NULL exactly when the revision is published, so it also backs the
+-- published-pointer FK below.
+ALTER TABLE public.listing_revisions
+  ADD COLUMN published_ref_revision_id uuid
+  GENERATED ALWAYS AS (
+    CASE WHEN revision_state = 'published' THEN revision_id END
+  ) STORED;
+
+ALTER TABLE public.listing_revisions
+  ADD CONSTRAINT revision_published_ref_uq
+  UNIQUE (published_ref_revision_id, listing_id);
+
+ALTER TABLE public.listing_revisions
+  ADD CONSTRAINT base_published_same_listing_fk
+  FOREIGN KEY (base_revision_id, listing_id)
+  REFERENCES public.listing_revisions (published_ref_revision_id, listing_id);
+
+-- The public-authority pointer: can only name a PUBLISHED revision of THIS
+-- listing (lifecycle lens F2 / RLS lens F1 — pointer poisoning).
 ALTER TABLE public.listings
   ADD CONSTRAINT listings_published_revision_fk
-  FOREIGN KEY (published_revision_id)
-  REFERENCES public.listing_revisions(revision_id) ON DELETE RESTRICT;
+  FOREIGN KEY (published_revision_id, listing_id)
+  REFERENCES public.listing_revisions (published_ref_revision_id, listing_id)
+  ON DELETE RESTRICT;
 
-CREATE INDEX ON public.listing_revisions (listing_id);
-CREATE INDEX ON public.listing_revisions (revision_state);
+-- A published listing always has content (no "blank listing", contracts §11).
+ALTER TABLE public.listings
+  ADD CONSTRAINT listing_published_pointer_present
+  CHECK (lifecycle_state <> 'published' OR published_revision_id IS NOT NULL);
+
+CREATE INDEX listing_revisions_listing_idx ON public.listing_revisions (listing_id);
+CREATE INDEX listing_revisions_state_idx ON public.listing_revisions (revision_state);
 
 COMMENT ON TABLE public.listing_revisions IS
-  'Immutable content snapshot. Public content derives from the published revision only — never address, latitude/longitude, or contact data (ADR-014). price_per_sqm is derived at read time, never stored.';
+  'Immutable content snapshot. Public content derives from the published revision only — never address, latitude/longitude, or contact data (ADR-014). price_per_sqm is derived at read time, never stored. Frozen states (approved/publishing/published) are immutable outside domain commands.';
 
 -- ============================================================
 -- 4. ListingMedia + derived-evidence satellites (ADR-010)
@@ -236,7 +348,7 @@ COMMENT ON TABLE public.listing_revisions IS
 
 CREATE TABLE public.listing_media (
   media_id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  revision_id       uuid NOT NULL REFERENCES public.listing_revisions(revision_id) ON DELETE CASCADE,
+  revision_id       uuid NOT NULL,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
   position          integer NOT NULL,
   kind              text NOT NULL CHECK (kind IN ('image', 'video')),
@@ -255,48 +367,86 @@ CREATE TABLE public.listing_media (
   UNIQUE (revision_id, position)
 );
 
-CREATE INDEX ON public.listing_media (revision_id);
+-- Composite-org FK: media can only attach to a revision in the same org.
+ALTER TABLE public.listing_media
+  ADD CONSTRAINT listing_media_revision_same_org_fk
+  FOREIGN KEY (revision_id, organization_id)
+  REFERENCES public.listing_revisions (revision_id, organization_id)
+  ON DELETE CASCADE;
+
+CREATE INDEX listing_media_revision_idx ON public.listing_media (revision_id);
+CREATE INDEX listing_media_org_idx ON public.listing_media (organization_id);
 
 COMMENT ON TABLE public.listing_media IS
-  'Media records attach to revisions (ordered by position), never to a bare property. inherited_url rows are unverified references — nothing becomes buyer-visible merely because a row points at it.';
+  'Media records attach to revisions (ordered by position), never to a bare property. Rows do not move between revisions (guard trigger). inherited_url rows are unverified references — nothing becomes buyer-visible merely because a row points at it.';
+
+-- Composite anchor on media for the observation satellite.
+ALTER TABLE public.listing_media
+  ADD CONSTRAINT listing_media_id_org_key UNIQUE (media_id, organization_id);
 
 CREATE TABLE public.media_observations (
   observation_id    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  media_id          uuid NOT NULL REFERENCES public.listing_media(media_id) ON DELETE CASCADE,
+  media_id          uuid NOT NULL,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
+  observation_version integer NOT NULL,          -- contracts §5: versioned, never an edit
   observation       jsonb NOT NULL,              -- structured visual facts (derived AI evidence)
-  model_id          text NOT NULL,
-  model_version     text NOT NULL,
-  created_at        timestamptz NOT NULL DEFAULT now()
+  analysis_model    text NOT NULL,
+  analysis_model_version text NOT NULL,
+  observed_at       timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (media_id, observation_version)
 );
 
+ALTER TABLE public.media_observations
+  ADD CONSTRAINT media_observations_same_org_fk
+  FOREIGN KEY (media_id, organization_id)
+  REFERENCES public.listing_media (media_id, organization_id)
+  ON DELETE CASCADE;
+
 COMMENT ON TABLE public.media_observations IS
-  'Per-image derived AI evidence (ADR-010). Versioned and attributable; never media facts, never mixed into verified fact shapes, never a canonical business fact.';
+  'Per-image derived AI evidence (ADR-010). Versioned and attributable; never media facts, never a canonical business fact. Service-lane only: no client write policies.';
 
 CREATE TABLE public.visual_dossiers (
   dossier_id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  revision_id       uuid NOT NULL REFERENCES public.listing_revisions(revision_id) ON DELETE CASCADE,
+  revision_id       uuid NOT NULL,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
-  dossier           jsonb NOT NULL,               -- grouped property-level visual dossier
-  model_id          text NOT NULL,
-  model_version     text NOT NULL,
-  created_at        timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (revision_id, model_id, model_version)
+  dossier_version   integer NOT NULL,            -- contracts §5: regeneration = new version, never an edit
+  dossier           jsonb NOT NULL,             -- grouped property-level visual dossier (coverage_summary, room_groups)
+  analysis_model    text NOT NULL,
+  analysis_model_version text NOT NULL,
+  generated_at      timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (revision_id, dossier_version)
 );
+
+ALTER TABLE public.visual_dossiers
+  ADD CONSTRAINT visual_dossiers_same_org_fk
+  FOREIGN KEY (revision_id, organization_id)
+  REFERENCES public.listing_revisions (revision_id, organization_id)
+  ON DELETE CASCADE;
 
 CREATE TABLE public.embedding_provenance (
-  provenance_id     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  revision_id       uuid NOT NULL REFERENCES public.listing_revisions(revision_id) ON DELETE CASCADE,
+  embedding_id      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  revision_id       uuid NOT NULL,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
+  embedding_version integer NOT NULL,            -- re-embedding = new version, never an edit
   embedding_model   text NOT NULL,
   embedding_model_version text NOT NULL,
-  document_recipe   jsonb NOT NULL,               -- exact fields and text assembled for the vector
-  qdrant_point_id   text,                         -- rebuilt-projection bookkeeping (Qdrant is rebuildable)
-  created_at        timestamptz NOT NULL DEFAULT now()
+  recipe_version    text NOT NULL,               -- recipe is addressable, unlike the inherited Qdrant recipe
+  document_recipe   jsonb NOT NULL,             -- supplementary detail; the versioned anchors above are authoritative
+  content_hash      text NOT NULL,               -- closes the "4,258 unreproducible points" defect (ADR-015)
+  vector_dimension  integer NOT NULL,            -- pins the vector space the inherited collection never recorded
+  qdrant_point_id   text,                        -- rebuilt-projection bookkeeping (Qdrant is rebuildable)
+  embedded_at       timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (revision_id, embedding_version)
 );
 
+ALTER TABLE public.embedding_provenance
+  ADD CONSTRAINT embedding_provenance_same_org_fk
+  FOREIGN KEY (revision_id, organization_id)
+  REFERENCES public.listing_revisions (revision_id, organization_id)
+  ON DELETE CASCADE;
+
 COMMENT ON TABLE public.embedding_provenance IS
-  'Restricted-operational provenance for the Qdrant embedding projection. The inherited 4,258-point collection recipe is unrecorded (ADR-015); this table makes every future projection reproducible.';
+  'Restricted-operational provenance for the Qdrant embedding projection. Every anchor the inherited collection lacked (recipe version, content hash, dimension) is first-class here. Service-lane only.';
 
 -- ============================================================
 -- 5. Moderation — case, decisions, pre-checks (ADR-013)
@@ -305,14 +455,15 @@ COMMENT ON TABLE public.embedding_provenance IS
 CREATE TABLE public.moderation_cases (
   case_id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   case_kind         text NOT NULL CHECK (case_kind IN ('submission', 'buyer_report', 'staff_initiated')),
-  revision_id       uuid REFERENCES public.listing_revisions(revision_id),
-  listing_id        uuid NOT NULL REFERENCES public.listings(listing_id),
+  revision_id       uuid,
+  listing_id        uuid NOT NULL,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
   case_state        text NOT NULL DEFAULT 'open' CHECK (case_state IN ('open', 'resolved')),
   report_category   text,                        -- buyer_report only; vocabulary Phase 1
   report_note       text,                         -- T&S evidence; personal-data handling in practice
   -- reporter contact/consent (buyer_report only): consent-coupled per contracts §7.
-  -- While consent is null, the contact is INERT: no moderator reply or contact attempt may use it.
+  -- While consent is null, the contact is INERT. Column grants keep these
+  -- fields away from the reported org (contracts-parity lens F5 / RLS lens F3).
   reporter_contact  jsonb,                        -- VerifiedContact (personal)
   reporter_consent  jsonb,                        -- ConsentRecord (personal); required when contact present
   reference         text UNIQUE,
@@ -323,28 +474,43 @@ CREATE TABLE public.moderation_cases (
   CHECK (reporter_contact IS NULL OR reporter_consent IS NOT NULL)  -- consent coupling, enforced
 );
 
-CREATE INDEX ON public.moderation_cases (case_state, opened_at);
-CREATE INDEX ON public.moderation_cases (organization_id);
+-- Cases belong to the listing's org (composite FK).
+ALTER TABLE public.moderation_cases
+  ADD CONSTRAINT moderation_cases_id_org_key UNIQUE (case_id, organization_id);
+
+ALTER TABLE public.moderation_cases
+  ADD CONSTRAINT moderation_cases_listing_same_org_fk
+  FOREIGN KEY (listing_id, organization_id)
+  REFERENCES public.listings (listing_id, organization_id);
+
+CREATE INDEX moderation_cases_queue_idx ON public.moderation_cases (case_state, opened_at);
+CREATE INDEX moderation_cases_org_idx ON public.moderation_cases (organization_id);
 
 CREATE TABLE public.moderation_decisions (
   decision_id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  case_id           uuid NOT NULL REFERENCES public.moderation_cases(case_id) ON DELETE CASCADE,
-  revision_id       uuid REFERENCES public.listing_revisions(revision_id),
+  case_id           uuid NOT NULL,
+  revision_id       uuid,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
   decision          text NOT NULL
                     CHECK (decision IN ('approve', 'request_changes', 'reject', 'dismiss', 'takedown')),
-  decided_by        uuid NOT NULL REFERENCES auth.users(id),  -- platform moderator; fixes the inherited reviewer FK gap
+  decided_by        uuid NOT NULL REFERENCES auth.users(id),  -- platform moderator; no ON DELETE: audit-immutable anchor
   decided_at        timestamptz NOT NULL DEFAULT now(),
   reason_code       text NOT NULL,
   note              text                          -- doubles as the change note when request_changes
 );
 
-CREATE INDEX ON public.moderation_decisions (case_id);
+ALTER TABLE public.moderation_decisions
+  ADD CONSTRAINT moderation_decisions_case_same_org_fk
+  FOREIGN KEY (case_id, organization_id)
+  REFERENCES public.moderation_cases (case_id, organization_id)
+  ON DELETE CASCADE;
+
+CREATE INDEX moderation_decisions_case_idx ON public.moderation_decisions (case_id);
 
 CREATE TABLE public.moderation_pre_checks (
   check_id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  case_id           uuid NOT NULL REFERENCES public.moderation_cases(case_id) ON DELETE CASCADE,
-  revision_id       uuid NOT NULL REFERENCES public.listing_revisions(revision_id),
+  case_id           uuid NOT NULL,
+  revision_id       uuid NOT NULL,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
   check_code        text NOT NULL,                -- validator id
   outcome           text NOT NULL CHECK (outcome IN ('pass', 'fail', 'warn')),
@@ -352,6 +518,18 @@ CREATE TABLE public.moderation_pre_checks (
   checker_version   text NOT NULL,
   ran_at            timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.moderation_pre_checks
+  ADD CONSTRAINT pre_checks_case_same_org_fk
+  FOREIGN KEY (case_id, organization_id)
+  REFERENCES public.moderation_cases (case_id, organization_id)
+  ON DELETE CASCADE;
+
+ALTER TABLE public.moderation_pre_checks
+  ADD CONSTRAINT pre_checks_revision_fk
+  FOREIGN KEY (revision_id)
+  REFERENCES public.listing_revisions(revision_id)
+  ON DELETE CASCADE;
 
 COMMENT ON TABLE public.moderation_pre_checks IS
   'Deterministic validators (ADR-013). They never approve or publish autonomously.';
@@ -366,7 +544,7 @@ CREATE TYPE public.viewing_request_state AS ENUM
 
 CREATE TABLE public.viewing_requests (
   request_id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  listing_id        uuid NOT NULL REFERENCES public.listings(listing_id),
+  listing_id        uuid NOT NULL,
   organization_id   uuid NOT NULL REFERENCES public.owner_organizations(organization_id),
   actor_type        text NOT NULL CHECK (actor_type IN ('anonymous', 'buyer')),
   requester_user_id uuid REFERENCES auth.users(id),
@@ -384,11 +562,16 @@ CREATE TABLE public.viewing_requests (
   updated_at        timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX ON public.viewing_requests (listing_id);
-CREATE INDEX ON public.viewing_requests (organization_id, request_state);
+ALTER TABLE public.viewing_requests
+  ADD CONSTRAINT viewing_requests_listing_same_org_fk
+  FOREIGN KEY (listing_id, organization_id)
+  REFERENCES public.listings (listing_id, organization_id);
+
+CREATE INDEX viewing_requests_listing_idx ON public.viewing_requests (listing_id);
+CREATE INDEX viewing_requests_org_state_idx ON public.viewing_requests (organization_id, request_state);
 
 COMMENT ON TABLE public.viewing_requests IS
-  'Viewing requests keyed by request_id — never by phone (the inherited phone-keyed lookups are abolished). Contact verification must complete before the request becomes owner-visible (open).';
+  'Viewing requests keyed by request_id — never by phone. Contact verification must complete before the request becomes owner-visible (open). Inserts are service-lane only (ADR-016 domain command).';
 
 -- ============================================================
 -- 7. Handoff — buyer-to-owner lead
@@ -399,7 +582,7 @@ CREATE TYPE public.handoff_state AS ENUM
 
 CREATE TABLE public.handoffs (
   handoff_id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  listing_id        uuid REFERENCES public.listings(listing_id),  -- null for general concierge handoffs
+  listing_id        uuid,                          -- null for general concierge handoffs
   viewing_request_id uuid REFERENCES public.viewing_requests(request_id),
   organization_id   uuid REFERENCES public.owner_organizations(organization_id),  -- null = platform concierge
   actor_type        text NOT NULL CHECK (actor_type IN ('anonymous', 'buyer')),
@@ -415,6 +598,12 @@ CREATE TABLE public.handoffs (
   created_at        timestamptz NOT NULL DEFAULT now(),
   updated_at        timestamptz NOT NULL DEFAULT now()
 );
+
+-- When a handoff names a listing, it belongs to that listing's org.
+ALTER TABLE public.handoffs
+  ADD CONSTRAINT handoffs_listing_same_org_fk
+  FOREIGN KEY (listing_id, organization_id)
+  REFERENCES public.listings (listing_id, organization_id);
 
 COMMENT ON TABLE public.handoffs IS
   'Buyer-to-owner lead. A consequential action (contacts a person): explicit confirmation, server-validated input, verified contact, rate limits, audit record, idempotency. Never carries restricted property data (ADR-014).';
@@ -433,33 +622,59 @@ CREATE TABLE public.audit_records (
   action            text NOT NULL,                 -- e.g. 'listing.submit'
   resource_type     text NOT NULL,                 -- e.g. 'listing_revision'
   resource_id       text NOT NULL,
-  request_id        text NOT NULL,                 -- idempotency/correlation
+  request_id        text NOT NULL,                 -- correlation key; NOT unique — one request may yield many records (import: one per staged row)
   outcome           text NOT NULL CHECK (outcome IN ('accepted', 'rejected', 'completed', 'failed')),
   reason_code       text NOT NULL
 );
 
-CREATE INDEX ON public.audit_records (resource_type, resource_id);
-CREATE INDEX ON public.audit_records (organization_id, occurred_at);
-CREATE INDEX ON public.audit_records (request_id);
+CREATE INDEX audit_records_resource_idx ON public.audit_records (resource_type, resource_id);
+CREATE INDEX audit_records_org_time_idx ON public.audit_records (organization_id, occurred_at);
+CREATE INDEX audit_records_request_idx ON public.audit_records (request_id);
 
 COMMENT ON TABLE public.audit_records IS
-  'Server-generated, append-only cross-cutting audit baseline. No UPDATE/DELETE policy exists; application code treats it as append-only.';
+  'Server-generated, append-only cross-cutting audit baseline. Append-only is TRIGGER-enforced (outbox lens F2): UPDATE and DELETE raise, including for the service role.';
+
+-- Append-only enforcement (outbox lens): a reject trigger on UPDATE/DELETE.
+CREATE OR REPLACE FUNCTION public.audit_records_reject_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'audit_records is append-only (contracts §1): % blocked', TG_OP;
+END $$;
+
+CREATE TRIGGER audit_records_append_only
+  BEFORE UPDATE OR DELETE ON public.audit_records
+  FOR EACH ROW EXECUTE FUNCTION public.audit_records_reject_mutation();
 
 CREATE TABLE public.outbox_events (
   event_id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   occurred_at        timestamptz NOT NULL DEFAULT now(),
   organization_id   uuid,                          -- owning org; platform-level events use the internal org
   event_type        text NOT NULL,                 -- e.g. 'listing.published'
-  payload           jsonb NOT NULL,                -- typed; buyer-safe content + operational references only — never restricted fields
+  aggregate_type     text NOT NULL DEFAULT '',     -- dedupe anchor: e.g. 'listing'
+  aggregate_id      text NOT NULL DEFAULT '',     -- dedupe anchor: e.g. the listing uuid
+  correlation_id    text,                         -- the domain command's idempotency key / request id
+  payload           jsonb NOT NULL,               -- typed; buyer-safe content + operational references only
   delivery_state    text NOT NULL DEFAULT 'pending'
                     CHECK (delivery_state IN ('pending', 'delivered', 'failed')),
-  delivery_attempts integer NOT NULL DEFAULT 0
+  delivery_attempts integer NOT NULL DEFAULT 0,
+  -- Buyer-safety backstop (outbox lens F3): the most dangerous accidental keys
+  -- are rejected at write time, inside the producing transaction.
+  CHECK (NOT (payload ?| ARRAY['exact_address','latitude','longitude',
+                                'contact','consent','reporter_contact','original_path'])),
+  -- At-least-once semantics: command-driven events dedupe on their
+  -- idempotency key; fan-out events without a correlation id are exempt
+  -- (partial uniqueness approximated by NULLable member in the constraint).
+  UNIQUE (event_type, aggregate_type, aggregate_id, correlation_id)
 );
 
-CREATE INDEX ON public.outbox_events (delivery_state, occurred_at);
+-- The poll index: pending rows only, time-ordered (outbox lens F6).
+CREATE INDEX outbox_pending ON public.outbox_events (occurred_at)
+  WHERE delivery_state = 'pending';
 
 COMMENT ON TABLE public.outbox_events IS
-  'Transactional outbox (ADR-005). Written in the same transaction as the state change; consumed idempotently. The inherited request_outbox rows are legacy-only; the unknown writer of that table must not gain a second owner of this ledger.';
+  'Transactional outbox (ADR-005), at-least-once: written in the same transaction as the state change; consumers dedupe via (event_type, aggregate_type, aggregate_id, correlation_id) or their own ledger. Workers claim rows with a compare-and-swap UPDATE ... WHERE delivery_state=pending and treat rowcount=0 as not-mine. Payload is buyer-safe only — the CHECK is a backstop; typed payload builders remain the primary obligation.';
 
 -- ============================================================
 -- 9. OrgContactCandidate — migration staging (never buyer-visible)
@@ -471,7 +686,7 @@ CREATE TABLE public.org_contact_candidates (
   channel           text NOT NULL CHECK (channel IN ('email', 'phone')),
   value             text NOT NULL,                -- personal; never a lookup key
   display_name      text,
-  consent_id        uuid,                          -- null: consent does not transfer through import
+  consent_id        uuid,                         -- RESERVED for a future consents registry; always null in Phase 1 (consent does not transfer through import)
   source_column     text NOT NULL,                -- provenance label, e.g. 'properties.public_contact_phone'
   staged_at         timestamptz NOT NULL DEFAULT now()
 );
@@ -480,130 +695,216 @@ COMMENT ON TABLE public.org_contact_candidates IS
   'Migration staging for inherited contact fields (agents.email/phone, properties.public_contact_*). Personal/consent-bound; usable only after the owner claims the org and re-consents; never buyer-visible, never revision content.';
 
 -- ============================================================
--- 10. Row Level Security — default deny everywhere
+-- 10. Domain-command guards (lifecycle lens F1/F4, tenancy lens F5).
+--     0002's SECURITY DEFINER functions SET luxonn.domain_command='on'
+--     around each audited transition; until then, client writes to state
+--     and pointer columns raise. Draft content editing stays untouched.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.guard_revision_state()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Frozen states are immutable outside domain commands (contracts §4).
+  IF OLD.revision_state IN ('approved', 'publishing', 'published')
+     AND COALESCE(current_setting('luxonn.domain_command', true), 'off') <> 'on' THEN
+    RAISE EXCEPTION 'revision % is frozen in state %; changes require a new revision',
+      OLD.revision_id, OLD.revision_state;
+  END IF;
+  -- State transitions are domain commands, never raw client writes.
+  IF NEW.revision_state <> OLD.revision_state
+     AND COALESCE(current_setting('luxonn.domain_command', true), 'off') <> 'on' THEN
+    RAISE EXCEPTION 'revision_state transition % -> % is a domain command',
+      OLD.revision_state, NEW.revision_state;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER revision_state_guard
+  BEFORE UPDATE ON public.listing_revisions
+  FOR EACH ROW EXECUTE FUNCTION public.guard_revision_state();
+
+CREATE OR REPLACE FUNCTION public.guard_listing_state()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.lifecycle_state <> OLD.lifecycle_state
+     AND COALESCE(current_setting('luxonn.domain_command', true), 'off') <> 'on' THEN
+    RAISE EXCEPTION 'lifecycle transition % -> % is a domain command',
+      OLD.lifecycle_state, NEW.lifecycle_state;
+  END IF;
+  IF NEW.published_revision_id IS DISTINCT FROM OLD.published_revision_id
+     AND COALESCE(current_setting('luxonn.domain_command', true), 'off') <> 'on' THEN
+    RAISE EXCEPTION 'published_revision_id is set only by the publish domain command';
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER listing_state_guard
+  BEFORE UPDATE ON public.listings
+  FOR EACH ROW EXECUTE FUNCTION public.guard_listing_state();
+
+-- Timestamp coupling: withdrawn/closed states carry their timestamps.
+ALTER TABLE public.listings
+  ADD CONSTRAINT listing_withdrawn_ts CHECK (lifecycle_state <> 'withdrawn' OR withdrawn_at IS NOT NULL);
+ALTER TABLE public.listings
+  ADD CONSTRAINT listing_closed_ts CHECK (lifecycle_state <> 'closed' OR closed_at IS NOT NULL);
+
+-- Media rows do not move between revisions (lifecycle lens F3).
+CREATE OR REPLACE FUNCTION public.guard_media_revision()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.revision_id <> OLD.revision_id THEN
+    RAISE EXCEPTION 'media rows do not move between revisions';
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER media_revision_guard
+  BEFORE UPDATE ON public.listing_media
+  FOR EACH ROW EXECUTE FUNCTION public.guard_media_revision();
+
+-- ============================================================
+-- 11. Row Level Security — default deny everywhere, plus FORCE
+--     (Supabase best practice: table owners otherwise bypass RLS).
+--     All helper calls inside policies are wrapped in (SELECT ...) —
+--     one evaluation per statement, not per row.
 -- ============================================================
 
 -- ---- owner_organizations -------------------------------------------------
 ALTER TABLE public.owner_organizations ENABLE ROW LEVEL SECURITY;
--- Buyers may see public org display fields of any org (public_bio etc. per
--- contracts §6). Internal orgs are invisible to non-members.
+ALTER TABLE public.owner_organizations FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY org_public_read ON public.owner_organizations
   FOR SELECT
   USING (
     NOT is_internal
     OR organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
-CREATE POLICY org_member_manage ON public.owner_organizations
+
+-- Management is owner/admin-only (RLS lens F6: trust-badge and internal-flag
+-- flips are not member-self-service). Column grants below additionally remove
+-- is_verified/is_internal from every client-writable path.
+CREATE POLICY org_admin_manage ON public.owner_organizations
   FOR ALL
   USING (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    (SELECT public.is_org_admin(organization_id))
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    (SELECT public.is_org_admin(organization_id))
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
 
 -- ---- memberships ---------------------------------------------------------
 ALTER TABLE public.owner_organizations_memberships ENABLE ROW LEVEL SECURITY;
--- A user may read their own memberships; org admins manage their org's.
+ALTER TABLE public.owner_organizations_memberships FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY membership_self_read ON public.owner_organizations_memberships
   FOR SELECT
   USING (
-    user_id = public.current_app_user_id()
+    user_id = (SELECT public.current_app_user_id())
     OR organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
+
+-- Admin paths go through the SECURITY DEFINER helper (no self-referential
+-- EXISTS — migration-safety lens F2). Bootstrap: the FIRST owner membership
+-- is created by the signup domain command in the service lane; client inserts
+-- require an existing owner/admin (tenancy lens F7).
 CREATE POLICY membership_admin_write ON public.owner_organizations_memberships
   FOR ALL
   USING (
-    EXISTS (
-      SELECT 1 FROM public.owner_organizations_memberships m
-      WHERE m.organization_id = owner_organizations_memberships.organization_id
-        AND m.user_id = public.current_app_user_id()
-        AND m.member_role IN ('owner', 'admin')
-    )
-    OR public.current_platform_role() IS NOT NULL
+    (SELECT public.is_org_admin(organization_id))
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.owner_organizations_memberships m
-      WHERE m.organization_id = owner_organizations_memberships.organization_id
-        AND m.user_id = public.current_app_user_id()
-        AND m.member_role IN ('owner', 'admin')
-    )
-    OR public.current_platform_role() IS NOT NULL
+    (SELECT public.is_org_admin(organization_id))
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
 
 -- ---- platform_roles ------------------------------------------------------
 ALTER TABLE public.platform_roles ENABLE ROW LEVEL SECURITY;
--- Admin-only management; users may see their own roles.
+ALTER TABLE public.platform_roles FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY platform_role_self_read ON public.platform_roles
   FOR SELECT
   USING (
-    user_id = public.current_app_user_id()
-    OR public.current_platform_role() = 'admin'
+    user_id = (SELECT public.current_app_user_id())
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
+
 CREATE POLICY platform_role_admin_manage ON public.platform_roles
   FOR ALL
-  USING (public.current_platform_role() = 'admin')
-  WITH CHECK (public.current_platform_role() = 'admin');
+  USING ((SELECT public.current_platform_role()) = 'admin')
+  WITH CHECK ((SELECT public.current_platform_role()) = 'admin');
 
 -- ---- properties_lux ------------------------------------------------------
 ALTER TABLE public.properties_lux ENABLE ROW LEVEL SECURITY;
--- Owners see their own org's assets (including restricted address/coords for
--- viewings). Buyers never read properties directly: buyer surfaces resolve
--- through the listing's published revision only (ADR-014).
+ALTER TABLE public.properties_lux FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY property_org_read ON public.properties_lux
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
+
 CREATE POLICY property_org_write ON public.properties_lux
   FOR ALL
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
 
 -- ---- listings -------------------------------------------------------------
 ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
--- The buyer-facing public surface: only PUBLISHED listings are readable by
--- anyone (anonymous included). published_revision_id is the sole public
--- authority; all other fields are internal linkage (org/property ids are
--- opaque uuids and reveal nothing).
+ALTER TABLE public.listings FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY listing_public_read ON public.listings
   FOR SELECT
-  USING (lifecycle_state = 'published');
--- Org members read+write their own listings (all states).
+  USING (
+    lifecycle_state = 'published'
+    AND NOT EXISTS (
+      SELECT 1 FROM public.owner_organizations o
+      WHERE o.organization_id = listings.organization_id AND o.is_internal
+    )
+  );
+
 CREATE POLICY listing_org_read ON public.listings
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
+
+-- Client writes: org members manage rows, but state/pointer columns are
+-- trigger-guarded (section 10) and the platform branch is ADMIN only
+-- (tenancy lens F4 — moderators never inherit owner-org write privileges).
 CREATE POLICY listing_org_write ON public.listings
   FOR ALL
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
 
 -- ---- listing_revisions ----------------------------------------------------
 ALTER TABLE public.listing_revisions ENABLE ROW LEVEL SECURITY;
--- The public content gate: a revision is public content only when it is the
--- published_revision_id of a PUBLISHED listing. Everything else (drafts,
--- pipeline states) is org-private.
+ALTER TABLE public.listing_revisions FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY revision_public_read ON public.listing_revisions
   FOR SELECT
   USING (
@@ -613,27 +914,29 @@ CREATE POLICY revision_public_read ON public.listing_revisions
         AND l.lifecycle_state = 'published'
     )
   );
+
 CREATE POLICY revision_org_read ON public.listing_revisions
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
+
 CREATE POLICY revision_org_write ON public.listing_revisions
   FOR ALL
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
 
 -- ---- listing_media ---------------------------------------------------------
 ALTER TABLE public.listing_media ENABLE ROW LEVEL SECURITY;
--- Public read: media of the published revision of a published listing, and
--- only when processing + moderation gates both pass (processed + approved).
+ALTER TABLE public.listing_media FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY media_public_read ON public.listing_media
   FOR SELECT
   USING (
@@ -645,190 +948,225 @@ CREATE POLICY media_public_read ON public.listing_media
         AND l.lifecycle_state = 'published'
     )
   );
+
 CREATE POLICY media_org_read ON public.listing_media
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
+
 CREATE POLICY media_org_write ON public.listing_media
   FOR ALL
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
 
--- ---- media_observations / visual_dossiers / embedding_provenance -----------
--- Derived AI evidence: never public. Org members + platform staff only.
+-- ---- derived AI evidence: service-lane only (RLS lens F4) -----------------
+-- RLS on, no client policies: default deny. Workers write through SECURITY
+-- DEFINER domain functions (0002) or the service connection. ADR-009: derived
+-- evidence is produced by deterministic workers, never by org members.
 ALTER TABLE public.media_observations ENABLE ROW LEVEL SECURITY;
-CREATE POLICY observation_org_all ON public.media_observations
-  FOR ALL
-  USING (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
-  )
-  WITH CHECK (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
-  );
+ALTER TABLE public.media_observations FORCE ROW LEVEL SECURITY;
 
 ALTER TABLE public.visual_dossiers ENABLE ROW LEVEL SECURITY;
-CREATE POLICY dossier_org_all ON public.visual_dossiers
-  FOR ALL
-  USING (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
-  )
-  WITH CHECK (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
-  );
+ALTER TABLE public.visual_dossiers FORCE ROW LEVEL SECURITY;
 
 ALTER TABLE public.embedding_provenance ENABLE ROW LEVEL SECURITY;
-CREATE POLICY provenance_org_all ON public.embedding_provenance
-  FOR ALL
-  USING (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
-  )
-  WITH CHECK (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
-  );
+ALTER TABLE public.embedding_provenance FORCE ROW LEVEL SECURITY;
 
 -- ---- moderation ------------------------------------------------------------
 ALTER TABLE public.moderation_cases ENABLE ROW LEVEL SECURITY;
--- Moderators see all cases. Owners see their org's cases (outcomes + change
--- notes, never other orgs'). Buyers never see cases.
+ALTER TABLE public.moderation_cases FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY case_moderator_all ON public.moderation_cases
   FOR ALL
-  USING (public.current_platform_role() IS NOT NULL)
-  WITH CHECK (public.current_platform_role() IS NOT NULL);
+  USING ((SELECT public.current_platform_role()) IS NOT NULL)
+  WITH CHECK ((SELECT public.current_platform_role()) IS NOT NULL);
+
+-- Owners see only their own SUBMISSION cases: reporter personal fields exist
+-- only on buyer_report/staff_initiated cases, which org members never read
+-- (RLS lens F3 / contracts-parity lens F5 — the reported org must not see
+-- the reporter).
 CREATE POLICY case_org_read ON public.moderation_cases
   FOR SELECT
   USING (
-    organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    (
+      case_kind = 'submission'
+      AND organization_id IN (SELECT public.current_user_org_ids())
+    )
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
 
 ALTER TABLE public.moderation_decisions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.moderation_decisions FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY decision_moderator_all ON public.moderation_decisions
   FOR ALL
-  USING (public.current_platform_role() IS NOT NULL)
-  WITH CHECK (public.current_platform_role() IS NOT NULL);
+  USING ((SELECT public.current_platform_role()) IS NOT NULL)
+  WITH CHECK ((SELECT public.current_platform_role()) IS NOT NULL);
+
 CREATE POLICY decision_org_read ON public.moderation_decisions
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
 
 ALTER TABLE public.moderation_pre_checks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.moderation_pre_checks FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY precheck_moderator_all ON public.moderation_pre_checks
   FOR ALL
-  USING (public.current_platform_role() IS NOT NULL)
-  WITH CHECK (public.current_platform_role() IS NOT NULL);
+  USING ((SELECT public.current_platform_role()) IS NOT NULL)
+  WITH CHECK ((SELECT public.current_platform_role()) IS NOT NULL);
+
 CREATE POLICY precheck_org_read ON public.moderation_pre_checks
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
 
 -- ---- viewing_requests --------------------------------------------------------
 ALTER TABLE public.viewing_requests ENABLE ROW LEVEL SECURITY;
--- Owning org sees only OPEN-or-later requests (verified contact) plus their
--- outcomes; unverified (pending_contact_verification) rows stay sealed in the
--- service worker lane. Requesters see their own requests via user id or the
--- opaque session id + request_id pair. Never a phone-scan surface.
+ALTER TABLE public.viewing_requests FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY viewing_org_read ON public.viewing_requests
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
     AND request_state <> 'pending_contact_verification'
   );
+
+-- Requester access is by AUTH USER only. (The original draft also matched a
+-- session-id GUC; that path is dropped: raw session-id equality plus pooled-
+-- connection GUC bleed is a real risk surface — RLS lens F6. Anonymous
+-- requesters track their request via the reference code delivered out-of-
+-- band by the domain command.)
 CREATE POLICY viewing_requester_read ON public.viewing_requests
   FOR SELECT
   USING (
-    (requester_user_id = public.current_app_user_id() AND requester_user_id IS NOT NULL)
-    OR (
-      requester_session_id IS NOT NULL
-      AND requester_session_id::text = current_setting('request.session_id', true)
-    )
+    requester_user_id = (SELECT public.current_app_user_id())
+    AND requester_user_id IS NOT NULL
   );
+
 CREATE POLICY viewing_org_update ON public.viewing_requests
   FOR UPDATE
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
--- Inserts are service-lane only (server worker with per-request verification
--- writes); no anonymous direct INSERT policy exists by design (ADR-016:
--- the create flow is a domain command through an authorized endpoint).
+-- No client INSERT policy: creates go through the ADR-016 domain command.
 
 -- ---- handoffs -----------------------------------------------------------------
 ALTER TABLE public.handoffs ENABLE ROW LEVEL SECURITY;
--- Owning org sees routed-or-later handoffs; requesters see their own.
+ALTER TABLE public.handoffs FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY handoff_org_read ON public.handoffs
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
     AND handoff_state <> 'pending_contact_verification'
   );
+
 CREATE POLICY handoff_requester_read ON public.handoffs
   FOR SELECT
   USING (
-    (requester_user_id = public.current_app_user_id() AND requester_user_id IS NOT NULL)
-    OR (
-      requester_session_id IS NOT NULL
-      AND requester_session_id::text = current_setting('request.session_id', true)
-    )
+    requester_user_id = (SELECT public.current_app_user_id())
+    AND requester_user_id IS NOT NULL
   );
+
 CREATE POLICY handoff_org_update ON public.handoffs
   FOR UPDATE
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
+-- No client INSERT policy: creates go through the domain command (verified
+-- contact + consent + rate limits are server-side obligations).
 
--- ---- audit + outbox -------------------------------------------------------------
--- Append-only, service-lane only. No client policies at all: the default is
--- deny for anon/authenticated/auth.roles(). Workers operate inside
--- transactional server code (SECURITY DEFINER domain functions, added in a
--- later migration alongside the domain commands) or via the service
--- connection from server runtime.
+-- ---- audit + outbox: RLS on, no client policies (service lane) ---------------
 ALTER TABLE public.audit_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_records FORCE ROW LEVEL SECURITY;
+
 ALTER TABLE public.outbox_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.outbox_events FORCE ROW LEVEL SECURITY;
 
 -- ---- org_contact_candidates -------------------------------------------------------
 ALTER TABLE public.org_contact_candidates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.org_contact_candidates FORCE ROW LEVEL SECURITY;
+
 CREATE POLICY candidate_org_read ON public.org_contact_candidates
   FOR SELECT
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) IS NOT NULL
   );
+
 CREATE POLICY candidate_org_write ON public.org_contact_candidates
   FOR ALL
   USING (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   )
   WITH CHECK (
     organization_id IN (SELECT public.current_user_org_ids())
-    OR public.current_platform_role() IS NOT NULL
+    OR (SELECT public.current_platform_role()) = 'admin'
   );
+
+-- ============================================================
+-- 12. Column grants: the public surface exposes ONLY public-class
+--     fields (RLS lens F5 — row-level policies cannot restrict
+--     columns). Anonymous and general authenticated reads see only
+--     the buyer-safe columns below; org members retain row-level
+--     access through the policies above but column-granted surfaces
+--     stay carved out. Reporter personal fields never reach the
+--     reported org (moderation_cases grants exclude them).
+-- ============================================================
+
+REVOKE SELECT ON public.listings FROM anon, authenticated;
+GRANT SELECT (listing_id, listing_kind, lifecycle_state, published_revision_id)
+  ON public.listings TO anon, authenticated;
+
+REVOKE SELECT ON public.listing_revisions FROM anon, authenticated;
+GRANT SELECT (revision_id, listing_id, title, description, property_type,
+              property_subtype, availability, price_amount, price_currency,
+              price_period, bedrooms, bathrooms, square_meters, lot_size_sqm,
+              year_built, floor_number, total_floors, plot_dimensions,
+              land_size_raw, area, city, town, county, country, amenities,
+              furnished, published_at)
+  ON public.listing_revisions TO anon, authenticated;
+
+REVOKE SELECT ON public.listing_media FROM anon, authenticated;
+GRANT SELECT (media_id, revision_id, position, kind, is_featured, derivative_paths)
+  ON public.listing_media TO anon, authenticated;
+
+-- Orgs expose only public display fields (contracts §6).
+REVOKE SELECT ON public.owner_organizations FROM anon, authenticated;
+GRANT SELECT (organization_id, display_name, kind, public_bio, avatar_url, is_verified)
+  ON public.owner_organizations TO anon, authenticated;
+
+-- Reporter personal fields never reach owner roles via column grants: the
+-- reported org may read case outcomes but reporter_contact/reporter_consent
+-- stay moderator-only. Anon has no grants on moderation_cases at all.
+REVOKE SELECT ON public.moderation_cases FROM anon, authenticated;
+GRANT SELECT (case_id, case_kind, revision_id, listing_id, organization_id,
+              case_state, reference, opened_at, resolved_at, created_at,
+              report_category, report_note)
+  ON public.moderation_cases TO authenticated;
 
 COMMIT;

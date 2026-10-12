@@ -17,7 +17,7 @@ The marketplace database is the fresh project in the "dream home sellers" organi
 
 1. Open the Supabase dashboard → the dream-home-sellers project (`nokarvewyorsupraufdg`).
 2. **Connect the Supabase MCP server** (you mentioned you will) — optional, but it lets the next agent session inspect schema state read-only instead of asking you.
-3. Take the one-line backup the dashboard offers (Database → Backups) if you are within the free-tier window where that exists; otherwise note that all 16 tables are new names — the migration cannot lose existing data by construction, and rolling back is `DROP TABLE ... CASCADE` on new names only (script below).
+3. Take the one-line backup the dashboard offers (Database → Backups) if you are within the free-tier window where that exists; otherwise note that all 18 tables are new names — the migration cannot lose existing data by construction, and rolling back is `DROP TABLE ... CASCADE` on new names only (script below).
 4. Read the migration file once: `supabase/migrations/0001_tenancy_and_lifecycle.sql`. Every table has a comment tying it to its ADR and the contracts doc.
 
 ## Apply (5 minutes)
@@ -59,7 +59,7 @@ AND tablename IN (
 ORDER BY rowsecurity, tablename;
 -- Expected: every row shows rowsecurity = true
 
--- 3. No inherited relation was touched (names unchanged, all present):
+-- 3. You are on the RIGHT project (guard against pasting into the legacy one):
 SELECT tablename FROM pg_tables
 WHERE schemaname = 'public'
 AND tablename IN ('properties','property_images','agents','scheduled_viewings',
@@ -68,8 +68,25 @@ AND tablename IN ('properties','property_images','agents','scheduled_viewings',
   'customer_profiles','bot_settings','request_outbox','mpesa_transactions',
   'schema_migrations')
 ORDER BY tablename;
--- Expected: all 15 still listed
+-- Expected: 0 rows. The legacy relations exist only in the inherited project.
+-- If ANY row appears, you are connected to the WRONG project — stop and rollback.
+
+-- 4. RLS runtime smoke test (policies execute without recursion errors):
+--    As a non-bypass role, every org-scoped table must return a count without error.
+SET ROLE authenticated;
+SELECT count(*) FROM public.owner_organizations_memberships;
+SELECT count(*) FROM public.listings;
+SELECT count(*) FROM public.listing_revisions;
+SELECT count(*) FROM public.moderation_cases;
+SELECT count(*) FROM public.viewing_requests;
+SELECT count(*) FROM public.handoffs;
+RESET ROLE;
+-- Expected: every count returns 0 (empty tables, RLS-filtered) with NO error.
+-- An "infinite recursion detected in policy" error means the helper-function fix
+-- did not apply — do not proceed.
 ```
+
+**If you paste the migration twice:** you will see "already exists" errors — that is harmless; the transaction rolled back and nothing changed. Run the Verify queries instead of re-running the migration.
 
 ## Rollback (if anything looks wrong)
 
@@ -87,12 +104,19 @@ DROP TABLE IF EXISTS
 DROP FUNCTION IF EXISTS public.current_app_user_id();
 DROP FUNCTION IF EXISTS public.current_user_org_ids();
 DROP FUNCTION IF EXISTS public.current_platform_role();
+DROP FUNCTION IF EXISTS public.is_org_admin();
+DROP FUNCTION IF EXISTS public.guard_revision_state();
+DROP FUNCTION IF EXISTS public.guard_listing_state();
+DROP FUNCTION IF EXISTS public.guard_media_revision();
+DROP FUNCTION IF EXISTS public.audit_records_reject_mutation();
 DROP TYPE IF EXISTS public.listing_lifecycle_state;
 DROP TYPE IF EXISTS public.revision_state;
 DROP TYPE IF EXISTS public.viewing_request_state;
 DROP TYPE IF EXISTS public.handoff_state;
 COMMIT;
 ```
+
+This exact script was tested against the hardened migration on a scratch PostgreSQL 18.6 cluster on 2026-10-12: apply → verify → rollback → residue check all passed (zero residual tables, enums, functions, indexes, or policies).
 
 After rollback, the database is exactly as before — inherited tables untouched throughout.
 
