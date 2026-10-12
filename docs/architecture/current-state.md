@@ -19,16 +19,24 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
 - A homepage with luxury marketing sections.
 - A floating Simon launcher and direct `/simon` route that embed the Chainlit service through a server-configured URL.
 - A native horizontally scrollable `PropertyShowcase`; the previous scroll-pinned implementation was removed because it blocked lower-page scrolling.
+- A published-listings read model (`src/lib/marketplace/read-model.ts`): the buyer grid with URL-backed filters, facets, and pagination on `/properties`, and the `/property/[listingId]` detail page — all anonymous-safe by RLS construction.
 - The existing Python Simon prototype can search the existing Supabase-backed Kenyan property pool, compare properties, book viewings, and create listing/lead records through authored tools.
+
+- A homepage whose merchandising rails (Featured Properties grid and the
+  horizontal collection strip) read verified published listings from the
+  buyer read model via `fetchPublishedFeatured`, each rail wrapped in its
+  own Suspense boundary; hero floating facts mirror the verified Karen
+  record. Metadata is Kenya-framed.
+- A shared ADR-001 money formatter (`src/lib/marketplace/format-money.ts`)
+  used by the grid, detail, and homepage surfaces.
 
 ## What is provisional or incomplete
 
 ### Frontend
 
-- Property cards and homepage property material are hardcoded marketing content, not inventory from a canonical catalog.
-- The site still contains global-luxury marketing references. LUXONN is now Kenya-focused; those references must be replaced with real Kenyan inventory or clearly editorial, non-inventory material during the marketplace build.
-- Root metadata still describes a global luxury market and must be corrected when the real marketplace information architecture is implemented.
-- No real buyer search route, filter state, property detail pages, saved listings, comparison state, owner portal, moderator portal, or map experience exists.
+- Property cards in the About/testimonials sections remain editorial marketing content, not inventory from a canonical catalog.
+- The homepage About section and hero are Kenya-framed; the testimonials keep one fictional "Private Client, Dubai" byline (editorial social proof, decided exception).
+- Root metadata is Kenya-framed. Map experience, saved listings, comparison state, owner portal, and moderator portal do not exist yet.
 - The login page is presentation-only; there is no Supabase Auth integration or protected route enforcement.
 - The circular gallery is an unrelated animal-photo demo on `/gallery`. It is not property data and must not be used as broad search results.
 - There are no application tests, retrieval evaluations, or CI checks beyond ad hoc local lint/build verification.
