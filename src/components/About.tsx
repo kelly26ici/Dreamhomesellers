@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 const STATS = [
   { value: "25+", label: "Years of Expertise" },
   { value: "4B+", label: "In Sales Volume" },
-  { value: "12", label: "Global Locations" },
+  { value: "Kenya", label: "One Home Market" },
 ];
 
 export default function About() {
@@ -75,7 +75,7 @@ export default function About() {
           </h2>
           <p className="text-lg leading-relaxed text-muted">
             LUXONN exists for one reason: to place extraordinary people inside
-            extraordinary spaces. We travel the world to find residences that
+            extraordinary spaces. We travel Kenya to find residences that
             are not merely built, but composed — homes where light, material,
             and proportion work in concert.
           </p>

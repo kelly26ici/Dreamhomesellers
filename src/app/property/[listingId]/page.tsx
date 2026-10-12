@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import ListingMedia from '@/components/marketplace/ListingMedia';
+import { formatListingPrice } from '@/lib/marketplace/format-money';
 import { fetchPublishedListing } from '@/lib/marketplace/read-model';
 
 export const metadata = {
@@ -82,7 +83,7 @@ async function Detail({
           </p>
         </div>
         <p className="text-2xl font-medium text-champagne">
-          {formatDetailPrice(card.priceAmount, card.priceCurrency, card.pricePeriod)}
+          {formatListingPrice(card.priceAmount, card.priceCurrency, card.pricePeriod)}
         </p>
       </header>
 
@@ -133,19 +134,4 @@ async function Detail({
       </footer>
     </article>
   );
-}
-
-function formatDetailPrice(
-  amount: string,
-  currency: string,
-  period: string,
-): string {
-  const value = new Intl.NumberFormat('en-KE', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 0,
-  }).format(Number(amount));
-  const suffix =
-    period === 'per_month' ? ' /mo' : period === 'per_night' ? ' /night' : '';
-  return `${value}${suffix}`;
 }
