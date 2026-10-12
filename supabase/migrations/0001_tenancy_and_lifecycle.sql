@@ -167,6 +167,23 @@ AS $$
   )
 $$;
 
+-- Whether the owning organization is internal (e.g. the import-staging org):
+-- such orgs' listings are never buyer-visible (listing_public_read). SECURITY
+-- DEFINER because is_internal is withheld from client column grants — the
+-- policy must read it with the owner's privileges, never the caller's.
+CREATE OR REPLACE FUNCTION public.is_org_internal(org_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.owner_organizations o
+    WHERE o.organization_id = org_id AND o.is_internal
+  )
+$$;
+
 -- ============================================================
 -- 1. Property — stable physical asset (ADR-014 restricted set)
 -- ============================================================
@@ -638,6 +655,7 @@ COMMENT ON TABLE public.audit_records IS
 CREATE OR REPLACE FUNCTION public.audit_records_reject_mutation()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path = pg_catalog
 AS $$
 BEGIN
   RAISE EXCEPTION 'audit_records is append-only (contracts §1): % blocked', TG_OP;
@@ -704,6 +722,7 @@ COMMENT ON TABLE public.org_contact_candidates IS
 CREATE OR REPLACE FUNCTION public.guard_revision_state()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path = pg_catalog
 AS $$
 BEGIN
   -- Frozen states are immutable outside domain commands (contracts §4).
@@ -728,6 +747,7 @@ CREATE TRIGGER revision_state_guard
 CREATE OR REPLACE FUNCTION public.guard_listing_state()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path = pg_catalog
 AS $$
 BEGIN
   IF NEW.lifecycle_state <> OLD.lifecycle_state
@@ -756,6 +776,7 @@ ALTER TABLE public.listings
 CREATE OR REPLACE FUNCTION public.guard_media_revision()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path = pg_catalog
 AS $$
 BEGIN
   IF NEW.revision_id <> OLD.revision_id THEN
@@ -874,10 +895,12 @@ CREATE POLICY listing_public_read ON public.listings
   FOR SELECT
   USING (
     lifecycle_state = 'published'
-    AND NOT EXISTS (
-      SELECT 1 FROM public.owner_organizations o
-      WHERE o.organization_id = listings.organization_id AND o.is_internal
-    )
+    -- is_org_internal (SECURITY DEFINER) reads owner_organizations.is_internal,
+    -- which column grants deliberately withhold from clients; an inline
+    -- subquery here ran with the caller's privileges and broke the whole
+    -- policy under anon (permission denied — caught by the production
+    -- smoke test on 2026-10-12).
+    AND NOT public.is_org_internal(organization_id)
   );
 
 CREATE POLICY listing_org_read ON public.listings

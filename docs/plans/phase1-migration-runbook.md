@@ -104,7 +104,8 @@ DROP TABLE IF EXISTS
 DROP FUNCTION IF EXISTS public.current_app_user_id();
 DROP FUNCTION IF EXISTS public.current_user_org_ids();
 DROP FUNCTION IF EXISTS public.current_platform_role();
-DROP FUNCTION IF EXISTS public.is_org_admin();
+DROP FUNCTION IF EXISTS public.is_org_admin(uuid);
+DROP FUNCTION IF EXISTS public.is_org_internal(uuid);
 DROP FUNCTION IF EXISTS public.guard_revision_state();
 DROP FUNCTION IF EXISTS public.guard_listing_state();
 DROP FUNCTION IF EXISTS public.guard_media_revision();
@@ -122,5 +123,13 @@ After rollback, the database is exactly as before — inherited tables untouched
 
 ## After you apply
 
-- Tell the next agent session (or just say "migration applied"); the verification-backlog items that need catalog access (pg_policies dump, `rls_auto_enable` body, enum value lists, trigger inventory — discovery brief §9) become runnable **read-only** through the MCP server you are connecting, and the Phase 1 vocabulary freezes (`ListingKind`, `PropertyType`, `Availability`, `PricePeriod`, viewing `mode`) can proceed from real `pg_enum` values instead of prototype inference.
-- The import path (staging the 4,259 inherited rows as unverified) remains a separate, later decision — nothing in this migration moves any inherited data.
+**Status 2026-10-12: APPLIED** — via the Supabase MCP `apply_migration` (owner-directed after confirming IPv4 direct DB is unavailable; the SQL-editor path above remains valid for future migrations). Verified through MCP: 18/18 tables, 18/18 RLS-enabled, 18/18 FORCE RLS, and the runtime smoke test passes for both `anon` and `authenticated` roles.
+
+Post-apply hardening applied the same day (all mirrored into the migration file):
+
+- The four trigger functions (`audit_records_reject_mutation`, `guard_revision_state`, `guard_listing_state`, `guard_media_revision`) got pinned `search_path` (security-lint advisor fix).
+- A production smoke test caught a real bug: `listing_public_read` referenced `owner_organizations.is_internal` inline, but column grants deliberately withhold that column from clients — RLS policies run with the *caller's* privileges, so anonymous listing reads failed with `permission denied`. Fixed by adding the `is_org_internal(uuid)` SECURITY DEFINER helper and rewriting the policy to call it. `is_internal` remains hidden; the policy now runs with the table owner's privileges.
+
+The verification-backlog items that need catalog access (pg_policies dump, `rls_auto_enable` body, enum value lists, trigger inventory — discovery brief §9) are now runnable read-only through the MCP server, and the Phase 1 vocabulary freezes (`ListingKind`, `PropertyType`, `Availability`, `PricePeriod`, viewing `mode`) can proceed from real `pg_enum` values instead of prototype inference.
+
+The import path (staging the 4,259 inherited rows as unverified) remains a separate, later decision — nothing in this migration moves any inherited data.
