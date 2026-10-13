@@ -1,4 +1,4 @@
-# Current state — 2026-10-12
+# Current state — 2026-10-13
 
 ## Repository ownership
 
@@ -31,6 +31,17 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
   record. Metadata is Kenya-framed.
 - A shared ADR-001 money formatter (`src/lib/marketplace/format-money.ts`)
   used by the grid, detail, and homepage surfaces.
+- Anonymous buyer save and compare on `/saved` (commit `eb073c4`): localStorage
+  stores hold only listing IDs; facts re-fetch RLS-governed from the published
+  record so unpublished rows drop out automatically.
+- The similar-residences circular strip on the property detail page (commit
+  `2b70e47`): same-county+type neighbors in a drag-to-rotate 3D ring, honest
+  empty state, never bound to page scroll.
+- The OAuth 2.1 consent surface (2026-10-13): `/oauth/consent` renders the
+  authorization UI for the Supabase OAuth Server (`authorization_url_path`),
+  and `POST /api/oauth/decision` completes approve/deny server-side with the
+  user's session cookies via `src/lib/auth/supabase-server.ts` and
+  `@supabase/ssr`. `@supabase/ssr` is now a dependency.
 
 ## What is provisional or incomplete
 
@@ -38,8 +49,13 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
 
 - Property cards in the About/testimonials sections remain editorial marketing content, not inventory from a canonical catalog.
 - The homepage About section and hero are Kenya-framed; the testimonials keep one fictional "Private Client, Dubai" byline (editorial social proof, decided exception).
-- Root metadata is Kenya-framed. Map experience, saved listings, comparison state, owner portal, and moderator portal do not exist yet.
-- The login page is presentation-only; there is no Supabase Auth integration or protected route enforcement.
+- Root metadata is Kenya-framed. Map experience, owner portal, and moderator portal do not exist yet.
+- The login page is still presentation-only; the sign-in surface is not yet
+  wired to Supabase Auth, so the consent page reports "Sign in to continue"
+  rather than redirecting to a working login. Viewing requests do not exist
+  yet (the ADR-016 domain command for their creation is the next step).
+- Saved/compare and the similar-residences strip are implemented but not yet
+  runtime-verified (the dev server stays down per Kelly until they say otherwise).
 - The circular gallery is an unrelated animal-photo demo on `/gallery`. It is not property data and must not be used as broad search results.
 - There are no application tests, retrieval evaluations, or CI checks beyond ad hoc local lint/build verification.
 
