@@ -73,10 +73,14 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
   private-window submission lands in `pending_contact_verification`
   (VR-55C72218) — states verified against `viewing_requests` and
   `audit_records` server-side.
-- Saved/compare and the similar-residences strip are implemented; the strip
-  was exercised during the 2026-10-13 live session without errors. Formal
-  runtime verification (save → /saved shows the card, compare renders) is
-  the last remaining check on the client-side phase.
+- Saved/compare and the similar-residences strip are runtime-verified
+  (2026-10-13, browser-driven session): save stores only IDs under
+  `luxonn.saved.v1`, `/saved` re-fetches facts live, compare renders the
+  9-attribute table for up to 4 selections and persists selections across
+  navigation, REMOVE drops the ID and auto-deselects from compare, and the
+  similar-residences ring renders same-county+type neighbors. One advisory
+  remains: the read model's browser anon client creates a new GoTrueClient
+  per call (memoization cleanup owed).
 - The circular gallery is an unrelated animal-photo demo on `/gallery`. It is not property data and must not be used as broad search results.
 - There are no application tests, retrieval evaluations, or CI checks beyond ad hoc local lint/build verification.
 
