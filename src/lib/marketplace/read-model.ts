@@ -37,13 +37,18 @@ function anonClient(): SupabaseClient {
         'the buyer read model cannot reach PostgREST.',
     );
   }
-  // Fresh per call: server components may run concurrently; the anon client
-  // holds no session state (no persistSession), so this is cheap and avoids
-  // any cross-request leakage in dev hot-reload.
-  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  // Memoized module-level: the anon client holds no session state
+  // (persistSession off), so one instance serves every request safely.
+  // A fresh client per call spawned multiple GoTrueClient instances in
+  // the browser under the same storage key, which Supabase flags as
+  // undefined behavior when used concurrently (e.g. a 4-way compare).
+  anonClientInstance ??= createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  return anonClientInstance;
 }
+
+let anonClientInstance: SupabaseClient | undefined;
 
 /** Sort keys the grid exposes. URL-facing values, lowercase kebab. */
 export type ListingSort =
