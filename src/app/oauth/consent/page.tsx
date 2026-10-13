@@ -9,6 +9,7 @@
  */
 
 import { Suspense } from 'react';
+import { connection } from 'next/server';
 
 export const metadata = {
   title: 'Authorize — LUXONN',
@@ -53,6 +54,14 @@ async function Consent({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { authorization_id: authorizationId } = await searchParams;
+
+  // The consent flow is inherently per-request (cookies + a live
+  // authorization). Await connection() BEFORE any auth call so
+  // cacheComponents marks this boundary dynamic — otherwise Supabase
+  // auth-js's internal Date.now() token-expiry check trips the
+  // blocking-prerender error during the prerender pass.
+  await connection();
+
   if (typeof authorizationId !== 'string' || authorizationId === '') {
     return <ConsentError message="Missing authorization request." />;
   }
