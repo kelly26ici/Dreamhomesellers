@@ -13,8 +13,12 @@ import { notFound } from 'next/navigation';
 
 import ListingMedia from '@/components/marketplace/ListingMedia';
 import { CardActions } from '@/components/marketplace/SaveControls';
+import SimilarResidencesStrip from '@/components/marketplace/SimilarResidencesStrip';
 import { formatListingPrice } from '@/lib/marketplace/format-money';
-import { fetchPublishedListing } from '@/lib/marketplace/read-model';
+import {
+  fetchPublishedListing,
+  fetchPublishedSimilar,
+} from '@/lib/marketplace/read-model';
 
 export const metadata = {
   title: 'Property — LUXONN',
@@ -132,6 +136,13 @@ async function Detail({
         </p>
       </section>
 
+      {/* Similar residences: streamed in its own boundary so a slow or
+          empty similarity query never blocks the listing facts. The strip
+          renders nothing when no same-county+type neighbors exist. */}
+      <Suspense fallback={null}>
+        <Similar listingId={card.listingId} county={card.county} propertyType={card.propertyType} />
+      </Suspense>
+
       <footer className="mt-10 border-t border-white/10 pt-6 text-xs text-muted">
         Published facts from the LUXONN verified record
         {card.publishedAt
@@ -140,5 +151,33 @@ async function Detail({
         .
       </footer>
     </article>
+  );
+}
+
+/**
+ * Similar-residences section. Fetches same-county+type published
+ * neighbors server-side and hands them to the client strip; renders
+ * nothing when the subject has no county or no neighbors — an honest
+ * empty state, never a filler rail.
+ */
+async function Similar({
+  listingId,
+  county,
+  propertyType,
+}: {
+  listingId: string;
+  county: string | null;
+  propertyType: string;
+}) {
+  const similar = await fetchPublishedSimilar(
+    { listingId, county, propertyType },
+    8,
+  );
+  if (similar.length === 0) return null;
+  return (
+    <section aria-label="Similar residences" className="mt-12">
+      <h2 className="text-xs tracking-[0.2em] text-gold">SIMILAR RESIDENCES</h2>
+      <SimilarResidencesStrip cards={similar} />
+    </section>
   );
 }

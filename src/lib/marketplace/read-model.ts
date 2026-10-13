@@ -544,3 +544,47 @@ export async function fetchPublishedListingsByIds(
   );
   return { cards, mediaByRevision };
 }
+
+/**
+ * Similar-residences candidates for the detail page's circular strip:
+ * published listings sharing the subject's county AND property type,
+ * excluding the subject itself. Small set (the strip's capacity), newest
+ * first. Same published-only / RLS-governed construction as the grid; no
+ * similarity score, just a deterministic county+type neighborhood — the
+ * Qdrant semantic projection (Phase 4) will refine this later.
+ */
+export async function fetchPublishedSimilar(
+  subject: {
+    readonly listingId: string;
+    readonly county: string | null;
+    readonly propertyType: string;
+  },
+  limit = 8,
+): Promise<readonly PublishedListingCard[]> {
+  if (!subject.county) return [];
+
+  const supabase = anonClient();
+  const { data, error } = await supabase
+    .from('listings')
+    .select(
+      `listing_id, listing_kind, published_revision:${PUBLISHED_REVISION_FK}(${REVISION_COLUMNS})`,
+    )
+    .eq('lifecycle_state', 'published')
+    .eq('published_revision.county', subject.county)
+    .eq('published_revision.property_type', subject.propertyType)
+    .neq('listing_id', subject.listingId)
+    .order('published_at', {
+      ascending: false,
+      referencedTable: 'published_revision',
+      nullsFirst: false,
+    })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Similar-listings query failed: ${error.message}`);
+  }
+
+  return ((data ?? []) as unknown as PublishedRow[])
+    .filter((row) => row.published_revision !== null)
+    .map(toCard);
+}
