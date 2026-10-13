@@ -14,6 +14,7 @@ import { notFound } from 'next/navigation';
 import ListingMedia from '@/components/marketplace/ListingMedia';
 import { CardActions } from '@/components/marketplace/SaveControls';
 import SimilarResidencesStrip from '@/components/marketplace/SimilarResidencesStrip';
+import ViewingRequestForm from '@/components/marketplace/ViewingRequestForm';
 import { formatListingPrice } from '@/lib/marketplace/format-money';
 import {
   fetchPublishedListing,
@@ -134,6 +135,13 @@ async function Detail({
         <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-white/90">
           {card.description}
         </p>
+      </section>
+
+      {/* ADR-016 viewing-request surface: a client component calling the
+          create_viewing_request domain command. RLS still governs every
+          read; the command audits and rate-limits server-side. */}
+      <section aria-label="Request a viewing" className="mt-8">
+        <ViewingRequestForm listingId={card.listingId} title={card.title} />
       </section>
 
       {/* Similar residences: streamed in its own boundary so a slow or
