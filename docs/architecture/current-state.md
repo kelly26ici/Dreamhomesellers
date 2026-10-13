@@ -78,9 +78,9 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
   `luxonn.saved.v1`, `/saved` re-fetches facts live, compare renders the
   9-attribute table for up to 4 selections and persists selections across
   navigation, REMOVE drops the ID and auto-deselects from compare, and the
-  similar-residences ring renders same-county+type neighbors. One advisory
-  remains: the read model's browser anon client creates a new GoTrueClient
-  per call (memoization cleanup owed).
+  similar-residences ring renders same-county+type neighbors. The advisory
+  duplicate-GoTrueClient warning was fixed the same day (commit `da647e8`):
+  the read model's anon client is memoized module-level.
 - The circular gallery is an unrelated animal-photo demo on `/gallery`. It is not property data and must not be used as broad search results.
 - There are no application tests, retrieval evaluations, or CI checks beyond ad hoc local lint/build verification.
 
