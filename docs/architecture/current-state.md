@@ -64,11 +64,19 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
 - Property cards in the About/testimonials sections remain editorial marketing content, not inventory from a canonical catalog.
 - The homepage About section and hero are Kenya-framed; the testimonials keep one fictional "Private Client, Dubai" byline (editorial social proof, decided exception).
 - Root metadata is Kenya-framed. Map experience, owner portal, and moderator portal do not exist yet.
-- The login page is functional for email/password sign-in; what remains
-  is runtime verification of the whole sign-in → consent → viewing-request
-  chain (the dev server stays down per Kelly until they say otherwise).
-- Saved/compare and the similar-residences strip are implemented but not yet
-  runtime-verified (the dev server stays down per Kelly until they say otherwise).
+- The login page is functional for email/password sign-in, and the whole
+  sign-in → consent → viewing-request chain is runtime-verified (2026-10-13,
+  live dev-server session): PKCE authorize, consent UI, approve decision,
+  token exchange, and the persisted consent row all confirmed end to end.
+  Both viewing-request paths confirmed live: an authenticated buyer's
+  verified email lands the request in `open` (VR-A7FD19A8), an anonymous
+  private-window submission lands in `pending_contact_verification`
+  (VR-55C72218) — states verified against `viewing_requests` and
+  `audit_records` server-side.
+- Saved/compare and the similar-residences strip are implemented; the strip
+  was exercised during the 2026-10-13 live session without errors. Formal
+  runtime verification (save → /saved shows the card, compare renders) is
+  the last remaining check on the client-side phase.
 - The circular gallery is an unrelated animal-photo demo on `/gallery`. It is not property data and must not be used as broad search results.
 - There are no application tests, retrieval evaluations, or CI checks beyond ad hoc local lint/build verification.
 
