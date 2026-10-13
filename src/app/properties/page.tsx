@@ -42,17 +42,25 @@ export default function PropertiesPage(
     <main className="min-h-screen">
       {/* Static shell: renders instantly, even before data resolves. */}
       <header className="border-b border-white/10 bg-black/40">
-        <div className="mx-auto max-w-7xl px-4 py-10">
-          <p className="text-xs tracking-[0.2em] text-gold">
-            THE COLLECTION
-          </p>
-          <h1 className="mt-2 font-display text-5xl tracking-wide text-white md:text-6xl">
-            Properties
-          </h1>
-          <p className="mt-3 max-w-xl text-sm text-muted">
-            Verified premium listings across Kenya. Every price, every fact,
-            straight from the published record.
-          </p>
+        <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 py-10">
+          <div>
+            <p className="text-xs tracking-[0.2em] text-gold">
+              THE COLLECTION
+            </p>
+            <h1 className="mt-2 font-display text-5xl tracking-wide text-white md:text-6xl">
+              Properties
+            </h1>
+            <p className="mt-3 max-w-xl text-sm text-muted">
+              Verified premium listings across Kenya. Every price, every fact,
+              straight from the published record.
+            </p>
+          </div>
+          <Link
+            href="/saved"
+            className="glass rounded-lg px-4 py-2 text-xs tracking-widest text-gold transition-colors hover:border-gold/50 hover:text-white"
+          >
+            SAVED →
+          </Link>
         </div>
       </header>
 
