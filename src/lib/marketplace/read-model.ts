@@ -492,3 +492,55 @@ export async function fetchPublishedFeatured(
     .filter((row) => row.published_revision !== null)
     .map(toCard);
 }
+
+/**
+ * Fetch published listings by explicit ids, for the anonymous buyer's
+ * saved/compare views. The caller passes listing IDs it stored client-side
+ * (localStorage); only rows that are STILL published AND buyer-visible
+ * through RLS come back, so an unpublished or moderated listing drops out
+ * of the saved view automatically — the client store holds intent, never
+ * facts. Order follows the caller's id order (saved-listings store is
+ * most-recent-first); media is stitched alongside as in the grid.
+ */
+export async function fetchPublishedListingsByIds(
+  listingIds: readonly string[],
+): Promise<{
+  readonly cards: readonly PublishedListingCard[];
+  readonly mediaByRevision: ReadonlyMap<RevisionId, readonly PublicMediaRow[]>;
+}> {
+  if (listingIds.length === 0) {
+    return { cards: [], mediaByRevision: new Map() };
+  }
+
+  const supabase = anonClient();
+  const { data, error } = await supabase
+    .from('listings')
+    .select(
+      `listing_id, listing_kind, published_revision:${PUBLISHED_REVISION_FK}(${REVISION_COLUMNS})`,
+    )
+    .in('listing_id', listingIds as string[])
+    .eq('lifecycle_state', 'published');
+
+  if (error) {
+    throw new Error(`Saved-listings query failed: ${error.message}`);
+  }
+
+  const byId = new Map<string, PublishedListingCard>();
+  for (const row of ((data ?? []) as unknown as PublishedRow[]).filter(
+    (row) => row.published_revision !== null,
+  )) {
+    const card = toCard(row);
+    byId.set(card.listingId, card);
+  }
+  // Preserve the caller's ordering; silently skip ids that no longer
+  // resolve to a published, buyer-visible listing.
+  const cards = listingIds
+    .map((id) => byId.get(id))
+    .filter((c): c is PublishedListingCard => c !== undefined);
+
+  const mediaByRevision = await fetchMediaForRevisions(
+    supabase,
+    cards.map((c) => c.revisionId),
+  );
+  return { cards, mediaByRevision };
+}

@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import ListingMedia from '@/components/marketplace/ListingMedia';
+import { CardActions } from '@/components/marketplace/SaveControls';
 import { formatListingPrice } from '@/lib/marketplace/format-money';
 import { fetchPublishedListing } from '@/lib/marketplace/read-model';
 
@@ -64,9 +65,12 @@ async function Detail({
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="mb-6 text-xs tracking-widest text-muted">
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center justify-between text-xs tracking-widest text-muted">
         <Link href="/properties" className="hover:text-gold">
           ← BACK TO PROPERTIES
+        </Link>
+        <Link href="/saved" className="hover:text-gold">
+          SAVED →
         </Link>
       </nav>
 
@@ -82,9 +86,12 @@ async function Detail({
             {[card.area, card.city, card.county, card.country].filter(Boolean).join(', ')}
           </p>
         </div>
-        <p className="text-2xl font-medium text-champagne">
-          {formatListingPrice(card.priceAmount, card.priceCurrency, card.pricePeriod)}
-        </p>
+        <div className="flex flex-col items-end gap-3">
+          <p className="text-2xl font-medium text-champagne">
+            {formatListingPrice(card.priceAmount, card.priceCurrency, card.pricePeriod)}
+          </p>
+          <CardActions listingId={card.listingId} />
+        </div>
       </header>
 
       <div className="mt-8">
