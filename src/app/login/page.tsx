@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { ArrowLeft } from "lucide-react";
 import { LoginAmbient, LoginForm } from "@/components/ui/login-form";
 
@@ -20,8 +21,28 @@ export default function LoginPage() {
         BACK TO SITE
       </Link>
       <div className="relative z-10 w-full max-w-sm">
-        <LoginForm />
+        {/* LoginForm reads ?next= to resume interrupted flows (e.g. an
+            OAuth authorization) — under cacheComponents that read must
+            sit inside a Suspense boundary. */}
+        <Suspense fallback={<LoginFormFallback />}>
+          <LoginForm />
+        </Suspense>
       </div>
     </main>
+  );
+}
+
+function LoginFormFallback() {
+  return (
+    <div
+      aria-busy="true"
+      aria-label="Loading sign-in form"
+      className="w-full max-w-sm space-y-8 rounded-3xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10"
+    >
+      <div className="h-8 w-48 animate-pulse rounded bg-surface-2" />
+      <div className="h-10 w-full animate-pulse rounded bg-surface-2" />
+      <div className="h-10 w-full animate-pulse rounded bg-surface-2" />
+      <div className="h-12 w-full animate-pulse rounded bg-surface-2" />
+    </div>
   );
 }

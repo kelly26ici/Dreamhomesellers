@@ -62,12 +62,30 @@ async function Consent({
 
   // Who is consenting? An unsigned-in visitor must authenticate first,
   // preserving the authorization_id so the consent lands on the same
-  // request after sign-in.
+  // request after sign-in (the login form redirects back via ?next=).
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return <ConsentError message="Sign in to continue this authorization." />;
+    const signInHref = `/login?next=${encodeURIComponent(
+      `/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`,
+    )}`;
+    return (
+      <div role="alert" className="mt-6 glass rounded-xl p-6">
+        <h1 className="font-display text-xl tracking-wide text-white">
+          Sign in to continue
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          This authorization needs a signed-in LUXONN account.
+        </p>
+        <a
+          href={signInHref}
+          className="mt-5 block rounded-lg bg-gold px-4 py-2.5 text-center text-sm tracking-widest text-black transition-opacity hover:opacity-90"
+        >
+          SIGN IN
+        </a>
+      </div>
+    );
   }
 
   const { data: authDetails, error } =

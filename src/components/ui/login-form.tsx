@@ -1,11 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type FormEvent,
+} from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Canvas } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import { useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { User, Lock, ArrowRight } from "lucide-react";
+
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
+
+// Constant subscription for the mount gate below — nothing to observe,
+// the client snapshot differing from the server snapshot is the signal.
+const subscribeNoop = () => () => {};
 
 /**
  * Ambient gold background that matches the site's visual language:
@@ -20,8 +33,13 @@ export function LoginAmbient({
   const reduceMotion = useReducedMotion();
   // Mount gate: SSR and the first client render must agree (no canvas on
   // either), or React 19 flags a hydration mismatch for reduced-motion users.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // useSyncExternalStore does this without the setState-in-effect cascade
+  // the classic `useState(false) + useEffect` gate triggers.
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
 
   return (
     <div
@@ -59,6 +77,42 @@ export function LoginAmbient({
 export function LoginForm() {
   const rootRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Where to land after sign-in: the consent flow passes ?next= so an
+  // interrupted authorization resumes on the same request. Never accept
+  // an off-site redirect target (open-redirect guard).
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const nextPath = (() => {
+    const raw = searchParams.get("next");
+    return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+  })();
+
+  async function handleSignIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError(null);
+    setSubmitting(true);
+    try {
+      const { error } = await getSupabaseBrowserClient().auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        setFormError(error.message);
+        return;
+      }
+      router.replace(nextPath);
+    } catch {
+      setFormError("Sign-in failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   useEffect(() => {
     const root = rootRef.current;
@@ -118,12 +172,25 @@ export function LoginForm() {
           Sign in to access your private collection and saved residences.
         </p>
       </div>
-      <form data-login="form" className="space-y-8 opacity-0">
+      <form
+        data-login="form"
+        onSubmit={handleSignIn}
+        className="space-y-8 opacity-0"
+      >
+        {formError && (
+          <p role="alert" className="text-sm text-red-400">
+            {formError}
+          </p>
+        )}
         {/* Email Input with Animated Label */}
         <div className="relative z-0">
           <input
             type="email"
             id="floating_email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            disabled={submitting}
             className="block w-full appearance-none border-0 border-b-2 border-white/20 bg-transparent py-2.5 px-0 text-sm text-white transition-colors duration-300 focus:border-gold focus:outline-none focus:ring-0 peer"
             placeholder=" "
             required
@@ -141,6 +208,10 @@ export function LoginForm() {
           <input
             type="password"
             id="floating_password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            disabled={submitting}
             className="block w-full appearance-none border-0 border-b-2 border-white/20 bg-transparent py-2.5 px-0 text-sm text-white transition-colors duration-300 focus:border-gold focus:outline-none focus:ring-0 peer"
             placeholder=" "
             required
@@ -162,9 +233,10 @@ export function LoginForm() {
 
         <button
           type="submit"
-          className="group w-full border border-gold bg-gold px-8 py-3.5 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505]"
+          disabled={submitting}
+          className="group w-full border border-gold bg-gold px-8 py-3.5 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Sign In
+          {submitting ? "Signing In…" : "Sign In"}
           <ArrowRight
             className="ml-2 inline h-4 w-4 transform transition-transform group-hover:translate-x-1"
             aria-hidden
@@ -195,7 +267,7 @@ export function LoginForm() {
         </button>
       </form>
       <p className="text-center text-xs text-muted" data-login="fade">
-        Don't have an account?{" "}
+        Don&apos;t have an account?{" "}
         <a
           href="#"
           className="font-semibold text-gold transition hover:text-champagne"
