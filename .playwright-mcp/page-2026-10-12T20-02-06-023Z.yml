@@ -1,0 +1,50 @@
+- generic [active] [ref=f5e1]:
+  - main [ref=f5e2]:
+    - article [ref=f5e3]:
+      - navigation "Breadcrumb" [ref=f5e4]:
+        - link "← BACK TO PROPERTIES" [ref=f5e5] [cursor=pointer]:
+          - /url: /properties
+      - generic [ref=f5e6]:
+        - generic [ref=f5e7]:
+          - paragraph [ref=f5e8]: SALE · AVAILABLE
+          - heading "Karen — 5-Bedroom Standalone Villa on Half an Acre" [level=1] [ref=f5e9]
+          - paragraph [ref=f5e10]: Karen, Nairobi, Nairobi, Kenya
+        - paragraph [ref=f5e11]: Ksh 145,000,000
+      - generic [ref=f5e13]:
+        - generic [aria-hidden] [ref=f5e14]: LUXONN
+        - generic [ref=f5e15]: IMAGERY PENDING
+      - region "Key facts" [ref=f5e16]:
+        - generic [ref=f5e17]:
+          - generic [ref=f5e18]:
+            - term [ref=f5e19]: Type
+            - definition [ref=f5e20]: villa
+          - generic [ref=f5e21]:
+            - term [ref=f5e22]: Bedrooms
+            - definition [ref=f5e23]: "5"
+          - generic [ref=f5e24]:
+            - term [ref=f5e25]: Bathrooms
+            - definition [ref=f5e26]: "6"
+          - generic [ref=f5e27]:
+            - term [ref=f5e28]: Interior
+            - definition [ref=f5e29]: 620 m²
+          - generic [ref=f5e30]:
+            - term [ref=f5e31]: Plot
+            - definition [ref=f5e32]: 2023 m²
+          - generic [ref=f5e33]:
+            - term [ref=f5e34]: Furnished
+            - definition [ref=f5e35]: "No"
+      - region "Amenities" [ref=f5e36]:
+        - heading "AMENITIES" [level=2] [ref=f5e37]
+        - list [ref=f5e38]:
+          - listitem [ref=f5e39]: borehole
+          - listitem [ref=f5e40]: solar backup
+          - listitem [ref=f5e41]: staff quarters
+          - listitem [ref=f5e42]: garage
+          - listitem [ref=f5e43]: garden
+          - listitem [ref=f5e44]: fireplace
+      - region "Description" [ref=f5e45]:
+        - heading "ABOUT THIS PROPERTY" [level=2] [ref=f5e46]
+        - paragraph [ref=f5e47]: "A substantial standalone villa on a mature half-acre garden in Karen. The plan runs wide rather than tall: a double-volume living room, formal dining, a study, and a kitchen with a separate pantry open onto a wraparound veranda. All five bedrooms are en-suite; the principal suite takes the garden side with a dressing room and private terrace. Domestic quarters and a two-car garage sit off a gated service yard. Borehole water and a solar array back the mains."
+      - generic [ref=f5e48]: Published facts from the LUXONN verified record · listed 12 Oct 2026.
+  - button "Open Next.js Dev Tools" [ref=f5e54] [cursor=pointer]
+  - alert [ref=f5e58]

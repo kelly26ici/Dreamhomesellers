@@ -1,0 +1,414 @@
+- generic [active] [ref=f12e1]:
+  - banner [ref=f12e2]:
+    - navigation [ref=f12e3]:
+      - button "LUXONN home" [ref=f12e4]:
+        - generic [ref=f12e5]: L
+        - generic [ref=f12e7]: LUXONN
+      - list [ref=f12e8]:
+        - listitem [ref=f12e9]:
+          - button "Home" [ref=f12e10]
+        - listitem [ref=f12e11]:
+          - button "Properties" [ref=f12e12]
+        - listitem [ref=f12e13]:
+          - button "About" [ref=f12e14]
+        - listitem [ref=f12e15]:
+          - button "Services" [ref=f12e16]
+        - listitem [ref=f12e17]:
+          - button "Contact" [ref=f12e18]
+      - generic [ref=f12e19]:
+        - button "Search" [ref=f12e20]
+        - link "Sign In" [ref=f12e24] [cursor=pointer]:
+          - /url: /login
+        - button "Book Viewing" [ref=f12e25]
+  - main [ref=f12e26]:
+    - generic [ref=f12e29]:
+      - generic [ref=f12e30]:
+        - heading "LUXURY REDEFINED" [level=1] [ref=f12e31]:
+          - generic [ref=f12e32]: LUXURY
+          - generic [ref=f12e33]: REDEFINED
+        - paragraph [ref=f12e34]: Where architectural mastery meets quiet privilege. A private collection of Kenya’s most exceptional residences, curated for those who accept nothing less.
+        - generic [ref=f12e35]:
+          - link "Explore the Collection" [ref=f12e36] [cursor=pointer]:
+            - /url: /properties
+          - link "Book a Private Viewing" [ref=f12e37] [cursor=pointer]:
+            - /url: "#contact"
+      - generic [ref=f12e38]:
+        - generic [ref=f12e43]:
+          - paragraph [ref=f12e44]: Location
+          - paragraph [ref=f12e45]: Karen, Nairobi
+        - generic [ref=f12e50]:
+          - paragraph [ref=f12e51]: Price
+          - paragraph [ref=f12e52]: Ksh 145,000,000
+        - generic [ref=f12e60]:
+          - paragraph [ref=f12e61]: Interior
+          - paragraph [ref=f12e62]: 620 m²
+    - generic [ref=f12e63]:
+      - generic [ref=f12e64]:
+        - heading "FEATURED PROPERTIES" [level=2] [ref=f12e65]
+        - paragraph [ref=f12e66]: The latest verified additions to the Kenyan collection. Each listing is published from the LUXONN record — price and facts exactly as verified.
+      - generic [ref=f12e67]:
+        - article [ref=f12e68]:
+          - generic [ref=f12e69]:
+            - generic [aria-hidden] [ref=f12e70]: LUXONN
+            - generic [ref=f12e71]: IMAGERY PENDING
+          - link "Karen — 5-Bedroom Standalone Villa on Half an Acre" [ref=f12e72] [cursor=pointer]:
+            - /url: /property/00000000-0000-0000-0000-000000000b01
+          - generic [ref=f12e73]:
+            - paragraph [ref=f12e74]: Ksh 145,000,000
+            - heading "Karen — 5-Bedroom Standalone Villa on Half an Acre" [level=3] [ref=f12e75]
+            - paragraph [ref=f12e76]: Karen, Nairobi, Nairobi
+        - article [ref=f12e80]:
+          - generic [ref=f12e81]:
+            - generic [aria-hidden] [ref=f12e82]: LUXONN
+            - generic [ref=f12e83]: IMAGERY PENDING
+          - link "Runda — 4-Bedroom Townhouse in a Gated Court of Six" [ref=f12e84] [cursor=pointer]:
+            - /url: /property/00000000-0000-0000-0000-000000000b02
+          - generic [ref=f12e85]:
+            - paragraph [ref=f12e86]: Ksh 89,500,000
+            - heading "Runda — 4-Bedroom Townhouse in a Gated Court of Six" [level=3] [ref=f12e87]
+            - paragraph [ref=f12e88]: Runda, Nairobi, Nairobi
+        - article [ref=f12e92]:
+          - generic [ref=f12e93]:
+            - generic [aria-hidden] [ref=f12e94]: LUXONN
+            - generic [ref=f12e95]: IMAGERY PENDING
+          - link "Westlands — 3-Bedroom Apartment with Rift Views, 8th Floor" [ref=f12e96] [cursor=pointer]:
+            - /url: /property/00000000-0000-0000-0000-000000000b03
+          - generic [ref=f12e97]:
+            - paragraph [ref=f12e98]: Ksh 42,000,000
+            - heading "Westlands — 3-Bedroom Apartment with Rift Views, 8th Floor" [level=3] [ref=f12e99]
+            - paragraph [ref=f12e100]: Westlands, Nairobi, Nairobi
+    - generic [ref=f12e105]:
+      - img "Modern luxury residence with glass walls at dusk" [ref=f12e108]
+      - generic [ref=f12e109]:
+        - heading "ARCHITECTURAL MASTERPIECES" [level=2] [ref=f12e110]
+        - paragraph [ref=f12e111]: "LUXONN exists for one reason: to place extraordinary people inside extraordinary spaces. We travel Kenya to find residences that are not merely built, but composed — homes where light, material, and proportion work in concert."
+        - paragraph [ref=f12e112]: Our advisors do not sell listings. They curate introductions between discerning buyers and the properties that deserve them, handling every negotiation with absolute discretion.
+        - generic [ref=f12e113]:
+          - generic [ref=f12e114]:
+            - paragraph [ref=f12e115]: 25+
+            - paragraph [ref=f12e116]: Years of Expertise
+          - generic [ref=f12e117]:
+            - paragraph [ref=f12e118]: 4B+
+            - paragraph [ref=f12e119]: In Sales Volume
+          - generic [ref=f12e120]:
+            - paragraph [ref=f12e121]: Kenya
+            - paragraph [ref=f12e122]: One Home Market
+    - generic [ref=f12e124]:
+      - generic [ref=f12e125]:
+        - heading "THE COLLECTION" [level=2] [ref=f12e126]
+        - paragraph [ref=f12e127]: Kenya’s most exceptional residences, one scroll at a time.
+      - figure [ref=f12e128]:
+        - generic [ref=f12e129]:
+          - generic [aria-hidden] [ref=f12e130]: LUXONN
+          - generic [ref=f12e131]: IMAGERY PENDING
+        - link "Karen — 5-Bedroom Standalone Villa on Half an Acre" [ref=f12e132] [cursor=pointer]:
+          - /url: /property/00000000-0000-0000-0000-000000000b01
+        - generic [ref=f12e134]:
+          - paragraph [ref=f12e135]: Ksh 145,000,000
+          - paragraph [ref=f12e136]: Karen — 5-Bedroom Standalone Villa on Half an Acre
+          - paragraph [ref=f12e137]: Karen, Nairobi, Nairobi
+      - figure [ref=f12e141]:
+        - generic [ref=f12e142]:
+          - generic [aria-hidden] [ref=f12e143]: LUXONN
+          - generic [ref=f12e144]: IMAGERY PENDING
+        - link "Runda — 4-Bedroom Townhouse in a Gated Court of Six" [ref=f12e145] [cursor=pointer]:
+          - /url: /property/00000000-0000-0000-0000-000000000b02
+        - generic [ref=f12e147]:
+          - paragraph [ref=f12e148]: Ksh 89,500,000
+          - paragraph [ref=f12e149]: Runda — 4-Bedroom Townhouse in a Gated Court of Six
+          - paragraph [ref=f12e150]: Runda, Nairobi, Nairobi
+      - figure [ref=f12e154]:
+        - generic [ref=f12e155]:
+          - generic [aria-hidden] [ref=f12e156]: LUXONN
+          - generic [ref=f12e157]: IMAGERY PENDING
+        - link "Westlands — 3-Bedroom Apartment with Rift Views, 8th Floor" [ref=f12e158] [cursor=pointer]:
+          - /url: /property/00000000-0000-0000-0000-000000000b03
+        - generic [ref=f12e160]:
+          - paragraph [ref=f12e161]: Ksh 42,000,000
+          - paragraph [ref=f12e162]: Westlands — 3-Bedroom Apartment with Rift Views, 8th Floor
+          - paragraph [ref=f12e163]: Westlands, Nairobi, Nairobi
+      - figure [ref=f12e167]:
+        - generic [ref=f12e168]:
+          - generic [aria-hidden] [ref=f12e169]: LUXONN
+          - generic [ref=f12e170]: IMAGERY PENDING
+        - link "Lavington — 4-Bedroom Family Townhouse on a Quiet Lane" [ref=f12e171] [cursor=pointer]:
+          - /url: /property/00000000-0000-0000-0000-000000000b04
+        - generic [ref=f12e173]:
+          - paragraph [ref=f12e174]: Ksh 68,000,000
+          - paragraph [ref=f12e175]: Lavington — 4-Bedroom Family Townhouse on a Quiet Lane
+          - paragraph [ref=f12e176]: Lavington, Nairobi, Nairobi
+      - figure [ref=f12e180]:
+        - generic [ref=f12e181]:
+          - generic [aria-hidden] [ref=f12e182]: LUXONN
+          - generic [ref=f12e183]: IMAGERY PENDING
+        - link "Runda — Half-Acre Level Plot Ready for Development" [ref=f12e184] [cursor=pointer]:
+          - /url: /property/00000000-0000-0000-0000-000000000b05
+        - generic [ref=f12e186]:
+          - paragraph [ref=f12e187]: Ksh 55,000,000
+          - paragraph [ref=f12e188]: Runda — Half-Acre Level Plot Ready for Development
+          - paragraph [ref=f12e189]: Runda, Nairobi, Nairobi
+    - generic [ref=f12e193]:
+      - generic [ref=f12e194]:
+        - heading "WHAT WE DO" [level=2] [ref=f12e195]
+        - paragraph [ref=f12e196]: Four disciplines, one standard. Everything we take on is handled end-to-end by a single dedicated advisor.
+      - generic [ref=f12e197]:
+        - article [ref=f12e198]:
+          - heading "Property Buying" [level=3] [ref=f12e202]
+          - paragraph [ref=f12e203]: Off-market access and private previews of residences matched to your brief, with every negotiation handled for you.
+        - article [ref=f12e204]:
+          - heading "Property Selling" [level=3] [ref=f12e208]
+          - paragraph [ref=f12e209]: Presentation, photography, and placement that position your residence to the right buyers — quietly and globally.
+        - article [ref=f12e210]:
+          - heading "Investment Advisory" [level=3] [ref=f12e214]
+          - paragraph [ref=f12e215]: Portfolio guidance across gateway cities, grounded in local data and long-term value rather than momentum.
+        - article [ref=f12e216]:
+          - heading "Interior Design" [level=3] [ref=f12e221]
+          - paragraph [ref=f12e222]: Curated interiors that honor a property's architecture, from single-room refreshes to complete commissions.
+    - generic [ref=f12e224]:
+      - generic [ref=f12e225]:
+        - heading "IN THEIR WORDS" [level=2] [ref=f12e226]
+        - paragraph [ref=f12e227]: Private clients, collectors, and estate owners on what it is like to be represented by LUXONN.
+      - generic [ref=f12e230]:
+        - generic [ref=f12e232]:
+          - generic [ref=f12e234]:
+            - paragraph [ref=f12e239]: They found us a penthouse we didn't know existed and negotiated terms we didn't think possible. Absolute discretion from start to finish.
+            - generic [ref=f12e240]:
+              - img "Amara Okafor" [ref=f12e242]
+              - generic [ref=f12e243]:
+                - generic [ref=f12e244]: Amara Okafor
+                - generic [ref=f12e245]: Private Client, Dubai
+          - generic [ref=f12e247]:
+            - paragraph [ref=f12e252]: Every property they presented was worth the flight. You stop browsing listings and start choosing between masterpieces.
+            - generic [ref=f12e253]:
+              - img "Daniel Roth" [ref=f12e255]
+              - generic [ref=f12e256]:
+                - generic [ref=f12e257]: Daniel Roth
+                - generic [ref=f12e258]: Collector, New York
+          - generic [ref=f12e260]:
+            - paragraph [ref=f12e265]: The off-market access alone justified the retainer. Our villa in Cap Ferrat never touched a public listing.
+            - generic [ref=f12e266]:
+              - img "Isabelle Marchand" [ref=f12e268]
+              - generic [ref=f12e269]:
+                - generic [ref=f12e270]: Isabelle Marchand
+                - generic [ref=f12e271]: Villa Owner, Côte d'Azur
+          - generic [ref=f12e273]:
+            - paragraph [ref=f12e278]: Twelve acquisitions across three gateway cities, each one sourced, vetted and closed inside a month.
+            - generic [ref=f12e279]:
+              - img "Khalid Al-Rashid" [ref=f12e281]
+              - generic [ref=f12e282]:
+                - generic [ref=f12e283]: Khalid Al-Rashid
+                - generic [ref=f12e284]: Investor, Riyadh
+          - generic [ref=f12e286]:
+            - paragraph [ref=f12e291]: They understand that a house on Como is not a transaction. It is an inheritance you choose for your grandchildren.
+            - generic [ref=f12e292]:
+              - img "Sofia Bianchi" [ref=f12e294]
+              - generic [ref=f12e295]:
+                - generic [ref=f12e296]: Sofia Bianchi
+                - generic [ref=f12e297]: Art Collector, Lake Como
+          - generic [ref=f12e299]:
+            - paragraph [ref=f12e304]: They found us a penthouse we didn't know existed and negotiated terms we didn't think possible. Absolute discretion from start to finish.
+            - generic [ref=f12e305]:
+              - img "Amara Okafor" [ref=f12e307]
+              - generic [ref=f12e308]:
+                - generic [ref=f12e309]: Amara Okafor
+                - generic [ref=f12e310]: Private Client, Dubai
+          - generic [ref=f12e312]:
+            - paragraph [ref=f12e317]: Every property they presented was worth the flight. You stop browsing listings and start choosing between masterpieces.
+            - generic [ref=f12e318]:
+              - img "Daniel Roth" [ref=f12e320]
+              - generic [ref=f12e321]:
+                - generic [ref=f12e322]: Daniel Roth
+                - generic [ref=f12e323]: Collector, New York
+          - generic [ref=f12e325]:
+            - paragraph [ref=f12e330]: The off-market access alone justified the retainer. Our villa in Cap Ferrat never touched a public listing.
+            - generic [ref=f12e331]:
+              - img "Isabelle Marchand" [ref=f12e333]
+              - generic [ref=f12e334]:
+                - generic [ref=f12e335]: Isabelle Marchand
+                - generic [ref=f12e336]: Villa Owner, Côte d'Azur
+          - generic [ref=f12e338]:
+            - paragraph [ref=f12e343]: Twelve acquisitions across three gateway cities, each one sourced, vetted and closed inside a month.
+            - generic [ref=f12e344]:
+              - img "Khalid Al-Rashid" [ref=f12e346]
+              - generic [ref=f12e347]:
+                - generic [ref=f12e348]: Khalid Al-Rashid
+                - generic [ref=f12e349]: Investor, Riyadh
+          - generic [ref=f12e351]:
+            - paragraph [ref=f12e356]: They understand that a house on Como is not a transaction. It is an inheritance you choose for your grandchildren.
+            - generic [ref=f12e357]:
+              - img "Sofia Bianchi" [ref=f12e359]
+              - generic [ref=f12e360]:
+                - generic [ref=f12e361]: Sofia Bianchi
+                - generic [ref=f12e362]: Art Collector, Lake Como
+        - generic [ref=f12e365]:
+          - generic [ref=f12e367]:
+            - paragraph [ref=f12e372]: Selling a family estate is emotional. They handled the buyers, the paperwork and the press with absolute grace.
+            - generic [ref=f12e373]:
+              - img "James Whitmore" [ref=f12e375]
+              - generic [ref=f12e376]:
+                - generic [ref=f12e377]: James Whitmore
+                - generic [ref=f12e378]: Estate Owner, London
+          - generic [ref=f12e380]:
+            - paragraph [ref=f12e385]: Discreet, precise, and endlessly patient. Nine months of viewing, zero pressure, and the perfect penthouse in the end.
+            - generic [ref=f12e386]:
+              - img "Nikolai Petrov" [ref=f12e388]
+              - generic [ref=f12e389]:
+                - generic [ref=f12e390]: Nikolai Petrov
+                - generic [ref=f12e391]: Private Client, Monaco
+          - generic [ref=f12e393]:
+            - paragraph [ref=f12e398]: Their valuation of my hotel was forty percent above every other agency's. They were also the only ones who were right.
+            - generic [ref=f12e399]:
+              - img "Camille Duret" [ref=f12e401]
+              - generic [ref=f12e402]:
+                - generic [ref=f12e403]: Camille Duret
+                - generic [ref=f12e404]: Boutique Hotelier, Paris
+          - generic [ref=f12e406]:
+            - paragraph [ref=f12e411]: One advisor, end to end, across two jurisdictions. That is not a service I expected to find anywhere.
+            - generic [ref=f12e412]:
+              - img "Richard Hale" [ref=f12e414]
+              - generic [ref=f12e415]:
+                - generic [ref=f12e416]: Richard Hale
+                - generic [ref=f12e417]: Family Office Principal, Zurich
+          - generic [ref=f12e419]:
+            - paragraph [ref=f12e424]: We handed them a bare plot in Abu Dhabi. They returned a sold-out tower with a waiting list. Enough said.
+            - generic [ref=f12e425]:
+              - img "Leila Haddad" [ref=f12e427]
+              - generic [ref=f12e428]:
+                - generic [ref=f12e429]: Leila Haddad
+                - generic [ref=f12e430]: Developer, Abu Dhabi
+          - generic [ref=f12e432]:
+            - paragraph [ref=f12e437]: Selling a family estate is emotional. They handled the buyers, the paperwork and the press with absolute grace.
+            - generic [ref=f12e438]:
+              - img "James Whitmore" [ref=f12e440]
+              - generic [ref=f12e441]:
+                - generic [ref=f12e442]: James Whitmore
+                - generic [ref=f12e443]: Estate Owner, London
+          - generic [ref=f12e445]:
+            - paragraph [ref=f12e450]: Discreet, precise, and endlessly patient. Nine months of viewing, zero pressure, and the perfect penthouse in the end.
+            - generic [ref=f12e451]:
+              - img "Nikolai Petrov" [ref=f12e453]
+              - generic [ref=f12e454]:
+                - generic [ref=f12e455]: Nikolai Petrov
+                - generic [ref=f12e456]: Private Client, Monaco
+          - generic [ref=f12e458]:
+            - paragraph [ref=f12e463]: Their valuation of my hotel was forty percent above every other agency's. They were also the only ones who were right.
+            - generic [ref=f12e464]:
+              - img "Camille Duret" [ref=f12e466]
+              - generic [ref=f12e467]:
+                - generic [ref=f12e468]: Camille Duret
+                - generic [ref=f12e469]: Boutique Hotelier, Paris
+          - generic [ref=f12e471]:
+            - paragraph [ref=f12e476]: One advisor, end to end, across two jurisdictions. That is not a service I expected to find anywhere.
+            - generic [ref=f12e477]:
+              - img "Richard Hale" [ref=f12e479]
+              - generic [ref=f12e480]:
+                - generic [ref=f12e481]: Richard Hale
+                - generic [ref=f12e482]: Family Office Principal, Zurich
+          - generic [ref=f12e484]:
+            - paragraph [ref=f12e489]: We handed them a bare plot in Abu Dhabi. They returned a sold-out tower with a waiting list. Enough said.
+            - generic [ref=f12e490]:
+              - img "Leila Haddad" [ref=f12e492]
+              - generic [ref=f12e493]:
+                - generic [ref=f12e494]: Leila Haddad
+                - generic [ref=f12e495]: Developer, Abu Dhabi
+    - generic [ref=f12e496]:
+      - heading "BEGIN THE CONVERSATION" [level=2] [ref=f12e498]
+      - generic [ref=f12e499]:
+        - generic [ref=f12e500]:
+          - paragraph [ref=f12e501]: Tell us what you are looking for — or what you are ready to part with. An advisor responds within one business day.
+          - generic [ref=f12e506]:
+            - paragraph [ref=f12e507]: Office
+            - paragraph [ref=f12e508]: One Hyde Park, London SW1X 7NA
+          - generic [ref=f12e512]:
+            - paragraph [ref=f12e513]: Phone
+            - paragraph [ref=f12e514]: +44 20 7946 0958
+          - generic [ref=f12e519]:
+            - paragraph [ref=f12e520]: Email
+            - paragraph [ref=f12e521]: private@luxonn.com
+          - paragraph [ref=f12e526]: Map — One Hyde Park
+        - generic [ref=f12e527]:
+          - generic [ref=f12e528]:
+            - textbox "Full Name" [ref=f12e529]:
+              - /placeholder: " "
+            - generic: Full Name
+          - generic [ref=f12e530]:
+            - textbox "Email Address" [ref=f12e531]:
+              - /placeholder: " "
+            - generic: Email Address
+          - generic [ref=f12e532]:
+            - textbox "Phone (optional)" [ref=f12e533]:
+              - /placeholder: " "
+            - generic: Phone (optional)
+          - generic [ref=f12e534]:
+            - textbox "Your Message" [ref=f12e535]:
+              - /placeholder: " "
+            - generic: Your Message
+          - button "Send Inquiry" [ref=f12e536]
+  - button "Chat with Simon, property concierge" [ref=f12e537]:
+    - generic [ref=f12e541]:
+      - generic [ref=f12e542]: PROPERTY CONCIERGE
+      - generic [ref=f12e543]: CHAT WITH SIMON
+  - dialog [aria-hidden]:
+    - banner:
+      - generic:
+        - generic:
+          - paragraph: PROPERTY CONCIERGE
+          - heading [level=2]: SIMON
+      - generic:
+        - link:
+          - /url: /simon
+        - button
+    - generic:
+      - generic:
+        - status: CONNECTING TO SIMON
+  - contentinfo [ref=f12e544]:
+    - generic [ref=f12e545]:
+      - generic [ref=f12e546]:
+        - generic [ref=f12e547]:
+          - generic [ref=f12e548]: L
+          - generic [ref=f12e550]: LUXONN
+        - paragraph [ref=f12e551]: A private collection of the world’s most exceptional residences.
+      - navigation "Properties" [ref=f12e552]:
+        - paragraph [ref=f12e553]: Properties
+        - list [ref=f12e554]:
+          - listitem [ref=f12e555]:
+            - link "Penthouses" [ref=f12e556] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=f12e557]:
+            - link "Villas" [ref=f12e558] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=f12e559]:
+            - link "Estates" [ref=f12e560] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=f12e561]:
+            - link "New Developments" [ref=f12e562] [cursor=pointer]:
+              - /url: "#"
+      - navigation "Company" [ref=f12e563]:
+        - paragraph [ref=f12e564]: Company
+        - list [ref=f12e565]:
+          - listitem [ref=f12e566]:
+            - link "About" [ref=f12e567] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=f12e568]:
+            - link "Advisors" [ref=f12e569] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=f12e570]:
+            - link "Press" [ref=f12e571] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=f12e572]:
+            - link "Careers" [ref=f12e573] [cursor=pointer]:
+              - /url: "#"
+      - navigation "Contact" [ref=f12e574]:
+        - paragraph [ref=f12e575]: Contact
+        - list [ref=f12e576]:
+          - listitem [ref=f12e577]:
+            - link "private@luxonn.com" [ref=f12e578] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=f12e579]:
+            - link "+44 20 7 946 0958" [ref=f12e580] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=f12e581]:
+            - link "One Hyde Park, London" [ref=f12e582] [cursor=pointer]:
+              - /url: "#"
+    - paragraph [ref=f12e584]: © 2026 LUXONN. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=f12e590] [cursor=pointer]

@@ -1,0 +1,5 @@
+[  314350ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:10100/api/github/star:0
+[  314376ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:10100/api/provider-quotas:0
+[  615221ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:10100/api/github/star:0
+[  615312ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:10100/api/update/badge:0
+[  615329ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:10100/api/provider-quotas:0
