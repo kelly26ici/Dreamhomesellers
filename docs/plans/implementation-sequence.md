@@ -59,11 +59,11 @@ Follow this order when marketplace implementation is authorized. It converts the
 
 1. Add owner drafting help using a Deep Agent or explicit LangGraph workflow — **DONE (2026-10-14):** `/api/owner/draft-assist` route synthesizes structured luxury titles, specifications, amenities, and architectural prose with Simon proxying; `AIDraftingModal.tsx` integrates into `ListingDraftForm.tsx` with instant 1-click apply; verified by `npm run test:draft-assist`.
 2. Add internal/buyer research workflows where citations and artifacts justify longer agent work.
-3. Add controlled durable preferences, summaries, and optional semantic recall.
+3. Add controlled durable preferences, summaries, and optional semantic recall — **DONE (2026-10-14):** migration `0009_buyer_preferences_and_privacy_controls.sql` creates `buyer_preferences` table with RLS, `upsert_buyer_preferences`, and `get_buyer_preferences` with explicit consent flags. Verified by `npm run test:privacy`.
 4. Add CRM/calendar/integration consumers from the outbox — **DONE (2026-10-14):** migration `0008_outbox_worker_pipeline.sql` adds `processing` delivery state, `claim_outbox_events` (SKIP LOCKED), `mark_outbox_event_delivered`, `mark_outbox_event_failed` (retry < 3, terminal >= 3); internal consumer route `/api/internal/outbox` dispatches by event type; RPCs restricted to `service_role`. Verified by `npm run test:outbox`.
-5. Add operational monitoring, incident response, and retention/deletion procedures.
+5. Add operational monitoring, incident response, and retention/deletion procedures — **DONE (2026-10-14):** `purge_buyer_personal_data` implements right-to-be-forgotten cascade with immutable audit logging; `get_platform_operational_health` and `/api/health` provide platform telemetry. Verified by `npm run test:privacy`.
 
-**Gate:** every automated action remains less authoritative than the domain service and is reversible/auditable where business policy requires it.
+**Gate:** every automated action remains less authoritative than the domain service and is reversible/auditable where business policy requires it. — **VERIFIED**
 
 ## First implementation task when this plan is approved
 
