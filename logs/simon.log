@@ -1,0 +1,308 @@
+2026-10-14 06:25:47.769 | INFO     | src.core.redis:<module>:36 - Redis client initialised | url=redis://localhost:6379
+2026-10-14 06:25:47.960 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 06:25:47.962 | INFO     | src.core.tracing:enable_tracing:31 - LangSmith API key not configured — tracing disabled
+2026-10-14 06:25:50.217 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'web_search'.
+2026-10-14 06:25:50.254 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'send_stk_push'.
+2026-10-14 06:25:50.255 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_transaction_status'.
+2026-10-14 06:25:50.700 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 06:25:50.758 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'save_customer_fact'.
+2026-10-14 06:25:50.759 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_customer_preferences'.
+2026-10-14 06:25:50.760 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'update_conversation_summary'.
+2026-10-14 06:25:50.760 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'notify_owner'.
+2026-10-14 06:25:50.761 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_payment_history'.
+2026-10-14 06:25:50.763 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_past_conversations'.
+2026-10-14 06:25:52.550 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_properties'.
+2026-10-14 06:25:52.553 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'semantic_search_properties'.
+2026-10-14 06:25:52.553 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_property_details'.
+2026-10-14 06:25:52.554 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'compare_properties'.
+2026-10-14 06:25:52.562 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'create_property'.
+2026-10-14 06:25:52.567 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'schedule_property_viewing'.
+2026-10-14 06:25:52.568 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_my_scheduled_viewings'.
+2026-10-14 06:25:52.569 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'cancel_property_viewing'.
+2026-10-14 06:25:52.572 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'calculate_mortgage'.
+2026-10-14 06:25:52.575 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_support_contact'.
+2026-10-14 06:25:53.339 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'web_search'
+2026-10-14 06:25:53.343 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'send_stk_push'
+2026-10-14 06:25:53.348 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_transaction_status'
+2026-10-14 06:25:53.355 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'save_customer_fact'
+2026-10-14 06:25:53.359 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_customer_preferences'
+2026-10-14 06:25:53.365 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'update_conversation_summary'
+2026-10-14 06:25:53.368 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'notify_owner'
+2026-10-14 06:25:53.375 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_payment_history'
+2026-10-14 06:25:53.379 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_past_conversations'
+2026-10-14 06:25:53.392 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_properties'
+2026-10-14 06:25:53.400 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'semantic_search_properties'
+2026-10-14 06:25:53.403 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_property_details'
+2026-10-14 06:25:53.407 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'compare_properties'
+2026-10-14 06:25:53.427 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'create_property'
+2026-10-14 06:25:53.432 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'schedule_property_viewing'
+2026-10-14 06:25:53.434 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_my_scheduled_viewings'
+2026-10-14 06:25:53.437 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'cancel_property_viewing'
+2026-10-14 06:25:53.443 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'calculate_mortgage'
+2026-10-14 06:25:53.447 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_support_contact'
+2026-10-14 06:25:53.448 | SUCCESS  | __main__:register_all_tools:117 - MCP: registered 19 tools on server
+2026-10-14 06:25:53.448 | INFO     | __main__:run_stdio:152 - Starting Simon MCP server (stdio transport)
+2026-10-14 15:41:25.023 | INFO     | src.core.redis:<module>:36 - Redis client initialised | url=redis://localhost:6379
+2026-10-14 15:41:25.768 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 15:41:25.771 | INFO     | src.core.tracing:enable_tracing:31 - LangSmith API key not configured — tracing disabled
+2026-10-14 15:41:31.655 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'web_search'.
+2026-10-14 15:41:31.721 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'send_stk_push'.
+2026-10-14 15:41:31.723 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_transaction_status'.
+2026-10-14 15:41:32.670 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 15:41:32.811 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'save_customer_fact'.
+2026-10-14 15:41:32.812 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_customer_preferences'.
+2026-10-14 15:41:32.813 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'update_conversation_summary'.
+2026-10-14 15:41:32.815 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'notify_owner'.
+2026-10-14 15:41:32.816 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_payment_history'.
+2026-10-14 15:41:32.820 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_past_conversations'.
+2026-10-14 15:41:36.950 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_properties'.
+2026-10-14 15:41:36.956 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'semantic_search_properties'.
+2026-10-14 15:41:36.957 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_property_details'.
+2026-10-14 15:41:36.958 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'compare_properties'.
+2026-10-14 15:41:36.971 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'create_property'.
+2026-10-14 15:41:36.982 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'schedule_property_viewing'.
+2026-10-14 15:41:36.983 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_my_scheduled_viewings'.
+2026-10-14 15:41:36.985 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'cancel_property_viewing'.
+2026-10-14 15:41:36.993 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'calculate_mortgage'.
+2026-10-14 15:41:37.001 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_support_contact'.
+2026-10-14 15:41:38.401 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'web_search'
+2026-10-14 15:41:38.412 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'send_stk_push'
+2026-10-14 15:41:38.418 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_transaction_status'
+2026-10-14 15:41:38.427 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'save_customer_fact'
+2026-10-14 15:41:38.434 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_customer_preferences'
+2026-10-14 15:41:38.443 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'update_conversation_summary'
+2026-10-14 15:41:38.453 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'notify_owner'
+2026-10-14 15:41:38.460 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_payment_history'
+2026-10-14 15:41:38.470 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_past_conversations'
+2026-10-14 15:41:38.509 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_properties'
+2026-10-14 15:41:38.542 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'semantic_search_properties'
+2026-10-14 15:41:38.551 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_property_details'
+2026-10-14 15:41:38.559 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'compare_properties'
+2026-10-14 15:41:38.628 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'create_property'
+2026-10-14 15:41:38.641 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'schedule_property_viewing'
+2026-10-14 15:41:38.648 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_my_scheduled_viewings'
+2026-10-14 15:41:38.658 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'cancel_property_viewing'
+2026-10-14 15:41:38.671 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'calculate_mortgage'
+2026-10-14 15:41:38.680 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_support_contact'
+2026-10-14 15:41:38.681 | SUCCESS  | __main__:register_all_tools:117 - MCP: registered 19 tools on server
+2026-10-14 15:41:38.682 | INFO     | __main__:run_stdio:152 - Starting Simon MCP server (stdio transport)
+2026-10-14 20:26:34.338 | INFO     | src.core.redis:<module>:36 - Redis client initialised | url=redis://localhost:6379
+2026-10-14 20:26:34.548 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 20:26:34.550 | INFO     | src.core.tracing:enable_tracing:31 - LangSmith API key not configured — tracing disabled
+2026-10-14 20:26:36.763 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'web_search'.
+2026-10-14 20:26:36.790 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'send_stk_push'.
+2026-10-14 20:26:36.791 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_transaction_status'.
+2026-10-14 20:26:37.134 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 20:26:37.187 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'save_customer_fact'.
+2026-10-14 20:26:37.188 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_customer_preferences'.
+2026-10-14 20:26:37.189 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'update_conversation_summary'.
+2026-10-14 20:26:37.189 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'notify_owner'.
+2026-10-14 20:26:37.190 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_payment_history'.
+2026-10-14 20:26:37.191 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_past_conversations'.
+2026-10-14 20:26:38.761 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_properties'.
+2026-10-14 20:26:38.764 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'semantic_search_properties'.
+2026-10-14 20:26:38.765 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_property_details'.
+2026-10-14 20:26:38.765 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'compare_properties'.
+2026-10-14 20:26:38.773 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'create_property'.
+2026-10-14 20:26:38.778 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'schedule_property_viewing'.
+2026-10-14 20:26:38.779 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_my_scheduled_viewings'.
+2026-10-14 20:26:38.779 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'cancel_property_viewing'.
+2026-10-14 20:26:38.783 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'calculate_mortgage'.
+2026-10-14 20:26:38.786 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_support_contact'.
+2026-10-14 20:26:39.368 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'web_search'
+2026-10-14 20:26:39.370 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'send_stk_push'
+2026-10-14 20:26:39.372 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_transaction_status'
+2026-10-14 20:26:39.375 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'save_customer_fact'
+2026-10-14 20:26:39.377 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_customer_preferences'
+2026-10-14 20:26:39.379 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'update_conversation_summary'
+2026-10-14 20:26:39.381 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'notify_owner'
+2026-10-14 20:26:39.382 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_payment_history'
+2026-10-14 20:26:39.385 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_past_conversations'
+2026-10-14 20:26:39.393 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_properties'
+2026-10-14 20:26:39.398 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'semantic_search_properties'
+2026-10-14 20:26:39.400 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_property_details'
+2026-10-14 20:26:39.402 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'compare_properties'
+2026-10-14 20:26:39.413 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'create_property'
+2026-10-14 20:26:39.416 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'schedule_property_viewing'
+2026-10-14 20:26:39.418 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_my_scheduled_viewings'
+2026-10-14 20:26:39.420 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'cancel_property_viewing'
+2026-10-14 20:26:39.422 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'calculate_mortgage'
+2026-10-14 20:26:39.425 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_support_contact'
+2026-10-14 20:26:39.425 | SUCCESS  | __main__:register_all_tools:117 - MCP: registered 19 tools on server
+2026-10-14 20:26:39.425 | INFO     | __main__:run_stdio:152 - Starting Simon MCP server (stdio transport)
+2026-10-14 21:42:32.793 | INFO     | src.core.redis:<module>:36 - Redis client initialised | url=redis://localhost:6379
+2026-10-14 21:42:33.136 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 21:42:33.138 | INFO     | src.core.tracing:enable_tracing:31 - LangSmith API key not configured — tracing disabled
+2026-10-14 21:42:36.941 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'web_search'.
+2026-10-14 21:42:36.983 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'send_stk_push'.
+2026-10-14 21:42:36.984 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_transaction_status'.
+2026-10-14 21:42:37.538 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 21:42:37.619 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'save_customer_fact'.
+2026-10-14 21:42:37.620 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_customer_preferences'.
+2026-10-14 21:42:37.622 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'update_conversation_summary'.
+2026-10-14 21:42:37.623 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'notify_owner'.
+2026-10-14 21:42:37.624 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_payment_history'.
+2026-10-14 21:42:37.626 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_past_conversations'.
+2026-10-14 21:42:40.041 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_properties'.
+2026-10-14 21:42:40.049 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'semantic_search_properties'.
+2026-10-14 21:42:40.050 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_property_details'.
+2026-10-14 21:42:40.052 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'compare_properties'.
+2026-10-14 21:42:40.067 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'create_property'.
+2026-10-14 21:42:40.074 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'schedule_property_viewing'.
+2026-10-14 21:42:40.075 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_my_scheduled_viewings'.
+2026-10-14 21:42:40.076 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'cancel_property_viewing'.
+2026-10-14 21:42:40.082 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'calculate_mortgage'.
+2026-10-14 21:42:40.087 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_support_contact'.
+2026-10-14 21:42:40.954 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'web_search'
+2026-10-14 21:42:40.958 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'send_stk_push'
+2026-10-14 21:42:40.960 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_transaction_status'
+2026-10-14 21:42:40.964 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'save_customer_fact'
+2026-10-14 21:42:40.967 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_customer_preferences'
+2026-10-14 21:42:40.972 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'update_conversation_summary'
+2026-10-14 21:42:40.975 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'notify_owner'
+2026-10-14 21:42:40.977 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_payment_history'
+2026-10-14 21:42:40.982 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_past_conversations'
+2026-10-14 21:42:40.994 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_properties'
+2026-10-14 21:42:41.002 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'semantic_search_properties'
+2026-10-14 21:42:41.005 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_property_details'
+2026-10-14 21:42:41.008 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'compare_properties'
+2026-10-14 21:42:41.029 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'create_property'
+2026-10-14 21:42:41.035 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'schedule_property_viewing'
+2026-10-14 21:42:41.038 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_my_scheduled_viewings'
+2026-10-14 21:42:41.042 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'cancel_property_viewing'
+2026-10-14 21:42:41.046 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'calculate_mortgage'
+2026-10-14 21:42:41.050 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_support_contact'
+2026-10-14 21:42:41.050 | SUCCESS  | __main__:register_all_tools:117 - MCP: registered 19 tools on server
+2026-10-14 21:42:41.051 | INFO     | __main__:run_stdio:152 - Starting Simon MCP server (stdio transport)
+2026-10-14 21:45:28.009 | INFO     | src.core.redis:<module>:36 - Redis client initialised | url=redis://localhost:6379
+2026-10-14 21:45:28.294 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 21:45:28.296 | INFO     | src.core.tracing:enable_tracing:31 - LangSmith API key not configured — tracing disabled
+2026-10-14 21:45:30.567 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'web_search'.
+2026-10-14 21:45:30.597 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'send_stk_push'.
+2026-10-14 21:45:30.598 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_transaction_status'.
+2026-10-14 21:45:30.988 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 21:45:31.058 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'save_customer_fact'.
+2026-10-14 21:45:31.059 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_customer_preferences'.
+2026-10-14 21:45:31.060 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'update_conversation_summary'.
+2026-10-14 21:45:31.061 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'notify_owner'.
+2026-10-14 21:45:31.062 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_payment_history'.
+2026-10-14 21:45:31.064 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_past_conversations'.
+2026-10-14 21:45:33.258 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_properties'.
+2026-10-14 21:45:33.265 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'semantic_search_properties'.
+2026-10-14 21:45:33.267 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_property_details'.
+2026-10-14 21:45:33.268 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'compare_properties'.
+2026-10-14 21:45:33.289 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'create_property'.
+2026-10-14 21:45:33.303 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'schedule_property_viewing'.
+2026-10-14 21:45:33.305 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_my_scheduled_viewings'.
+2026-10-14 21:45:33.306 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'cancel_property_viewing'.
+2026-10-14 21:45:33.314 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'calculate_mortgage'.
+2026-10-14 21:45:33.323 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_support_contact'.
+2026-10-14 21:45:35.283 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'web_search'
+2026-10-14 21:45:35.290 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'send_stk_push'
+2026-10-14 21:45:35.295 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_transaction_status'
+2026-10-14 21:45:35.303 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'save_customer_fact'
+2026-10-14 21:45:35.308 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_customer_preferences'
+2026-10-14 21:45:35.314 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'update_conversation_summary'
+2026-10-14 21:45:35.320 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'notify_owner'
+2026-10-14 21:45:35.325 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_payment_history'
+2026-10-14 21:45:35.334 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_past_conversations'
+2026-10-14 21:45:35.359 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_properties'
+2026-10-14 21:45:35.376 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'semantic_search_properties'
+2026-10-14 21:45:35.381 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_property_details'
+2026-10-14 21:45:35.387 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'compare_properties'
+2026-10-14 21:45:35.422 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'create_property'
+2026-10-14 21:45:35.429 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'schedule_property_viewing'
+2026-10-14 21:45:35.433 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_my_scheduled_viewings'
+2026-10-14 21:45:35.438 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'cancel_property_viewing'
+2026-10-14 21:45:35.445 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'calculate_mortgage'
+2026-10-14 21:45:35.450 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_support_contact'
+2026-10-14 21:45:35.450 | SUCCESS  | __main__:register_all_tools:117 - MCP: registered 19 tools on server
+2026-10-14 21:45:35.451 | INFO     | __main__:run_stdio:152 - Starting Simon MCP server (stdio transport)
+2026-10-14 22:01:50.060 | INFO     | src.core.redis:<module>:36 - Redis client initialised | url=redis://localhost:6379
+2026-10-14 22:01:50.438 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 22:01:50.440 | INFO     | src.core.tracing:enable_tracing:31 - LangSmith API key not configured — tracing disabled
+2026-10-14 22:01:53.483 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'web_search'.
+2026-10-14 22:01:53.526 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'send_stk_push'.
+2026-10-14 22:01:53.528 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_transaction_status'.
+2026-10-14 22:01:54.072 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 22:01:54.142 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'save_customer_fact'.
+2026-10-14 22:01:54.143 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_customer_preferences'.
+2026-10-14 22:01:54.144 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'update_conversation_summary'.
+2026-10-14 22:01:54.145 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'notify_owner'.
+2026-10-14 22:01:54.146 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_payment_history'.
+2026-10-14 22:01:54.148 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_past_conversations'.
+2026-10-14 22:01:55.923 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_properties'.
+2026-10-14 22:01:55.926 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'semantic_search_properties'.
+2026-10-14 22:01:55.927 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_property_details'.
+2026-10-14 22:01:55.928 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'compare_properties'.
+2026-10-14 22:01:55.935 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'create_property'.
+2026-10-14 22:01:55.941 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'schedule_property_viewing'.
+2026-10-14 22:01:55.942 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_my_scheduled_viewings'.
+2026-10-14 22:01:55.942 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'cancel_property_viewing'.
+2026-10-14 22:01:55.946 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'calculate_mortgage'.
+2026-10-14 22:01:55.949 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_support_contact'.
+2026-10-14 22:01:56.532 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'web_search'
+2026-10-14 22:01:56.535 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'send_stk_push'
+2026-10-14 22:01:56.537 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_transaction_status'
+2026-10-14 22:01:56.540 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'save_customer_fact'
+2026-10-14 22:01:56.542 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_customer_preferences'
+2026-10-14 22:01:56.544 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'update_conversation_summary'
+2026-10-14 22:01:56.546 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'notify_owner'
+2026-10-14 22:01:56.548 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_payment_history'
+2026-10-14 22:01:56.550 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_past_conversations'
+2026-10-14 22:01:56.558 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_properties'
+2026-10-14 22:01:56.564 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'semantic_search_properties'
+2026-10-14 22:01:56.566 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_property_details'
+2026-10-14 22:01:56.568 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'compare_properties'
+2026-10-14 22:01:56.580 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'create_property'
+2026-10-14 22:01:56.583 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'schedule_property_viewing'
+2026-10-14 22:01:56.585 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_my_scheduled_viewings'
+2026-10-14 22:01:56.587 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'cancel_property_viewing'
+2026-10-14 22:01:56.590 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'calculate_mortgage'
+2026-10-14 22:01:56.593 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_support_contact'
+2026-10-14 22:01:56.593 | SUCCESS  | __main__:register_all_tools:117 - MCP: registered 19 tools on server
+2026-10-14 22:01:56.593 | INFO     | __main__:run_stdio:152 - Starting Simon MCP server (stdio transport)
+2026-10-14 22:23:16.769 | INFO     | src.core.redis:<module>:36 - Redis client initialised | url=redis://localhost:6379
+2026-10-14 22:23:17.347 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 22:23:17.350 | INFO     | src.core.tracing:enable_tracing:31 - LangSmith API key not configured — tracing disabled
+2026-10-14 22:23:24.379 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'web_search'.
+2026-10-14 22:23:24.511 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'send_stk_push'.
+2026-10-14 22:23:24.515 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_transaction_status'.
+2026-10-14 22:23:26.710 | WARNING  | src.core.clients:get_supabase_client:79 - Supabase URL or key not configured — database features disabled
+2026-10-14 22:23:26.960 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'save_customer_fact'.
+2026-10-14 22:23:26.962 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_customer_preferences'.
+2026-10-14 22:23:26.965 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'update_conversation_summary'.
+2026-10-14 22:23:26.968 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'notify_owner'.
+2026-10-14 22:23:26.971 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'check_payment_history'.
+2026-10-14 22:23:26.977 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_past_conversations'.
+2026-10-14 22:23:32.780 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'search_properties'.
+2026-10-14 22:23:32.790 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'semantic_search_properties'.
+2026-10-14 22:23:32.791 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_property_details'.
+2026-10-14 22:23:32.793 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'compare_properties'.
+2026-10-14 22:23:32.817 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'create_property'.
+2026-10-14 22:23:32.838 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'schedule_property_viewing'.
+2026-10-14 22:23:32.840 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_my_scheduled_viewings'.
+2026-10-14 22:23:32.841 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'cancel_property_viewing'.
+2026-10-14 22:23:32.850 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'calculate_mortgage'.
+2026-10-14 22:23:32.857 | SUCCESS  | src.tools.registry:decorator:69 - Registered tool 'get_support_contact'.
+2026-10-14 22:23:34.889 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'web_search'
+2026-10-14 22:23:34.899 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'send_stk_push'
+2026-10-14 22:23:34.907 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_transaction_status'
+2026-10-14 22:23:34.916 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'save_customer_fact'
+2026-10-14 22:23:34.923 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_customer_preferences'
+2026-10-14 22:23:34.932 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'update_conversation_summary'
+2026-10-14 22:23:34.942 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'notify_owner'
+2026-10-14 22:23:34.948 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'check_payment_history'
+2026-10-14 22:23:34.961 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_past_conversations'
+2026-10-14 22:23:34.999 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'search_properties'
+2026-10-14 22:23:35.025 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'semantic_search_properties'
+2026-10-14 22:23:35.034 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_property_details'
+2026-10-14 22:23:35.044 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'compare_properties'
+2026-10-14 22:23:35.111 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'create_property'
+2026-10-14 22:23:35.126 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'schedule_property_viewing'
+2026-10-14 22:23:35.135 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_my_scheduled_viewings'
+2026-10-14 22:23:35.144 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'cancel_property_viewing'
+2026-10-14 22:23:35.157 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'calculate_mortgage'
+2026-10-14 22:23:35.169 | INFO     | __main__:register_all_tools:113 - MCP: registered tool 'get_support_contact'
+2026-10-14 22:23:35.170 | SUCCESS  | __main__:register_all_tools:117 - MCP: registered 19 tools on server
+2026-10-14 22:23:35.171 | INFO     | __main__:run_stdio:152 - Starting Simon MCP server (stdio transport)

@@ -1,0 +1,121 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: THE COLLECTION
+      - heading "Properties" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Verified premium listings across Kenya. Every price, every fact, straight from the published record.
+    - region "Search filters" [ref=e8]:
+      - generic [ref=e9]:
+        - searchbox "Search by title" [ref=e10]
+        - group "Offer kind" [ref=e11]:
+          - button "For Sale" [active] [pressed] [ref=e12]
+          - button "For Rent" [ref=e13]
+          - button "Shortlet" [ref=e14]
+        - combobox "County" [ref=e15]:
+          - option "All counties"
+          - option "Mombasa"
+          - option "Nairobi" [selected]
+          - option "Nakuru"
+        - combobox "Property type" [ref=e16]:
+          - option "All types" [selected]
+          - option "apartment"
+          - option "house"
+          - option "land"
+          - option "townhouse"
+          - option "villa"
+        - combobox "Minimum bedrooms" [ref=e17]:
+          - 'option "Beds: any" [selected]'
+          - option "1+"
+          - option "2+"
+          - option "3+"
+          - option "4+"
+          - option "5+"
+        - combobox "Sort order" [ref=e18]:
+          - option "Newest" [selected]
+          - option "Price ↑"
+          - option "Price ↓"
+          - option "Beds ↓"
+        - paragraph [ref=e19]: 5 LISTINGS
+    - generic [ref=e21]:
+      - link "IMAGERY PENDING sale Ksh 145,000,000 Karen — 5-Bedroom Standalone Villa on Half an Acre Karen, Nairobi, Nairobi 5 bd 6 ba 620 m² 2023 m² plot villa" [ref=e22] [cursor=pointer]:
+        - /url: /property/00000000-0000-0000-0000-000000000b01
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - generic [aria-hidden] [ref=e25]: LUXONN
+            - generic [ref=e26]: IMAGERY PENDING
+          - generic [ref=e27]: sale
+        - generic [ref=e28]:
+          - paragraph [ref=e29]: Ksh 145,000,000
+          - heading "Karen — 5-Bedroom Standalone Villa on Half an Acre" [level=3] [ref=e30]
+          - paragraph [ref=e31]: Karen, Nairobi, Nairobi
+          - generic [ref=e32]:
+            - generic [ref=e33]: 5 bd
+            - generic [ref=e34]: 6 ba
+            - generic [ref=e35]: 620 m²
+            - generic [ref=e36]: 2023 m² plot
+            - generic [ref=e37]: villa
+      - link "IMAGERY PENDING sale Ksh 89,500,000 Runda — 4-Bedroom Townhouse in a Gated Court of Six Runda, Nairobi, Nairobi 4 bd 4 ba 340 m² townhouse" [ref=e38] [cursor=pointer]:
+        - /url: /property/00000000-0000-0000-0000-000000000b02
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - generic [aria-hidden] [ref=e41]: LUXONN
+            - generic [ref=e42]: IMAGERY PENDING
+          - generic [ref=e43]: sale
+        - generic [ref=e44]:
+          - paragraph [ref=e45]: Ksh 89,500,000
+          - heading "Runda — 4-Bedroom Townhouse in a Gated Court of Six" [level=3] [ref=e46]
+          - paragraph [ref=e47]: Runda, Nairobi, Nairobi
+          - generic [ref=e48]:
+            - generic [ref=e49]: 4 bd
+            - generic [ref=e50]: 4 ba
+            - generic [ref=e51]: 340 m²
+            - generic [ref=e52]: townhouse
+      - link "IMAGERY PENDING sale Ksh 42,000,000 Westlands — 3-Bedroom Apartment with Rift Views, 8th Floor Westlands, Nairobi, Nairobi 3 bd 3 ba 210 m² apartment" [ref=e53] [cursor=pointer]:
+        - /url: /property/00000000-0000-0000-0000-000000000b03
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - generic [aria-hidden] [ref=e56]: LUXONN
+            - generic [ref=e57]: IMAGERY PENDING
+          - generic [ref=e58]: sale
+        - generic [ref=e59]:
+          - paragraph [ref=e60]: Ksh 42,000,000
+          - heading "Westlands — 3-Bedroom Apartment with Rift Views, 8th Floor" [level=3] [ref=e61]
+          - paragraph [ref=e62]: Westlands, Nairobi, Nairobi
+          - generic [ref=e63]:
+            - generic [ref=e64]: 3 bd
+            - generic [ref=e65]: 3 ba
+            - generic [ref=e66]: 210 m²
+            - generic [ref=e67]: apartment
+      - link "IMAGERY PENDING sale Ksh 68,000,000 Lavington — 4-Bedroom Family Townhouse on a Quiet Lane Lavington, Nairobi, Nairobi 4 bd 4 ba 380 m² 900 m² plot townhouse" [ref=e68] [cursor=pointer]:
+        - /url: /property/00000000-0000-0000-0000-000000000b04
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [aria-hidden] [ref=e71]: LUXONN
+            - generic [ref=e72]: IMAGERY PENDING
+          - generic [ref=e73]: sale
+        - generic [ref=e74]:
+          - paragraph [ref=e75]: Ksh 68,000,000
+          - heading "Lavington — 4-Bedroom Family Townhouse on a Quiet Lane" [level=3] [ref=e76]
+          - paragraph [ref=e77]: Lavington, Nairobi, Nairobi
+          - generic [ref=e78]:
+            - generic [ref=e79]: 4 bd
+            - generic [ref=e80]: 4 ba
+            - generic [ref=e81]: 380 m²
+            - generic [ref=e82]: 900 m² plot
+            - generic [ref=e83]: townhouse
+      - link "IMAGERY PENDING sale Ksh 55,000,000 Runda — Half-Acre Level Plot Ready for Development Runda, Nairobi, Nairobi 2023 m² plot land" [ref=e84] [cursor=pointer]:
+        - /url: /property/00000000-0000-0000-0000-000000000b05
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - generic [aria-hidden] [ref=e87]: LUXONN
+            - generic [ref=e88]: IMAGERY PENDING
+          - generic [ref=e89]: sale
+        - generic [ref=e90]:
+          - paragraph [ref=e91]: Ksh 55,000,000
+          - heading "Runda — Half-Acre Level Plot Ready for Development" [level=3] [ref=e92]
+          - paragraph [ref=e93]: Runda, Nairobi, Nairobi
+          - generic [ref=e94]:
+            - generic [ref=e95]: 2023 m² plot
+            - generic [ref=e96]: land
+  - button "Open Next.js Dev Tools" [ref=e181] [cursor=pointer]
+  - alert [ref=e185]: Properties

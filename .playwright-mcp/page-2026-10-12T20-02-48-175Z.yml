@@ -1,0 +1,4 @@
+- generic [active] [ref=f7e1]:
+  - main [ref=f7e2]:
+    - generic "Loading property" [ref=f7e3]
+  - button "Open Next.js Dev Tools" [ref=f7e13] [cursor=pointer]

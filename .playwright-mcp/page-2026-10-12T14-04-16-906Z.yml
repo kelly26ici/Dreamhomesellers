@@ -1,0 +1,366 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation [ref=e3]:
+      - button "LUXONN home" [ref=e4]:
+        - generic [ref=e5]: L
+        - generic [ref=e7]: LUXONN
+      - list [ref=e8]:
+        - listitem [ref=e9]:
+          - button "Home" [ref=e10]
+        - listitem [ref=e11]:
+          - button "Properties" [ref=e12]
+        - listitem [ref=e13]:
+          - button "About" [ref=e14]
+        - listitem [ref=e15]:
+          - button "Services" [ref=e16]
+        - listitem [ref=e17]:
+          - button "Contact" [ref=e18]
+      - generic [ref=e19]:
+        - button "Search" [ref=e20]
+        - link "Sign In" [ref=e24] [cursor=pointer]:
+          - /url: /login
+        - button "Book Viewing" [ref=e25]
+  - main [ref=e26]:
+    - generic [ref=e30]:
+      - heading "LUXURY REDEFINED" [level=1] [ref=e31]:
+        - generic [ref=e32]: LUXURY
+        - generic [ref=e33]: REDEFINED
+      - paragraph [ref=e34]: Where architectural mastery meets quiet privilege. A private collection of the world’s most exceptional residences, curated for those who accept nothing less.
+      - generic [ref=e35]:
+        - link "Explore Collection" [ref=e36] [cursor=pointer]:
+          - /url: "#properties"
+        - link "Book a Private Viewing" [ref=e37] [cursor=pointer]:
+          - /url: "#contact"
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - heading "FEATURED PROPERTIES" [level=2] [ref=e40]
+        - paragraph [ref=e41]: Three addresses that define their skylines. Each residence is privately presented to pre-qualified clients.
+      - generic [ref=e42]:
+        - article [ref=e43]:
+          - img "Skyline Penthouse, Dubai, UAE" [ref=e44]
+          - generic [ref=e46]:
+            - paragraph [ref=e47]: $14.2M
+            - heading "Skyline Penthouse" [level=3] [ref=e48]
+            - paragraph [ref=e49]: Dubai, UAE
+        - article [ref=e53]:
+          - img "Fifth Avenue Duplex, New York, USA" [ref=e54]
+          - generic [ref=e56]:
+            - paragraph [ref=e57]: $22.5M
+            - heading "Fifth Avenue Duplex" [level=3] [ref=e58]
+            - paragraph [ref=e59]: New York, USA
+        - article [ref=e63]:
+          - img "Oceanfront Villa, Miami, USA" [ref=e64]
+          - generic [ref=e66]:
+            - paragraph [ref=e67]: $18.7M
+            - heading "Oceanfront Villa" [level=3] [ref=e68]
+            - paragraph [ref=e69]: Miami, USA
+    - generic [ref=e74]:
+      - img "Modern luxury residence with glass walls at dusk" [ref=e77]
+      - generic [ref=e78]:
+        - heading "ARCHITECTURAL MASTERPIECES" [level=2] [ref=e79]
+        - paragraph [ref=e80]: "LUXONN exists for one reason: to place extraordinary people inside extraordinary spaces. We travel the world to find residences that are not merely built, but composed — homes where light, material, and proportion work in concert."
+        - paragraph [ref=e81]: Our advisors do not sell listings. They curate introductions between discerning buyers and the properties that deserve them, handling every negotiation with absolute discretion.
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - paragraph [ref=e84]: 25+
+            - paragraph [ref=e85]: Years of Expertise
+          - generic [ref=e86]:
+            - paragraph [ref=e87]: 4B+
+            - paragraph [ref=e88]: In Sales Volume
+          - generic [ref=e89]:
+            - paragraph [ref=e90]: "12"
+            - paragraph [ref=e91]: Global Locations
+    - generic [ref=e93]:
+      - generic [ref=e94]:
+        - heading "THE COLLECTION" [level=2] [ref=e95]
+        - paragraph [ref=e96]: Five residences, five statements. Keep scrolling.
+      - figure [ref=e97]:
+        - img "Ciel Terrace, Côte d'Azur, France" [ref=e98]
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Ciel Terrace
+          - paragraph [ref=e102]: Côte d'Azur, France
+      - figure [ref=e103]:
+        - img "Marina House, Monaco" [ref=e104]
+        - generic [ref=e106]:
+          - paragraph [ref=e107]: Marina House
+          - paragraph [ref=e108]: Monaco
+      - figure [ref=e109]:
+        - img "Summit Lodge, Aspen, USA" [ref=e110]
+        - generic [ref=e112]:
+          - paragraph [ref=e113]: Summit Lodge
+          - paragraph [ref=e114]: Aspen, USA
+      - figure [ref=e115]:
+        - img "Aurora Penthouse, Oslo, Norway" [ref=e116]
+        - generic [ref=e118]:
+          - paragraph [ref=e119]: Aurora Penthouse
+          - paragraph [ref=e120]: Oslo, Norway
+      - figure [ref=e121]:
+        - img "Villa Serena, Lake Como, Italy" [ref=e122]
+        - generic [ref=e124]:
+          - paragraph [ref=e125]: Villa Serena
+          - paragraph [ref=e126]: Lake Como, Italy
+    - generic [ref=e127]:
+      - generic [ref=e128]:
+        - heading "WHAT WE DO" [level=2] [ref=e129]
+        - paragraph [ref=e130]: Four disciplines, one standard. Everything we take on is handled end-to-end by a single dedicated advisor.
+      - generic [ref=e131]:
+        - article [ref=e132]:
+          - heading "Property Buying" [level=3] [ref=e136]
+          - paragraph [ref=e137]: Off-market access and private previews of residences matched to your brief, with every negotiation handled for you.
+        - article [ref=e138]:
+          - heading "Property Selling" [level=3] [ref=e142]
+          - paragraph [ref=e143]: Presentation, photography, and placement that position your residence to the right buyers — quietly and globally.
+        - article [ref=e144]:
+          - heading "Investment Advisory" [level=3] [ref=e148]
+          - paragraph [ref=e149]: Portfolio guidance across gateway cities, grounded in local data and long-term value rather than momentum.
+        - article [ref=e150]:
+          - heading "Interior Design" [level=3] [ref=e155]
+          - paragraph [ref=e156]: Curated interiors that honor a property's architecture, from single-room refreshes to complete commissions.
+    - generic [ref=e158]:
+      - generic [ref=e159]:
+        - heading "IN THEIR WORDS" [level=2] [ref=e160]
+        - paragraph [ref=e161]: Private clients, collectors, and estate owners on what it is like to be represented by LUXONN.
+      - generic [ref=e164]:
+        - generic [ref=e166]:
+          - generic [ref=e168]:
+            - paragraph [ref=e173]: They found us a penthouse we didn't know existed and negotiated terms we didn't think possible. Absolute discretion from start to finish.
+            - generic [ref=e174]:
+              - img "Amara Okafor" [ref=e176]
+              - generic [ref=e177]:
+                - generic [ref=e178]: Amara Okafor
+                - generic [ref=e179]: Private Client, Dubai
+          - generic [ref=e181]:
+            - paragraph [ref=e186]: Every property they presented was worth the flight. You stop browsing listings and start choosing between masterpieces.
+            - generic [ref=e187]:
+              - img "Daniel Roth" [ref=e189]
+              - generic [ref=e190]:
+                - generic [ref=e191]: Daniel Roth
+                - generic [ref=e192]: Collector, New York
+          - generic [ref=e194]:
+            - paragraph [ref=e199]: The off-market access alone justified the retainer. Our villa in Cap Ferrat never touched a public listing.
+            - generic [ref=e200]:
+              - img "Isabelle Marchand" [ref=e202]
+              - generic [ref=e203]:
+                - generic [ref=e204]: Isabelle Marchand
+                - generic [ref=e205]: Villa Owner, Côte d'Azur
+          - generic [ref=e207]:
+            - paragraph [ref=e212]: Twelve acquisitions across three gateway cities, each one sourced, vetted and closed inside a month.
+            - generic [ref=e213]:
+              - img "Khalid Al-Rashid" [ref=e215]
+              - generic [ref=e216]:
+                - generic [ref=e217]: Khalid Al-Rashid
+                - generic [ref=e218]: Investor, Riyadh
+          - generic [ref=e220]:
+            - paragraph [ref=e225]: They understand that a house on Como is not a transaction. It is an inheritance you choose for your grandchildren.
+            - generic [ref=e226]:
+              - img "Sofia Bianchi" [ref=e228]
+              - generic [ref=e229]:
+                - generic [ref=e230]: Sofia Bianchi
+                - generic [ref=e231]: Art Collector, Lake Como
+          - generic [ref=e233]:
+            - paragraph [ref=e238]: They found us a penthouse we didn't know existed and negotiated terms we didn't think possible. Absolute discretion from start to finish.
+            - generic [ref=e239]:
+              - img "Amara Okafor" [ref=e241]
+              - generic [ref=e242]:
+                - generic [ref=e243]: Amara Okafor
+                - generic [ref=e244]: Private Client, Dubai
+          - generic [ref=e246]:
+            - paragraph [ref=e251]: Every property they presented was worth the flight. You stop browsing listings and start choosing between masterpieces.
+            - generic [ref=e252]:
+              - img "Daniel Roth" [ref=e254]
+              - generic [ref=e255]:
+                - generic [ref=e256]: Daniel Roth
+                - generic [ref=e257]: Collector, New York
+          - generic [ref=e259]:
+            - paragraph [ref=e264]: The off-market access alone justified the retainer. Our villa in Cap Ferrat never touched a public listing.
+            - generic [ref=e265]:
+              - img "Isabelle Marchand" [ref=e267]
+              - generic [ref=e268]:
+                - generic [ref=e269]: Isabelle Marchand
+                - generic [ref=e270]: Villa Owner, Côte d'Azur
+          - generic [ref=e272]:
+            - paragraph [ref=e277]: Twelve acquisitions across three gateway cities, each one sourced, vetted and closed inside a month.
+            - generic [ref=e278]:
+              - img "Khalid Al-Rashid" [ref=e280]
+              - generic [ref=e281]:
+                - generic [ref=e282]: Khalid Al-Rashid
+                - generic [ref=e283]: Investor, Riyadh
+          - generic [ref=e285]:
+            - paragraph [ref=e290]: They understand that a house on Como is not a transaction. It is an inheritance you choose for your grandchildren.
+            - generic [ref=e291]:
+              - img "Sofia Bianchi" [ref=e293]
+              - generic [ref=e294]:
+                - generic [ref=e295]: Sofia Bianchi
+                - generic [ref=e296]: Art Collector, Lake Como
+        - generic [ref=e299]:
+          - generic [ref=e301]:
+            - paragraph [ref=e306]: Selling a family estate is emotional. They handled the buyers, the paperwork and the press with absolute grace.
+            - generic [ref=e307]:
+              - img "James Whitmore" [ref=e309]
+              - generic [ref=e310]:
+                - generic [ref=e311]: James Whitmore
+                - generic [ref=e312]: Estate Owner, London
+          - generic [ref=e314]:
+            - paragraph [ref=e319]: Discreet, precise, and endlessly patient. Nine months of viewing, zero pressure, and the perfect penthouse in the end.
+            - generic [ref=e320]:
+              - img "Nikolai Petrov" [ref=e322]
+              - generic [ref=e323]:
+                - generic [ref=e324]: Nikolai Petrov
+                - generic [ref=e325]: Private Client, Monaco
+          - generic [ref=e327]:
+            - paragraph [ref=e332]: Their valuation of my hotel was forty percent above every other agency's. They were also the only ones who were right.
+            - generic [ref=e333]:
+              - img "Camille Duret" [ref=e335]
+              - generic [ref=e336]:
+                - generic [ref=e337]: Camille Duret
+                - generic [ref=e338]: Boutique Hotelier, Paris
+          - generic [ref=e340]:
+            - paragraph [ref=e345]: One advisor, end to end, across two jurisdictions. That is not a service I expected to find anywhere.
+            - generic [ref=e346]:
+              - img "Richard Hale" [ref=e348]
+              - generic [ref=e349]:
+                - generic [ref=e350]: Richard Hale
+                - generic [ref=e351]: Family Office Principal, Zurich
+          - generic [ref=e353]:
+            - paragraph [ref=e358]: We handed them a bare plot in Abu Dhabi. They returned a sold-out tower with a waiting list. Enough said.
+            - generic [ref=e359]:
+              - img "Leila Haddad" [ref=e361]
+              - generic [ref=e362]:
+                - generic [ref=e363]: Leila Haddad
+                - generic [ref=e364]: Developer, Abu Dhabi
+          - generic [ref=e366]:
+            - paragraph [ref=e371]: Selling a family estate is emotional. They handled the buyers, the paperwork and the press with absolute grace.
+            - generic [ref=e372]:
+              - img "James Whitmore" [ref=e374]
+              - generic [ref=e375]:
+                - generic [ref=e376]: James Whitmore
+                - generic [ref=e377]: Estate Owner, London
+          - generic [ref=e379]:
+            - paragraph [ref=e384]: Discreet, precise, and endlessly patient. Nine months of viewing, zero pressure, and the perfect penthouse in the end.
+            - generic [ref=e385]:
+              - img "Nikolai Petrov" [ref=e387]
+              - generic [ref=e388]:
+                - generic [ref=e389]: Nikolai Petrov
+                - generic [ref=e390]: Private Client, Monaco
+          - generic [ref=e392]:
+            - paragraph [ref=e397]: Their valuation of my hotel was forty percent above every other agency's. They were also the only ones who were right.
+            - generic [ref=e398]:
+              - img "Camille Duret" [ref=e400]
+              - generic [ref=e401]:
+                - generic [ref=e402]: Camille Duret
+                - generic [ref=e403]: Boutique Hotelier, Paris
+          - generic [ref=e405]:
+            - paragraph [ref=e410]: One advisor, end to end, across two jurisdictions. That is not a service I expected to find anywhere.
+            - generic [ref=e411]:
+              - img "Richard Hale" [ref=e413]
+              - generic [ref=e414]:
+                - generic [ref=e415]: Richard Hale
+                - generic [ref=e416]: Family Office Principal, Zurich
+          - generic [ref=e418]:
+            - paragraph [ref=e423]: We handed them a bare plot in Abu Dhabi. They returned a sold-out tower with a waiting list. Enough said.
+            - generic [ref=e424]:
+              - img "Leila Haddad" [ref=e426]
+              - generic [ref=e427]:
+                - generic [ref=e428]: Leila Haddad
+                - generic [ref=e429]: Developer, Abu Dhabi
+    - generic [ref=e430]:
+      - heading "BEGIN THE CONVERSATION" [level=2] [ref=e432]
+      - generic [ref=e433]:
+        - generic [ref=e434]:
+          - paragraph [ref=e435]: Tell us what you are looking for — or what you are ready to part with. An advisor responds within one business day.
+          - generic [ref=e440]:
+            - paragraph [ref=e441]: Office
+            - paragraph [ref=e442]: One Hyde Park, London SW1X 7NA
+          - generic [ref=e446]:
+            - paragraph [ref=e447]: Phone
+            - paragraph [ref=e448]: +44 20 7946 0958
+          - generic [ref=e453]:
+            - paragraph [ref=e454]: Email
+            - paragraph [ref=e455]: private@luxonn.com
+          - paragraph [ref=e460]: Map — One Hyde Park
+        - generic [ref=e461]:
+          - generic [ref=e462]:
+            - textbox "Full Name" [ref=e463]:
+              - /placeholder: " "
+            - generic: Full Name
+          - generic [ref=e464]:
+            - textbox "Email Address" [ref=e465]:
+              - /placeholder: " "
+            - generic: Email Address
+          - generic [ref=e466]:
+            - textbox "Phone (optional)" [ref=e467]:
+              - /placeholder: " "
+            - generic: Phone (optional)
+          - generic [ref=e468]:
+            - textbox "Your Message" [ref=e469]:
+              - /placeholder: " "
+            - generic: Your Message
+          - button "Send Inquiry" [ref=e470]
+  - button "Chat with Simon, property concierge" [ref=e471]:
+    - generic [ref=e475]:
+      - generic [ref=e476]: PROPERTY CONCIERGE
+      - generic [ref=e477]: CHAT WITH SIMON
+  - dialog [aria-hidden]:
+    - banner:
+      - generic:
+        - generic:
+          - paragraph: PROPERTY CONCIERGE
+          - heading [level=2]: SIMON
+      - generic:
+        - link:
+          - /url: /simon
+        - button
+    - generic:
+      - generic:
+        - status: CONNECTING TO SIMON
+  - contentinfo [ref=e478]:
+    - generic [ref=e479]:
+      - generic [ref=e480]:
+        - generic [ref=e481]:
+          - generic [ref=e482]: L
+          - generic [ref=e484]: LUXONN
+        - paragraph [ref=e485]: A private collection of the world’s most exceptional residences.
+      - navigation "Properties" [ref=e486]:
+        - paragraph [ref=e487]: Properties
+        - list [ref=e488]:
+          - listitem [ref=e489]:
+            - link "Penthouses" [ref=e490] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e491]:
+            - link "Villas" [ref=e492] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e493]:
+            - link "Estates" [ref=e494] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e495]:
+            - link "New Developments" [ref=e496] [cursor=pointer]:
+              - /url: "#"
+      - navigation "Company" [ref=e497]:
+        - paragraph [ref=e498]: Company
+        - list [ref=e499]:
+          - listitem [ref=e500]:
+            - link "About" [ref=e501] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e502]:
+            - link "Advisors" [ref=e503] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e504]:
+            - link "Press" [ref=e505] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e506]:
+            - link "Careers" [ref=e507] [cursor=pointer]:
+              - /url: "#"
+      - navigation "Contact" [ref=e508]:
+        - paragraph [ref=e509]: Contact
+        - list [ref=e510]:
+          - listitem [ref=e511]:
+            - link "private@luxonn.com" [ref=e512] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e513]:
+            - link "+44 20 7 946 0958" [ref=e514] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e515]:
+            - link "One Hyde Park, London" [ref=e516] [cursor=pointer]:
+              - /url: "#"
+    - paragraph [ref=e518]: © 2026 LUXONN. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=e524] [cursor=pointer]

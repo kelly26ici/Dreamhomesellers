@@ -1,0 +1,46 @@
+- generic [active] [ref=f1e1]:
+  - main [ref=f1e2]:
+    - generic [ref=f1e4]:
+      - paragraph [ref=f1e5]: THE COLLECTION
+      - heading "Properties" [level=1] [ref=f1e6]
+      - paragraph [ref=f1e7]: Verified premium listings across Kenya. Every price, every fact, straight from the published record.
+    - region "Search filters" [ref=f1e8]:
+      - generic [ref=f1e9]:
+        - searchbox "Search by title" [ref=f1e10]
+        - group "Offer kind" [ref=f1e11]:
+          - button "For Sale" [ref=f1e12]
+          - button "For Rent" [ref=f1e13]
+          - button "Shortlet" [ref=f1e14]
+        - combobox "County" [ref=f1e15]:
+          - option "All counties" [selected]
+          - option "Mombasa"
+          - option "Nairobi"
+          - option "Nakuru"
+        - combobox "Property type" [ref=f1e16]:
+          - option "All types" [selected]
+          - option "apartment"
+          - option "house"
+          - option "land"
+          - option "townhouse"
+          - option "villa"
+        - combobox "Minimum bedrooms" [ref=f1e17]:
+          - 'option "Beds: any" [selected]'
+          - option "1+"
+          - option "2+"
+          - option "3+"
+          - option "4+"
+          - option "5+"
+        - combobox "Sort order" [ref=f1e18]:
+          - option "Newest" [selected]
+          - option "Price ↑"
+          - option "Price ↓"
+          - option "Beds ↓"
+        - paragraph [ref=f1e19]: 0 LISTINGS
+    - generic [ref=f1e20]:
+      - generic [aria-hidden] [ref=f1e21]: LUXONN
+      - heading "Nothing matches this search" [level=2] [ref=f1e22]
+      - paragraph [ref=f1e23]: Adjust or clear the filters — the collection is small and growing.
+      - link "CLEAR FILTERS" [ref=f1e24] [cursor=pointer]:
+        - /url: /properties
+  - button "Open Next.js Dev Tools" [ref=f1e30] [cursor=pointer]
+  - alert [ref=f1e34]

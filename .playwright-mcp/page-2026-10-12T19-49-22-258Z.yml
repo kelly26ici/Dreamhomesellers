@@ -1,0 +1,9 @@
+- generic [active] [ref=f2e1]:
+  - main [ref=f2e2]:
+    - generic [ref=f2e4]:
+      - paragraph [ref=f2e5]: THE COLLECTION
+      - heading "Properties" [level=1] [ref=f2e6]
+      - paragraph [ref=f2e7]: Verified premium listings across Kenya. Every price, every fact, straight from the published record.
+    - generic "Loading listings" [ref=f2e8]
+  - button "Open Next.js Dev Tools" [ref=f2e22] [cursor=pointer]
+  - alert [ref=f2e26]
