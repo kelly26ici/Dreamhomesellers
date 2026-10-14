@@ -2,8 +2,10 @@
  * Owner-side write model over the migration-0003 domain-command RPCs.
  *
  * The authority model mirrors the read model (see read-model.ts): every
- * call runs AS the signed-in owner through the request-cookie client, and
- * the SECURITY DEFINER RPCs re-check org membership explicitly. The one
+ * call runs AS the signed-in owner through the browser cookie client
+ * (these functions are called from client components; the SECURITY
+ * DEFINER RPCs re-check org membership explicitly, so the browser
+ * client is the safe transport). The one
  * caller-side obligation this module enforces is shape discipline on
  * `content`: only the revision-content fields validate_revision_content
  * knows about, keys in snake_case exactly as the SQL validator reads them.
@@ -17,7 +19,7 @@
  * the single WriteResult union so pages never parse jsonb envelopes.
  */
 
-import { createAuthServerClient } from '@/lib/auth/supabase-server';
+import { getSupabaseBrowserClient } from '@/lib/auth/supabase-browser';
 
 /** The exact content shape validate_revision_content (0003) accepts.
  *  Optional numeric fields may be omitted entirely — the validator only
@@ -125,7 +127,13 @@ async function callWriteRpc(
     | 'withdraw_listing',
   params: Record<string, unknown>,
 ): Promise<{ ok: true; data: Record<string, unknown> } | OwnerRpcError> {
-  const client = await createAuthServerClient();
+  // The RPCs are called as the signed-in owner from client components.
+  // The browser cookie client is the caller identity here (the viewing-
+  // request surface established this pattern); the SECURITY DEFINER RPCs
+  // re-check org membership internally, so the browser client is the safe
+  // transport — the server client would drag next/headers into the browser
+  // bundle and break the client-component import graph.
+  const client = getSupabaseBrowserClient();
 
   const { data, error } = await client.rpc(rpcName, params);
   if (error) {
