@@ -60,7 +60,7 @@ Follow this order when marketplace implementation is authorized. It converts the
 1. Add owner drafting help using a Deep Agent or explicit LangGraph workflow.
 2. Add internal/buyer research workflows where citations and artifacts justify longer agent work.
 3. Add controlled durable preferences, summaries, and optional semantic recall.
-4. Add CRM/calendar/integration consumers from the outbox.
+4. Add CRM/calendar/integration consumers from the outbox — **DONE (2026-10-14):** migration `0008_outbox_worker_pipeline.sql` adds `processing` delivery state, `claim_outbox_events` (SKIP LOCKED), `mark_outbox_event_delivered`, `mark_outbox_event_failed` (retry < 3, terminal >= 3); internal consumer route `/api/internal/outbox` dispatches by event type; RPCs restricted to `service_role`. Verified by `npm run test:outbox`.
 5. Add operational monitoring, incident response, and retention/deletion procedures.
 
 **Gate:** every automated action remains less authoritative than the domain service and is reversible/auditable where business policy requires it.
