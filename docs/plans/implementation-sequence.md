@@ -14,12 +14,12 @@ Follow this order when marketplace implementation is authorized. It converts the
 
 ## 2. Establish trusted listing lifecycle
 
-1. Add Supabase Auth and server-side role checks.
-2. Implement owner-scoped draft creation and revision editing.
-3. Implement moderator review and auditable decision commands.
-4. Create published-revision pointer and immutable historical revisions.
-5. Add outbox records for all publish/withdraw/revision transitions.
-6. Add Row Level Security and authorization tests.
+1. Add Supabase Auth + server-side role checks — **DONE (2026-10-13):** Supabase Auth is live (`/login`, session refresh in `src/proxy.ts`); server-side role checks run through migration-0001 RLS plus the 0003/0004 SECURITY DEFINER RPCs.
+2. Implement owner-scoped draft creation and revision editing — **DONE (2026-10-14):** the owner portal (commits `9708b30`, `b52698b`) covers onboarding (`create_solo_organization`), draft creation (`create_listing_draft`), revision editing (`update_draft_revision` via the `[listingId]/edit` surface), submit-for-review, and withdraw; authenticated positive path awaits Kelly's browser test.
+3. Implement moderator review and auditable decision commands — **NOT STARTED** (requires the moderator platform-role bootstrap logged for Kelly).
+4. Create published-revision pointer and immutable historical revisions — **DONE (migrations 0001/0003):** `published_revision_id` pointer exists; revisions are immutable once they leave draft (draft-only updates enforced by `update_draft_revision`).
+5. Add outbox records for all publish/withdraw/revision transitions — **DONE (migration 0003):** the GUC smoke test confirmed draft→submitted and withdraw emit buyer-safe outbox events.
+6. Add Row Level Security and authorization tests — **PARTIAL:** RLS exists and is structurally verified (0001 verification suite, `revision_org_read` org-scoping confirmed); no automated authorization tests exist yet — the two-owner gate test remains a manual browser verification logged for Kelly.
 
 **Gate:** a buyer cannot read a draft or submitted listing, and an owner cannot access another owner’s records.
 
