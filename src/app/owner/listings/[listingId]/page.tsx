@@ -22,9 +22,12 @@ import {
   fetchOwnerRevision,
   type OwnerRevisionDetail,
 } from '@/lib/owner/read-model';
+import { fetchRevisionMedia } from '@/lib/media/read-model';
+import type { ListingMediaItem } from '@/lib/media/types';
 import { createAuthServerClient } from '@/lib/auth/supabase-server';
 import { SubmitForReviewButton } from '@/components/owner/submit-for-review-button';
 import { WithdrawButton } from '@/components/owner/withdraw-button';
+import { MediaManager } from '@/components/owner/media-manager';
 
 export const metadata = {
   title: 'Listing — LUXONN Owner Portal',
@@ -129,12 +132,21 @@ async function ListingDetail({ params }: ListingDetailPageProps) {
     );
   }
 
-  const detail = await fetchOwnerRevision(latest.revision_id);
+  const [detail, mediaRes] = await Promise.all([
+    fetchOwnerRevision(latest.revision_id),
+    fetchRevisionMedia(latest.revision_id),
+  ]);
+
   if (!detail.ok) {
     return <DetailError message={detail.message} />;
   }
 
-  return <DetailView detail={detail.detail} />;
+  return (
+    <DetailView
+      detail={detail.detail}
+      media={mediaRes.ok ? mediaRes.data : []}
+    />
+  );
 }
 
 function DetailError({ message }: { message: string }) {
@@ -150,7 +162,13 @@ function DetailError({ message }: { message: string }) {
   );
 }
 
-function DetailView({ detail }: { detail: OwnerRevisionDetail }) {
+function DetailView({
+  detail,
+  media,
+}: {
+  detail: OwnerRevisionDetail;
+  media: ListingMediaItem[];
+}) {
   const isDraft = detail.revisionState === 'draft';
   const isPublished = detail.lifecycleState === 'published';
 
@@ -218,6 +236,15 @@ function DetailView({ detail }: { detail: OwnerRevisionDetail }) {
         <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted">
           {detail.description}
         </p>
+      </section>
+
+      <section className="border-t border-gold/10 pt-8">
+        <MediaManager
+          organizationId={detail.organizationId}
+          revisionId={detail.revisionId}
+          isDraft={isDraft}
+          initialMedia={media}
+        />
       </section>
 
       <div className="flex flex-wrap items-center gap-3 border-t border-gold/10 pt-6">

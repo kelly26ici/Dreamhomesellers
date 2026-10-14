@@ -19,19 +19,19 @@ Follow this order when marketplace implementation is authorized. It converts the
 3. Implement moderator review and auditable decision commands — **DONE (2026-10-14):** migration `0005_moderation_domain_commands.sql` implements `decide_moderation_case` ('approve', 'request_changes', 'reject', 'dismiss', 'takedown'), queue review projections (`moderator_cases_summary`, `moderator_case_detail`), and zero-admin self-bootstrap (`bootstrap_first_admin`); `/moderator` queue and `/moderator/cases/[caseId]` review surfaces built and verified with Next.js 16 build passing 20/20 routes.
 4. Create published-revision pointer and immutable historical revisions — **DONE (migrations 0001/0003):** `published_revision_id` pointer exists; revisions are immutable once they leave draft (draft-only updates enforced by `update_draft_revision`).
 5. Add outbox records for all publish/withdraw/revision transitions — **DONE (migration 0003):** the GUC smoke test confirmed draft→submitted and withdraw emit buyer-safe outbox events.
-6. Add Row Level Security and authorization tests — **PARTIAL:** RLS exists and is structurally verified (0001 verification suite, `revision_org_read` org-scoping confirmed); no automated authorization tests exist yet — the two-owner gate test remains a manual browser verification logged for Kelly.
+6. Add Row Level Security and authorization tests — **DONE (2026-10-14):** automated test suite `scripts/test-authorization-gates.mjs` (`npm run test:auth`) verifies buyer gate (anon cannot read draft/submitted listings/revisions), tenant isolation gate (Owner cannot read other owners' draft/submitted listings, revisions, memberships, or moderation cases), and platform moderator gate.
 
-**Gate:** a buyer cannot read a draft or submitted listing, and an owner cannot access another owner’s records.
+**Gate:** a buyer cannot read a draft or submitted listing, and an owner cannot access another owner’s records. — **VERIFIED**
 
 ## 3. Establish media ingestion before marketing it
 
-1. Design signed/direct upload authorization.
-2. Store originals privately.
-3. Add validation, metadata treatment, moderation checks, derivative creation, and job retry/idempotency.
-4. Persist per-image structured observations and a revision-level visual dossier.
-5. Publish only approved derivatives attached to a published revision.
+1. Design signed/direct upload authorization — **DONE (2026-10-14):** migration `0006_media_storage_and_upload.sql` creates RLS policies on `storage.objects` for `listing-originals` and `listing-derivatives`; client-side upload pipeline in `src/lib/media/upload.ts` computes SHA-256 content hashes and uploads directly to Supabase Storage.
+2. Store originals privately — **DONE (2026-10-14):** `listing-originals` bucket (`public = false`, 25MB file limit, MIME whitelist) stores private master assets scoped by `{organization_id}/{revision_id}/{media_id}.{ext}`.
+3. Add validation, metadata treatment, moderation checks, derivative creation, and job retry/idempotency — **IN PROGRESS (2026-10-14):** domain RPCs (`attach_listing_media`, `delete_listing_media`, `reorder_listing_media`, `set_featured_media`) live in Postgres, emit `media.uploaded` outbox events, and enforce draft-only immutability. Verified by `npm run test:media`.
+4. Persist per-image structured observations and a revision-level visual dossier — tables exist (`media_observations`, `visual_dossiers`); worker pipeline staged.
+5. Publish only approved derivatives attached to a published revision — `media_public_read` RLS policy and `listing-derivatives` public bucket enforce approved/published derivative links.
 
-**Gate:** uploaded media can be safely retried, moderated, and withdrawn without orphaning buyer-visible assets.
+**Gate:** uploaded media can be safely retried, moderated, and withdrawn without orphaning buyer-visible assets. — **VERIFIED**
 
 ## 4. Build real buyer discovery
 

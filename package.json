@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:auth": "node scripts/test-authorization-gates.mjs",
+    "test:media": "node scripts/test-media-lifecycle.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
