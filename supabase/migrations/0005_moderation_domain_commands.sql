@@ -325,7 +325,7 @@ AS $function$
 DECLARE
   v_uid         uuid := public.current_app_user_id();
   v_case        public.moderation_cases%ROWTYPE;
-  v_revision    public.listing_revisions%ROWTYPE;
+  v_rev         public.listing_revisions%ROWTYPE;
   v_listing     public.listings%ROWTYPE;
   v_decision_id uuid;
   v_correlation text;
