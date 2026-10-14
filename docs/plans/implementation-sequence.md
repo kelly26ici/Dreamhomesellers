@@ -50,7 +50,7 @@ Follow this order when marketplace implementation is authorized. It converts the
 3. Implement buyer-safe Qdrant projection and Postgres hydration — **IN PROGRESS (2026-10-14):** document assembly recipe (`v1_buyer_safe_kenya` in `src/lib/retrieval/document-recipe.ts`) strictly filters out ADR-014 restricted fields and generates SHA-256 content hashes.
 4. Add FastAPI streaming boundary and native React Simon UI — **DONE (2026-10-14):** luxury dark/gold native UI `NativeSimonChat.tsx` integrated in `SimonLauncher.tsx`; `/api/simon/chat` provides Postgres fact-grounding.
 5. Send typed page context with every relevant turn — **DONE (2026-10-14):** `AskSimonButton.tsx` passes route, active listing ID, and query parameters to the chat API.
-6. Add persistent conversation state, consent, constrained tools, and audit records.
+6. Add persistent conversation state, consent, constrained tools, and audit records — **DONE (2026-10-14):** migration `0007_handoff_and_conversation_persistence.sql` creates `conversation_threads`, `conversation_messages`, `save_conversation_turn`, `get_conversation_history`, and `create_handoff` with outbox emission and audit records. Verified by `npm run test:conversation`.
 7. Retain Chainlit only as a temporary debug interface until the native path passes parity checks — **DONE (2026-10-14):** toggle button in `SimonLauncher.tsx` allows switching between Native Simon and legacy Chainlit.
 
 **Gate:** Simon cannot answer from stale, unpublished, browser-supplied, or ungrounded facts. — **VERIFIED**
