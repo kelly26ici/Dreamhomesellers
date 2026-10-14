@@ -11,7 +11,8 @@
     "test:media": "node scripts/test-media-lifecycle.mjs",
     "test:retrieval": "node scripts/run-retrieval-eval.mjs",
     "test:conversation": "node scripts/test-conversation-and-handoffs.mjs",
-    "test:all": "npm run test:auth && npm run test:media && npm run test:retrieval && npm run test:conversation"
+    "test:outbox": "node scripts/test-outbox-pipeline.mjs",
+    "test:all": "npm run test:auth && npm run test:media && npm run test:retrieval && npm run test:conversation && npm run test:outbox"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
