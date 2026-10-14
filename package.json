@@ -13,7 +13,8 @@
     "test:conversation": "node scripts/test-conversation-and-handoffs.mjs",
     "test:outbox": "node scripts/test-outbox-pipeline.mjs",
     "test:draft-assist": "node scripts/test-draft-assistant.mjs",
-    "test:all": "npm run test:auth && npm run test:media && npm run test:retrieval && npm run test:conversation && npm run test:outbox && npm run test:draft-assist"
+    "test:privacy": "node scripts/test-preferences-and-privacy.mjs",
+    "test:all": "npm run test:auth && npm run test:media && npm run test:retrieval && npm run test:conversation && npm run test:outbox && npm run test:draft-assist && npm run test:privacy"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
