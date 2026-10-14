@@ -13,6 +13,7 @@ import { notFound } from 'next/navigation';
 
 import ListingMedia from '@/components/marketplace/ListingMedia';
 import { CardActions } from '@/components/marketplace/SaveControls';
+import { AskSimonButton } from '@/components/marketplace/AskSimonButton';
 import SimilarResidencesStrip from '@/components/marketplace/SimilarResidencesStrip';
 import ViewingRequestForm from '@/components/marketplace/ViewingRequestForm';
 import { formatListingPrice } from '@/lib/marketplace/format-money';
@@ -95,7 +96,10 @@ async function Detail({
           <p className="text-2xl font-medium text-champagne">
             {formatListingPrice(card.priceAmount, card.priceCurrency, card.pricePeriod)}
           </p>
-          <CardActions listingId={card.listingId} />
+          <div className="flex items-center gap-2">
+            <AskSimonButton listingId={card.listingId} title={card.title} variant="compact" />
+            <CardActions listingId={card.listingId} />
+          </div>
         </div>
       </header>
 
@@ -135,6 +139,19 @@ async function Detail({
         <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-white/90">
           {card.description}
         </p>
+      </section>
+
+      <section aria-label="AI Concierge Guidance" className="mt-8 rounded-2xl border border-gold/25 bg-gradient-to-r from-gold/10 via-surface-1 to-black p-6 backdrop-blur-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] tracking-[0.25em] text-gold uppercase">AI RESIDENCE CONCIERGE</p>
+            <h3 className="mt-1 font-heading text-xl text-foreground">Have Inquiries About This Estate?</h3>
+            <p className="mt-1 text-xs text-muted max-w-lg">
+              Simon can analyze neighborhood dynamics, historical pricing, architectural highlights, and prepare customized viewing itineraries.
+            </p>
+          </div>
+          <AskSimonButton listingId={card.listingId} title={card.title} variant="primary" />
+        </div>
       </section>
 
       {/* ADR-016 viewing-request surface: a client component calling the
