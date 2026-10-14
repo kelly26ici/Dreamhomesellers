@@ -1,18 +1,23 @@
 'use client';
 
 /**
- * Listing draft form — creates a listing + its first draft revision.
+ * Listing draft form — creates a listing + first draft, or edits a draft.
  *
  * Runs in the browser (per-keystroke state), but authority stays
- * server-side: create_listing_draft (migration 0003, SECURITY DEFINER)
- * re-checks org membership and runs validate_revision_content, so the
- * SQL validator is the authority. The type on RevisionContentInput makes
- * ADR-014's restricted fields (exact_address, latitude, longitude)
- * unrepresentable.
+ * server-side: create_listing_draft / update_draft_revision (migration
+ * 0003, SECURITY DEFINER) re-check org membership and the draft state, and
+ * run validate_revision_content — the SQL validator is the authority. The
+ * type on RevisionContentInput makes ADR-014's restricted fields
+ * (exact_address, latitude, longitude) unrepresentable.
  *
- * Save = create the draft, then hand off to the listing detail surface,
- * where Edit and Submit-for-review live. One write per surface keeps each
- * screen single-purpose and the lifecycle transitions visible.
+ * Mode discriminates create vs edit (see ListingFormMode). Edit prefill
+ * flows through revisionDetailToFormState from the server page, so every
+ * field the form renders is also a field the prefill maps — an edit-save
+ * cannot silently null a field it forgot to carry.
+ *
+ * Save = create the draft (→ detail surface) or update in place (→ back to
+ * detail). One write per surface keeps each screen single-purpose and the
+ * lifecycle transitions visible.
  */
 
 import { useState } from 'react';
@@ -20,8 +25,10 @@ import { useRouter } from 'next/navigation';
 
 import {
   createListingDraft,
+  updateDraftRevision,
   type RevisionContentInput,
 } from '@/lib/owner/write-model';
+import type { OwnerRevisionDetail } from '@/lib/owner/read-model';
 
 /** reason_code → user copy, mirroring the SQL validator's documented
  *  rejections. Unknown codes fall back to the server's message. */
@@ -29,7 +36,9 @@ const REJECTION_MESSAGES: Record<string, string> = {
   not_authenticated:
     'Your session has expired. Sign in again and retry.',
   not_authorized:
-    'You do not have permission to create listings in this organization.',
+    'You do not have permission to change listings in this organization.',
+  not_draft:
+    'This revision is no longer a draft — refresh to see its current state.',
   invalid_content:
     'The listing content failed validation. Check the highlighted fields.',
   idempotency_conflict:
@@ -96,6 +105,8 @@ interface FormState {
   yearBuilt: string;
   floorNumber: string;
   totalFloors: string;
+  plotDimensions: string;
+  landSizeRaw: string;
   furnished: boolean;
   area: string;
   city: string;
@@ -120,6 +131,8 @@ const INITIAL_STATE: FormState = {
   yearBuilt: '',
   floorNumber: '',
   totalFloors: '',
+  plotDimensions: '',
+  landSizeRaw: '',
   furnished: false,
   area: '',
   city: '',
@@ -168,6 +181,8 @@ function toContent(s: FormState): RevisionContentInput {
     year_built: optionalInt(s.yearBuilt),
     floor_number: optionalInt(s.floorNumber),
     total_floors: optionalInt(s.totalFloors),
+    plot_dimensions: s.plotDimensions.trim() === '' ? null : s.plotDimensions.trim(),
+    land_size_raw: s.landSizeRaw.trim() === '' ? null : s.landSizeRaw.trim(),
     area: s.area.trim(),
     city: s.city.trim(),
     town: s.town.trim() === '' ? null : s.town.trim(),
@@ -177,14 +192,77 @@ function toContent(s: FormState): RevisionContentInput {
   };
 }
 
+/**
+ * The form runs in exactly one of two modes. The discriminated union makes
+ * it impossible to render an edit form without the ids it needs, or a
+ * create form with stray ids — TypeScript enforces which fields must be
+ * present for each kind, rather than a pile of optional props.
+ */
+export type ListingFormMode =
+  | { readonly kind: 'create'; readonly organizationIdHint: string | undefined }
+  | { readonly kind: 'edit'; readonly revisionId: string; readonly listingId: string };
+
+/**
+ * OwnerRevisionDetail → form state, for prefilling the edit form. Lives
+ * here (next to FormState) so any field added to the form must be added to
+ * this mapping in the same file — the compiler flags the missing key in
+ * the object literal below, which is what keeps an edit-save from
+ * silently nulling a field the form forgot to prefill.
+ */
+export function revisionDetailToFormState(
+  detail: OwnerRevisionDetail,
+): FormState {
+  const numToStr = (n: number | null): string => (n === null ? '' : String(n));
+  // The contract types are open unions (they admit unknown server values);
+  // a <select> can only render its 3 options, so unrecognized values
+  // narrow to the first option rather than producing an impossible state.
+  const knownKind = (['sale', 'rent', 'shortlet'] as const).find(
+    (k) => k === detail.listingKind,
+  );
+  const knownPeriod = (
+    ['one_time', 'per_month', 'per_night'] as const
+  ).find((p) => p === detail.pricePeriod);
+  return {
+    listingKind: knownKind ?? 'sale',
+    title: detail.title,
+    description: detail.description,
+    propertyType: detail.propertyType,
+    propertySubtype: detail.propertySubtype ?? '',
+    priceAmount: detail.price.amount,
+    priceCurrency: detail.price.currency,
+    pricePeriod: knownPeriod ?? 'one_time',
+    bedrooms: numToStr(detail.bedrooms),
+    bathrooms: numToStr(detail.bathrooms),
+    squareMeters: numToStr(detail.squareMeters),
+    lotSizeSqm: numToStr(detail.lotSizeSqm),
+    yearBuilt: numToStr(detail.yearBuilt),
+    floorNumber: numToStr(detail.floorNumber),
+    totalFloors: numToStr(detail.totalFloors),
+    plotDimensions: detail.plotDimensions ?? '',
+    landSizeRaw: detail.landSizeRaw ?? '',
+    furnished: detail.furnished,
+    area: detail.area,
+    city: detail.city,
+    town: detail.town ?? '',
+    county: detail.county ?? '',
+    amenities: detail.amenities.join(', '),
+  };
+}
+
 export function ListingDraftForm({
-  organizationIdHint,
+  mode,
+  initial,
 }: {
-  /** UX hint from the URL; undefined means "no hint". */
-  organizationIdHint: string | undefined;
+  mode: ListingFormMode;
+  /** Edit mode only: the revision to prefill from. The lazy useState
+   *  initializer converts it once at mount; later re-renders never clobber
+   *  the owner's edits-in-progress. */
+  initial?: OwnerRevisionDetail;
 }) {
   const router = useRouter();
-  const [state, setState] = useState<FormState>(INITIAL_STATE);
+  const [state, setState] = useState<FormState>(() =>
+    initial !== undefined ? revisionDetailToFormState(initial) : INITIAL_STATE,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -206,7 +284,28 @@ export function ListingDraftForm({
     setSubmitting(true);
     setError(null);
 
-    const result = await createListingDraft(organizationIdHint ?? '', content);
+    if (mode.kind === 'edit') {
+      // Update in place; the server RPC re-checks that the revision is
+      // still a draft and still owned by the caller's org.
+      const result = await updateDraftRevision(mode.revisionId, content);
+      if (!result.ok || result.kind !== 'revision_updated') {
+        setSubmitting(false);
+        setError(
+          result.ok
+            ? 'Unexpected server response. Try again.'
+            : (REJECTION_MESSAGES[result.reasonCode] ??
+              result.message ??
+              'Something went wrong. Try again.'),
+        );
+        return;
+      }
+      // Back to the detail surface, which now shows the saved content and
+      // still offers Submit for review.
+      router.replace(`/owner/listings/${mode.listingId}`);
+      return;
+    }
+
+    const result = await createListingDraft(mode.organizationIdHint ?? '', content);
     if (!result.ok) {
       setSubmitting(false);
       setError(
@@ -227,7 +326,6 @@ export function ListingDraftForm({
     }
     router.replace(`/owner/listings/${result.listingId}`);
   }
-
   const inputClass =
     'mt-2 w-full rounded-lg border border-gold/20 bg-surface-2/50 px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-gold/50 focus:outline-none disabled:opacity-50';
   const labelClass = 'block text-xs tracking-[0.2em] text-gold';
@@ -415,6 +513,37 @@ export function ListingDraftForm({
           </div>
         </div>
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="plot-dimensions" className={labelClass}>
+              PLOT DIMENSIONS <span className="text-muted">(optional)</span>
+            </label>
+            <input
+              id="plot-dimensions"
+              type="text"
+              maxLength={100}
+              value={state.plotDimensions}
+              onChange={(e) => set('plotDimensions', e.target.value)}
+              placeholder="e.g. 50 x 100"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label htmlFor="land-size-raw" className={labelClass}>
+              LAND SIZE (RAW) <span className="text-muted">(optional)</span>
+            </label>
+            <input
+              id="land-size-raw"
+              type="text"
+              maxLength={100}
+              value={state.landSizeRaw}
+              onChange={(e) => set('landSizeRaw', e.target.value)}
+              placeholder="e.g. 1/4 acre"
+              className={inputClass}
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
             <label htmlFor="year-built" className={labelClass}>
@@ -561,7 +690,11 @@ export function ListingDraftForm({
         disabled={submitting}
         className="w-full rounded-lg border border-gold/40 bg-gold/10 px-4 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {submitting ? 'Saving draft…' : 'Save draft'}
+        {submitting
+          ? 'Saving…'
+          : mode.kind === 'edit'
+            ? 'Save changes'
+            : 'Save draft'}
       </button>
     </form>
   );
