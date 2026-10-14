@@ -74,6 +74,32 @@ async function ListingDetail({ params }: ListingDetailPageProps) {
   await connection();
   const { listingId } = await params;
 
+  const client = await createAuthServerClient();
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return (
+      <div className="mt-10 rounded-2xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+        <h2 className="text-2xl font-heading text-foreground">
+          Owner sign in required
+        </h2>
+        <p className="mt-2 max-w-md text-sm text-muted">
+          Sign in to your LUXONN account to view and manage this listing.
+        </p>
+        <div className="mt-6">
+          <Link
+            href={`/login?next=%2Fowner%2Flistings%2F${encodeURIComponent(listingId)}`}
+            className="inline-block rounded-lg border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+          >
+            Sign in to continue
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const orgs = await fetchOwnerOrganizations();
   if ('ok' in orgs) {
     return <DetailError message={orgs.message} />;
@@ -86,7 +112,6 @@ async function ListingDetail({ params }: ListingDetailPageProps) {
 
   // Latest revision of this listing, scoped to the caller's orgs by RLS.
   // Zero rows = not your listing (or it genuinely has no revision).
-  const client = await createAuthServerClient();
   const { data: revisionRows, error } = await client
     .from('listing_revisions')
     .select('revision_id, revision_state, created_at')

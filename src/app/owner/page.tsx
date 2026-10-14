@@ -22,6 +22,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { connection } from 'next/server';
 
+import { createAuthServerClient } from '@/lib/auth/supabase-server';
 import {
   fetchOwnerOrganizations,
   fetchOwnerListings,
@@ -80,6 +81,15 @@ async function Portal() {
   // cacheComponents: mark this boundary dynamic before any auth call.
   await connection();
 
+  const client = await createAuthServerClient();
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return <SignInPrompt />;
+  }
+
   const orgs = await fetchOwnerOrganizations();
   // Discriminant narrowing (not Array.isArray — its predicate is `any[]`
   // and leaves readonly string[] behind, so .message would not resolve).
@@ -103,6 +113,28 @@ async function Portal() {
 
   return (
     <ListingsOverview organizationId={organizationId} items={listings.items} />
+  );
+}
+
+function SignInPrompt() {
+  return (
+    <div className="mt-10 rounded-2xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+      <h2 className="text-2xl font-heading text-foreground">
+        Owner sign in required
+      </h2>
+      <p className="mt-2 max-w-md text-sm text-muted">
+        Sign in to your LUXONN account to manage your listings, submit drafts,
+        and review moderation status.
+      </p>
+      <div className="mt-6">
+        <Link
+          href="/login?next=%2Fowner"
+          className="inline-block rounded-lg border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+        >
+          Sign in to continue
+        </Link>
+      </div>
+    </div>
   );
 }
 
