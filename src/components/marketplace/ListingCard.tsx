@@ -17,6 +17,7 @@
  */
 
 import Link from 'next/link';
+import { resolveDerivativeUrl } from '@/lib/media/url';
 import type {
   PublicMediaRow,
   PublishedListingCard as CardData,
@@ -62,7 +63,7 @@ export default function ListingCard({
             <div
               className="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
               style={{
-                backgroundImage: `url(${featured!.derivativePaths[0]})`,
+                backgroundImage: `url(${resolveDerivativeUrl(featured!.derivativePaths[0])})`,
               }}
               role="img"
               aria-label={card.title}

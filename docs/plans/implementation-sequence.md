@@ -35,13 +35,13 @@ Follow this order when marketplace implementation is authorized. It converts the
 
 ## 4. Build real buyer discovery
 
-1. Build the published listing read model and property detail route.
-2. Build dense, URL-backed search with structured filters and cursor/page semantics.
-3. Add save, compare, similar, inquiry, and viewing interactions with appropriate identity gating.
-4. Replace hardcoded/global sample inventory with database-backed Kenyan inventory or explicitly non-inventory editorial material.
-5. Add a constrained circular-gallery experience only for curated/small property sets.
+1. Build the published listing read model and property detail route — **DONE (2026-10-12):** `fetchPublishedListing`, `fetchPublishedGrid`, `/property/[listingId]` route live with SEO metadata.
+2. Build dense, URL-backed search with structured filters and cursor/page semantics — **DONE (2026-10-12):** `FilterBar`, `ListingCard`, `parseListingFilters` on `/properties`.
+3. Add save, compare, similar, inquiry, and viewing interactions with appropriate identity gating — **DONE (2026-10-13):** `CardActions`, `ViewingRequestForm`, `fetchPublishedSimilar` live; context-aware `AskSimonButton` added.
+4. Replace hardcoded/global sample inventory with database-backed Kenyan inventory or explicitly non-inventory editorial material — **DONE (2026-10-14):** `/gallery` replaced with canonical Kenyan database residences; homepage merchandising rails feed from `fetchPublishedFeatured()`.
+5. Add a constrained circular-gallery experience only for curated/small property sets — **DONE (2026-10-14):** `CircularGallery` relocated to `/gallery` signature collection, constrained to small curated sets with direct links to published residences per ADR-007.
 
-**Gate:** every buyer-facing card and detail view resolves from a current published revision, not an old static object or vector payload.
+**Gate:** every buyer-facing card and detail view resolves from a current published revision, not an old static object or vector payload. — **VERIFIED**
 
 ## 5. Add retrieval quality and native Simon
 

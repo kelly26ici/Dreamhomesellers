@@ -8,6 +8,7 @@
  */
 
 import type { PublicMediaRow } from '@/lib/marketplace/read-model';
+import { resolveDerivativeUrl } from '@/lib/media/url';
 
 export default function ListingMedia({
   strip,
@@ -57,7 +58,7 @@ export default function ListingMedia({
         >
           <div
             className="h-full w-full bg-cover bg-center"
-            style={{ backgroundImage: `url(${m.derivativePaths[0]})` }}
+            style={{ backgroundImage: `url(${resolveDerivativeUrl(m.derivativePaths[0])})` }}
             role="img"
             aria-label={title}
           />
