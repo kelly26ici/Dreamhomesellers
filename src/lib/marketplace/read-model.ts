@@ -42,8 +42,22 @@ function anonClient(): SupabaseClient {
   // A fresh client per call spawned multiple GoTrueClient instances in
   // the browser under the same storage key, which Supabase flags as
   // undefined behavior when used concurrently (e.g. a 4-way compare).
+  //
+  // This client is pure PostgREST — no code path ever touches supabase.auth
+  // — so the auth machinery is also fully disabled: no session persistence,
+  // no token auto-refresh, no eager init, and no URL callback consumption.
+  // detectSessionInUrl would otherwise stay true (the supabase-js default),
+  // and GoTrueClient auto-initializes at construction, letting this dead
+  // client race the real @supabase/ssr browser client for a one-time OAuth
+  // code on a callback URL (auth-js 2.117.3 runs the URL-detection branch
+  // regardless of persistSession).
   anonClientInstance ??= createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      skipAutoInitialize: true,
+    },
   });
   return anonClientInstance;
 }

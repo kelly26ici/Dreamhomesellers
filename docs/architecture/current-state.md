@@ -82,7 +82,12 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
   navigation, REMOVE drops the ID and auto-deselects from compare, and the
   similar-residences ring renders same-county+type neighbors. The advisory
   duplicate-GoTrueClient warning was fixed the same day (commit `da647e8`):
-  the read model's anon client is memoized module-level.
+  the read model's anon client is memoized module-level. Audit follow-up
+  (2026-10-14): the client is pure PostgREST, so its auth machinery is now
+  fully disabled too (`detectSessionInUrl: false`, `skipAutoInitialize:
+  true`) — GoTrueClient auto-initializes at construction and would
+  otherwise let this dead client compete for a one-time OAuth code on a
+  callback URL.
 - The circular gallery is an unrelated animal-photo demo on `/gallery`. It is not property data and must not be used as broad search results.
 - There are no application tests, retrieval evaluations, or CI checks beyond ad hoc local lint/build verification.
 
