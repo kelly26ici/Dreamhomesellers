@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test:auth": "node scripts/test-authorization-gates.mjs",
-    "test:media": "node scripts/test-media-lifecycle.mjs"
+    "test:media": "node scripts/test-media-lifecycle.mjs",
+    "test:retrieval": "node scripts/run-retrieval-eval.mjs",
+    "test:all": "npm run test:auth && npm run test:media && npm run test:retrieval"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

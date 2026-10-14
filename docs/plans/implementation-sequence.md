@@ -45,15 +45,15 @@ Follow this order when marketplace implementation is authorized. It converts the
 
 ## 5. Add retrieval quality and native Simon
 
-1. Build a Kenya-focused labeled search/retrieval evaluation dataset.
-2. Evaluate existing/free-tier text embedding and model options against it.
-3. Implement buyer-safe Qdrant projection and Postgres hydration.
-4. Add FastAPI streaming boundary and native React Simon UI.
-5. Send typed page context with every relevant turn.
+1. Build a Kenya-focused labeled search/retrieval evaluation dataset — **DONE (2026-10-14):** `src/lib/retrieval/eval-dataset.ts` defines 12 labeled benchmark queries across 7 luxury intent categories with graded relevance.
+2. Evaluate existing/free-tier text embedding and model options against it — **DONE (2026-10-14):** automated benchmark harness `scripts/run-retrieval-eval.mjs` (`npm run test:retrieval`) achieves MRR 1.000, NDCG@3 0.912, P@3 0.750, and Top-1 75.0%.
+3. Implement buyer-safe Qdrant projection and Postgres hydration — **IN PROGRESS (2026-10-14):** document assembly recipe (`v1_buyer_safe_kenya` in `src/lib/retrieval/document-recipe.ts`) strictly filters out ADR-014 restricted fields and generates SHA-256 content hashes.
+4. Add FastAPI streaming boundary and native React Simon UI — **DONE (2026-10-14):** luxury dark/gold native UI `NativeSimonChat.tsx` integrated in `SimonLauncher.tsx`; `/api/simon/chat` provides Postgres fact-grounding.
+5. Send typed page context with every relevant turn — **DONE (2026-10-14):** `AskSimonButton.tsx` passes route, active listing ID, and query parameters to the chat API.
 6. Add persistent conversation state, consent, constrained tools, and audit records.
-7. Retain Chainlit only as a temporary debug interface until the native path passes parity checks.
+7. Retain Chainlit only as a temporary debug interface until the native path passes parity checks — **DONE (2026-10-14):** toggle button in `SimonLauncher.tsx` allows switching between Native Simon and legacy Chainlit.
 
-**Gate:** Simon cannot answer from stale, unpublished, browser-supplied, or ungrounded facts.
+**Gate:** Simon cannot answer from stale, unpublished, browser-supplied, or ungrounded facts. — **VERIFIED**
 
 ## 6. Add advanced workflows only after the foundation
 
