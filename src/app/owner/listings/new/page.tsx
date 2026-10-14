@@ -81,5 +81,5 @@ async function NewListingLoader({
   // UX hint only — the RPC re-checks org membership server-side.
   const orgHint = typeof params.org === 'string' ? params.org : undefined;
 
-  return <ListingDraftForm organizationIdHint={orgHint} />;
+  return <ListingDraftForm mode={{ kind: 'create', organizationIdHint: orgHint }} />;
 }
