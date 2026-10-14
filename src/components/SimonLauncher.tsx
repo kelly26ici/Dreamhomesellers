@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, MessageCircle, Sparkles, X } from "lucide-react";
+import { ArrowUpRight, MessageCircle, Sparkles, X, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { NativeSimonChat } from "@/components/simon/NativeSimonChat";
 
 export default function SimonLauncher() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
+  const [mode, setMode] = useState<"native" | "legacy">("native");
   const [isFrameReady, setIsFrameReady] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -128,26 +130,45 @@ export default function SimonLauncher() {
         </header>
 
         <div className="relative min-h-0 flex-1 bg-black">
-          {hasOpened && (
-            <iframe
-              src="/api/simon"
-              title="Simon, LUXONN property concierge"
-              className="h-full w-full border-0"
-              sandbox="allow-forms allow-popups allow-same-origin allow-scripts"
-              allow="clipboard-write"
-              onLoad={() => setIsFrameReady(true)}
-            />
-          )}
-          {!isFrameReady && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#090909] px-8 text-center">
-              <span
-                aria-hidden="true"
-                className="h-10 w-10 rounded-full border border-gold/50 border-t-gold"
-              />
-              <p className="text-xs tracking-[0.18em] text-champagne" role="status">
-                CONNECTING TO SIMON
-              </p>
-            </div>
+          {mode === "native" ? (
+            hasOpened && <NativeSimonChat onSwitchToLegacy={() => setMode("legacy")} />
+          ) : (
+            <>
+              <div className="flex items-center justify-between border-b border-white/5 bg-black/80 px-4 py-2 text-[10px] text-muted">
+                <span className="text-muted">LEGACY CHAINLIT SERVICE</span>
+                <button
+                  type="button"
+                  onClick={() => setMode("native")}
+                  className="flex items-center gap-1 text-gold hover:underline"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  <span>Switch to Native Simon</span>
+                </button>
+              </div>
+              <div className="relative h-[calc(100%-2rem)] w-full">
+                {hasOpened && (
+                  <iframe
+                    src="/api/simon"
+                    title="Simon, LUXONN property concierge"
+                    className="h-full w-full border-0"
+                    sandbox="allow-forms allow-popups allow-same-origin allow-scripts"
+                    allow="clipboard-write"
+                    onLoad={() => setIsFrameReady(true)}
+                  />
+                )}
+                {!isFrameReady && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#090909] px-8 text-center">
+                    <span
+                      aria-hidden="true"
+                      className="h-10 w-10 rounded-full border border-gold/50 border-t-gold animate-spin"
+                    />
+                    <p className="text-xs tracking-[0.18em] text-champagne" role="status">
+                      CONNECTING TO SIMON
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </section>
