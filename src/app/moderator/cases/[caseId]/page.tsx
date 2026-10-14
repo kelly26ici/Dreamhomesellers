@@ -8,6 +8,8 @@ import {
   fetchModerationCaseDetail,
   type ModeratorCaseDetail,
 } from '@/lib/moderator/read-model';
+import { fetchRevisionMedia } from '@/lib/media/read-model';
+import type { ListingMediaItem } from '@/lib/media/types';
 import { DecisionActionBar } from '@/components/moderator/decision-action-bar';
 import { formatListingPrice } from '@/lib/marketplace/format-money';
 
@@ -96,10 +98,24 @@ async function CaseReviewLoader({ params }: CaseReviewPageProps) {
     );
   }
 
-  return <CaseReviewView detail={result.detail} />;
+  let media: ListingMediaItem[] = [];
+  if (result.detail.revision?.revisionId) {
+    const mediaRes = await fetchRevisionMedia(result.detail.revision.revisionId);
+    if (mediaRes.ok) {
+      media = [...mediaRes.data];
+    }
+  }
+
+  return <CaseReviewView detail={result.detail} media={media} />;
 }
 
-function CaseReviewView({ detail }: { readonly detail: ModeratorCaseDetail }) {
+function CaseReviewView({
+  detail,
+  media,
+}: {
+  readonly detail: ModeratorCaseDetail;
+  readonly media: ListingMediaItem[];
+}) {
   const { case: c, organization: o, listing: l, revision: r, preChecks, decisionHistory } = detail;
   const isCaseOpen = c.caseState === 'open';
 
@@ -225,6 +241,53 @@ function CaseReviewView({ detail }: { readonly detail: ModeratorCaseDetail }) {
               No revision snapshot attached to this case.
             </div>
           )}
+
+          {/* Media Assets Section */}
+          <div className="rounded-2xl border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] tracking-widest text-gold uppercase">RESIDENCE VISUAL DOSSIER</p>
+                <h3 className="mt-1 font-heading text-lg tracking-wide text-foreground">
+                  Attached Media ({media.length})
+                </h3>
+              </div>
+              <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-muted">
+                Private Ingestion Lane
+              </span>
+            </div>
+
+            {media.length === 0 ? (
+              <p className="mt-4 text-xs text-muted">
+                No visual assets attached to this revision. (Pre-check warning: media_present).
+              </p>
+            ) : (
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {media.map((item, idx) => (
+                  <div
+                    key={item.mediaId}
+                    className={`relative overflow-hidden rounded-xl border p-3 ${
+                      item.isFeatured
+                        ? 'border-gold/60 bg-gold/10'
+                        : 'border-white/10 bg-surface-1/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-[10px] text-muted">
+                      <span>#{idx + 1}</span>
+                      <span className="uppercase">{item.kind}</span>
+                    </div>
+                    <div className="mt-2 text-center text-xs font-mono text-champagne truncate">
+                      {item.mediaId.slice(0, 8)}...
+                    </div>
+                    {item.isFeatured && (
+                      <span className="mt-2 block rounded bg-gold/20 text-center text-[9px] font-bold text-gold">
+                        COVER HERO
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Column: Pre-Checks & Decision Bar */}
