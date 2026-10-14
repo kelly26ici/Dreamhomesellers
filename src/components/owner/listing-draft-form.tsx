@@ -22,6 +22,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
 
 import {
   createListingDraft,
@@ -29,6 +30,7 @@ import {
   type RevisionContentInput,
 } from '@/lib/owner/write-model';
 import type { OwnerRevisionDetail } from '@/lib/owner/read-model';
+import { AIDraftingModal } from './AIDraftingModal';
 
 /** reason_code → user copy, mirroring the SQL validator's documented
  *  rejections. Unknown codes fall back to the server's message. */
@@ -265,6 +267,7 @@ export function ListingDraftForm({
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAIDraftOpen, setIsAIDraftOpen] = useState(false);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setState((prev) => ({ ...prev, [key]: value }));
@@ -331,8 +334,57 @@ export function ListingDraftForm({
   const labelClass = 'block text-xs tracking-[0.2em] text-gold';
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-      <fieldset disabled={submitting} className="space-y-4">
+    <>
+      <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-gold/30 bg-gradient-to-r from-gold/15 via-gold/5 to-transparent p-4 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/40 bg-gold/10 text-gold shadow-sm shadow-gold/20">
+            <Sparkles className="h-5 w-5" />
+          </span>
+          <div>
+            <h3 className="text-sm font-heading tracking-wider text-champagne">
+              SIMON AI DRAFT ASSISTANT
+            </h3>
+            <p className="text-xs text-muted">
+              Paste rough property notes or features and let Simon synthesize luxury editorial prose, specs, and amenities.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsAIDraftOpen(true)}
+          className="flex items-center gap-2 rounded-lg border border-gold bg-gold/15 px-4 py-2 text-xs font-semibold tracking-wider text-gold hover:bg-gold/25 transition-all shadow-sm shadow-gold/20 shrink-0"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>Draft with Simon</span>
+        </button>
+      </div>
+
+      <AIDraftingModal
+        isOpen={isAIDraftOpen}
+        onClose={() => setIsAIDraftOpen(false)}
+        onApply={(draft) => {
+          setState((prev) => ({
+            ...prev,
+            title: draft.title,
+            description: draft.description,
+            propertyType: draft.propertyType,
+            propertySubtype: draft.propertySubtype || prev.propertySubtype,
+            priceAmount: draft.priceAmount,
+            priceCurrency: draft.priceCurrency,
+            pricePeriod: draft.pricePeriod,
+            bedrooms: draft.bedrooms || prev.bedrooms,
+            bathrooms: draft.bathrooms || prev.bathrooms,
+            squareMeters: draft.squareMeters || prev.squareMeters,
+            lotSizeSqm: draft.lotSizeSqm || prev.lotSizeSqm,
+            area: draft.area,
+            city: draft.city,
+            amenities: draft.amenities.join(', '),
+          }));
+        }}
+      />
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+        <fieldset disabled={submitting} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="listing-kind" className={labelClass}>
@@ -697,5 +749,6 @@ export function ListingDraftForm({
             : 'Save draft'}
       </button>
     </form>
+    </>
   );
 }
