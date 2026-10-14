@@ -4,6 +4,7 @@ import {
   fetchPublishedGrid,
 } from '@/lib/marketplace/read-model';
 import { formatListingPrice } from '@/lib/marketplace/format-money';
+import { createAuthServerClient } from '@/lib/auth/supabase-server';
 import type {
   SimonChatRequest,
   SimonMessage,
@@ -127,6 +128,22 @@ export async function POST(req: NextRequest) {
       listingCards: cards.length > 0 ? cards : undefined,
       suggestedFollowUps: followUps.length > 0 ? followUps : undefined,
     };
+
+    // Persist conversation turn into Postgres
+    try {
+      const supabase = await createAuthServerClient();
+      await supabase.rpc('save_conversation_turn', {
+        p_thread_id: conversationId,
+        p_session_id: conversationId,
+        p_user_content: message,
+        p_assistant_content: replyText,
+        p_page_context: pageContext || {},
+        p_referenced_listing_ids: cards.map((c) => c.listingId),
+        p_suggested_follow_ups: followUps,
+      });
+    } catch (persistErr) {
+      console.warn('Failed to persist conversation turn:', persistErr);
+    }
 
     return NextResponse.json({
       message: assistantMsg,
