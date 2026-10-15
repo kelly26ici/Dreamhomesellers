@@ -43,7 +43,7 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
   - On mobile: native full-screen sheet with safe-area padding (`pb-safe`).
 - Global `SimonContext` synchronizing typed `PageContext` automatically with routes (`/property/[listingId]`, `/properties`, `/gallery`), active listing IDs, and search filters.
 - Context-aware "Ask Simon about this residence" action docking Simon alongside the listing instantly without navigating away.
-- Next.js chat API `/api/simon/chat` with Postgres fact-grounding, zero-screenshot resolution of "what is this?" / "what am I looking at?", and automatic turn persistence.
+- Next.js chat API `/api/simon/chat` proxying to the Simon FastAPI agent service (`SIMON_API_URL`, ADR-008) with Postgres fact-grounding fallback, a `source` field (`simon-agent` | `offline-fallback`), a degraded-state banner when the agent is offline, ADR-016 per-IP rate limiting, and automatic turn persistence. Zero-screenshot resolution of "what is this?" / "what am I looking at?" via typed PageContext.
 - Standalone `/simon` route completely native React with zero iframes.
 - Owner AI drafting assistant (`/api/owner/draft-assist` + `AIDraftingModal.tsx` in `ListingDraftForm.tsx`) for 1-click structured luxury draft synthesis.
 - Relocated circular 3D gallery on `/gallery` signature collection backed by canonical database residences (ADR-007).
@@ -76,5 +76,5 @@ The verified inventory of the inherited Supabase schema, key posture, Storage, a
 ## Files that remain intentionally untouched
 
 - `Simon.env` is local secret material and is ignored. Never inspect or copy it.
-- `.claude-flow/` and `prompt.txt` are unrelated untracked local artifacts. Do not stage or modify them as part of marketplace work.
+- `prompt.txt` and `.claude-flow/` are unrelated local artifacts that were accidentally committed in `b01ecb4` and are scheduled for untracking (correction 2026-10-15: the previous claim that they were untracked was wrong). Do not stage or modify them as part of marketplace work.
 - The old sibling projects `../Simon` and `../Simon-Langchain` remain outside this project and are not sources for the new architecture.
