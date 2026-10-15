@@ -3,30 +3,30 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Search, Home, TrendingUp, Paintbrush } from "lucide-react";
+import { Building2, KeyRound, Sparkles, CalendarCheck } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SERVICES = [
+const DISCIPLINES = [
   {
-    icon: Search,
-    title: "Property Buying",
-    text: "Off-market access and private previews of residences matched to your brief, with every negotiation handled for you.",
+    icon: Building2,
+    title: "Seller Listings & Syndication",
+    text: "Estate owners and developers list directly, managing verified drafts, rich media galleries, and pricing with complete architectural control.",
   },
   {
-    icon: Home,
-    title: "Property Selling",
-    text: "Presentation, photography, and placement that position your residence to the right buyers — quietly and globally.",
+    icon: KeyRound,
+    title: "Buyer Discovery & Acquisitions",
+    text: "Discerning buyers search, compare, and acquire from the exact same verified inventory pool with zero intermediary distortion or stale data.",
   },
   {
-    icon: TrendingUp,
-    title: "Investment Advisory",
-    text: "Portfolio guidance across gateway cities, grounded in local data and long-term value rather than momentum.",
+    icon: Sparkles,
+    title: "AI Property Concierge",
+    text: "Simon AI delivers instantaneous, fact-grounded property intelligence, specs breakdown, and contextual search across Kenya's luxury estates.",
   },
   {
-    icon: Paintbrush,
-    title: "Interior Design",
-    text: "Curated interiors that honor a property's architecture, from single-room refreshes to complete commissions.",
+    icon: CalendarCheck,
+    title: "Private Viewings & Handoffs",
+    text: "Confidential in-person viewing coordination and verified-contact transaction handoffs, connecting qualified buyers directly with listing owners.",
   },
 ];
 
@@ -56,7 +56,7 @@ export default function Services() {
   return (
     <section
       ref={rootRef}
-      id="services"
+      id="what-we-do"
       className="mx-auto max-w-[1440px] px-6 py-32 lg:px-12"
     >
       <div className="mb-16 flex flex-col gap-4">
@@ -64,15 +64,15 @@ export default function Services() {
           WHAT WE DO
         </h2>
         <p className="max-w-2xl text-muted">
-          Four disciplines, one standard. Everything we take on is handled
-          end-to-end by a single dedicated advisor.
+          One unified marketplace. Estate owners list directly, while discerning
+          buyers discover and acquire from the exact same verified inventory pool.
         </p>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {SERVICES.map((service) => (
+        {DISCIPLINES.map((item) => (
           <article
-            key={service.title}
+            key={item.title}
             data-services="card"
             className="group relative overflow-hidden border border-white/10 bg-surface p-8 transition-colors duration-500 hover:border-gold/40"
           >
@@ -80,15 +80,15 @@ export default function Services() {
               <div className="absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-gold/20 blur-[80px]" />
             </div>
             <div className="absolute inset-x-0 top-0 h-px w-0 bg-gold transition-all duration-500 group-hover:w-full" />
-            <service.icon
+            <item.icon
               className="h-8 w-8 text-gold transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-110"
               aria-hidden
             />
             <h3 className="mt-6 font-display text-2xl tracking-wide text-white">
-              {service.title}
+              {item.title}
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-muted">
-              {service.text}
+              {item.text}
             </p>
           </article>
         ))}
