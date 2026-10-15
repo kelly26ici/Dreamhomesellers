@@ -15,7 +15,6 @@ import Services from "@/components/Services";
 import TestimonialsV2 from "@/components/testimonials-v2/TestimonialsV2";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import SimonLauncher from "@/components/SimonLauncher";
 import { fetchPublishedFeatured } from "@/lib/marketplace/read-model";
 
 export default function Home() {
@@ -35,7 +34,6 @@ export default function Home() {
         <TestimonialsV2 />
         <Contact />
       </main>
-      <SimonLauncher />
       <Footer />
     </>
   );

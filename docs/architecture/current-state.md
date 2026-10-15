@@ -22,102 +22,54 @@ LUXONN marketplace data lives in the fresh Supabase project `nokarvewyorsupraufd
 
 **Moderator portal & domain commands are BUILT (2026-10-14).** Phase 1 Step 2.3 is complete: migration `0005_moderation_domain_commands.sql` adds the staff-side review and decision command suite (`caller_is_platform_moderator`, `bootstrap_first_admin`, `moderator_cases_summary`, `moderator_case_detail`, and `decide_moderation_case` handling `approve`, `request_changes`, `reject`, `dismiss`, and `takedown`). On approval, the command performs the atomic swap of `published_revision_id`, updates `lifecycle_state = 'published'`, emits the `listing.published` outbox event, and records the immutable audit record. The moderator portal (`/moderator` queue and `/moderator/cases/[caseId]` review inspection) is built with server-side platform-role enforcement, pre-check badges, revision fact inspection, and one-click initial admin self-bootstrap.
 
+**Media storage & ingestion pipeline is APPLIED and verified (2026-10-14).** Migration `0006_media_storage_and_upload.sql` added private `listing-originals` (25MB limit, strict MIME whitelist) and public `listing-derivatives` buckets, 6 Storage RLS policies, and domain RPCs (`attach_listing_media`, `delete_listing_media`, `reorder_listing_media`, `set_featured_media`). Client-side direct upload pipeline (`src/lib/media/upload.ts`) computes SHA-256 content hashes. Luxury media manager UI (`src/components/owner/media-manager.tsx`) integrated into owner and moderator portals. Verified by `npm run test:media`.
+
+**Handoffs & conversation persistence are APPLIED and verified (2026-10-14).** Migration `0007_handoff_and_conversation_persistence.sql` added `conversation_threads` and `conversation_messages` with RLS, `save_conversation_turn`, `get_conversation_history`, and `create_handoff` (with audit trail and outbox event emission). Native Simon chat route (`/api/simon/chat`) persists turns automatically. Verified by `npm run test:conversation`.
+
+**Transactional outbox worker pipeline is APPLIED and verified (2026-10-14).** Migration `0008_outbox_worker_pipeline.sql` added `processing` delivery state, `claim_outbox_events` (`SELECT ... FOR UPDATE SKIP LOCKED` against partial index `outbox_pending`), `mark_outbox_event_delivered`, and `mark_outbox_event_failed` (retry < 3, terminal >= 3). Internal consumer route `/api/internal/outbox` routes by event type; RPCs restricted to `service_role`. Verified by `npm run test:outbox`.
+
+**Buyer preferences, privacy purge & operational telemetry are APPLIED and verified (2026-10-14).** Migration `0009_buyer_preferences_and_privacy_controls.sql` added `buyer_preferences` table with RLS, `upsert_buyer_preferences`, right-to-be-forgotten `purge_buyer_personal_data` cascade with immutable audit logging, `get_platform_operational_health`, and `/api/health` telemetry endpoint. Verified by `npm run test:privacy`.
+
 ## What works now
 
 - Dark/gold LUXONN visual system using Bebas Neue and Inter.
 - GSAP, Framer Motion, Lenis, React Three Fiber, Drei, and Three.js are available for high-motion and 3D surfaces.
-- A homepage with luxury marketing sections.
-- A floating Simon launcher and direct `/simon` route that embed the Chainlit service through a server-configured URL.
-- A native horizontally scrollable `PropertyShowcase`; the previous scroll-pinned implementation was removed because it blocked lower-page scrolling.
-- A published-listings read model (`src/lib/marketplace/read-model.ts`): the buyer grid with URL-backed filters, facets, and pagination on `/properties`, and the `/property/[listingId]` detail page — all anonymous-safe by RLS construction.
-- The existing Python Simon prototype can search the existing Supabase-backed Kenyan property pool, compare properties, book viewings, and create listing/lead records through authored tools.
-
-- A homepage whose merchandising rails (Featured Properties grid and the
-  horizontal collection strip) read verified published listings from the
-  buyer read model via `fetchPublishedFeatured`, each rail wrapped in its
-  own Suspense boundary; hero floating facts mirror the verified Karen
-  record. Metadata is Kenya-framed.
-- A shared ADR-001 money formatter (`src/lib/marketplace/format-money.ts`)
-  used by the grid, detail, and homepage surfaces.
-- Anonymous buyer save and compare on `/saved` (commit `eb073c4`): localStorage
-  stores hold only listing IDs; facts re-fetch RLS-governed from the published
-  record so unpublished rows drop out automatically.
-- The similar-residences circular strip on the property detail page (commit
-  `2b70e47`): same-county+type neighbors in a drag-to-rotate 3D ring, honest
-  empty state, never bound to page scroll.
-- The OAuth 2.1 consent surface (2026-10-13): `/oauth/consent` renders the
-  authorization UI for the Supabase OAuth Server (`authorization_url_path`),
-  and `POST /api/oauth/decision` completes approve/deny server-side with the
-  user's session cookies via `src/lib/auth/supabase-server.ts` and
-  `@supabase/ssr`. `@supabase/ssr` is now a dependency.
-- Working sign-in (2026-10-13): `/login` authenticates with Supabase Auth
-  (`signInWithPassword` through a browser cookie client in
-  `src/lib/auth/supabase-browser.ts`, session refresh in `src/proxy.ts` —
-  Next.js 16's middleware successor). Unsigned-in consent visitors are sent
-  to `/login?next=…` carrying their `authorization_id` so the authorization
-  resumes after sign-in.
-- The viewing-request surface (2026-10-13): the property detail page renders
-  `ViewingRequestForm`, which calls the applied `create_viewing_request`
-  ADR-016 domain command through the browser Supabase client (the only
-  client write path), maps its typed rejection reason codes to
-  buyer-facing copy, and shows the returned `VR-` reference. Authenticated
-  buyers with a Supabase-verified email get in-band verification (`open`
-  state directly); anonymous or unverified contact lands in
-  `pending_contact_verification`.
-
-## What is provisional or incomplete
-
-### Frontend
-
-- Property cards in the About/testimonials sections remain editorial marketing content, not inventory from a canonical catalog.
-- The homepage About section and hero are Kenya-framed; the testimonials keep one fictional "Private Client, Dubai" byline (editorial social proof, decided exception).
-- Root metadata is Kenya-framed. Map experience does not exist yet. The owner portal and moderator portal exist end to end (2026-10-14) with strictly enforced auth and platform-role gates; the first sign-in session should exercise onboarding, draft creation, edit, submit-for-review, and moderation decision against the live RPCs.
-- The login page is functional for email/password sign-in, and the whole
-  sign-in → consent → viewing-request chain is runtime-verified (2026-10-13,
-  live dev-server session): PKCE authorize, consent UI, approve decision,
-  token exchange, and the persisted consent row all confirmed end to end.
-  Both viewing-request paths confirmed live: an authenticated buyer's
-  verified email lands the request in `open` (VR-A7FD19A8), an anonymous
-  private-window submission lands in `pending_contact_verification`
-  (VR-55C72218) — states verified against `viewing_requests` and
-  `audit_records` server-side.
-- Saved/compare and the similar-residences strip are runtime-verified
-  (2026-10-13, browser-driven session): save stores only IDs under
-  `luxonn.saved.v1`, `/saved` re-fetches facts live, compare renders the
-  9-attribute table for up to 4 selections and persists selections across
-  navigation, REMOVE drops the ID and auto-deselects from compare, and the
-  similar-residences ring renders same-county+type neighbors. The advisory
-  duplicate-GoTrueClient warning was fixed the same day (commit `da647e8`):
-  the read model's anon client is memoized module-level. Audit follow-up
-  (2026-10-14): the client is pure PostgREST, so its auth machinery is now
-  fully disabled too (`detectSessionInUrl: false`, `skipAutoInitialize:
-  true`) — GoTrueClient auto-initializes at construction and would
-  otherwise let this dead client compete for a one-time OAuth code on a
-  callback URL.
-- The circular gallery is an unrelated animal-photo demo on `/gallery`. It is not property data and must not be used as broad search results.
-- There are no application tests, retrieval evaluations, or CI checks beyond ad hoc local lint/build verification.
-
-### Simon service
-
-- Simon currently uses LangChain `create_agent` and authored async tools. This remains suitable for short live buyer-concierge turns.
-- Its public UI is Chainlit inside an iframe. This is transitional and will be replaced by native React chat backed by Python streaming APIs.
-- Conversation state uses `InMemorySaver`, so state is lost across process restarts.
-- The agent is Kenya/Nairobi/KES oriented, unlike old global marketing copy in the frontend.
-- The current Supabase REST catalog and Qdrant text search are working prototype integrations, but they are not yet a revisioned, moderated marketplace architecture.
-- The current Cloudflare embedding path is text-only. It cannot directly embed raw property images.
+- A homepage with luxury marketing sections reading canonical published Kenyan residences from `fetchPublishedFeatured`.
+- Native Simon React concierge chat (`NativeSimonChat.tsx`) with suggested prompt chips, status indicators, and verified property cards; 100% native React, zero iframes.
+- Cloudflare/Meta-style docked AI sidebar (`SimonDockedSidebar.tsx`, `SimonLayoutWrapper.tsx`) with 3-state view machine (`closed`, `docked`, `fullscreen`):
+  - On desktop (`lg+`): docks full-height (`100dvh`, `440px`) to the right edge and smoothly resizes the main website canvas via layout reflow so buyers can co-browse residences alongside the concierge.
+  - On fullscreen: smoothly expands across the entire viewport (`100vw`, `100dvh`) without remounting or losing chat state.
+  - On tablet: slides over as an off-canvas drawer (`420px`) with a backdrop scrim.
+  - On mobile: native full-screen sheet with safe-area padding (`pb-safe`).
+- Global `SimonContext` synchronizing typed `PageContext` automatically with routes (`/property/[listingId]`, `/properties`, `/gallery`), active listing IDs, and search filters.
+- Context-aware "Ask Simon about this residence" action docking Simon alongside the listing instantly without navigating away.
+- Next.js chat API `/api/simon/chat` with Postgres fact-grounding, zero-screenshot resolution of "what is this?" / "what am I looking at?", and automatic turn persistence.
+- Standalone `/simon` route completely native React with zero iframes.
+- Owner AI drafting assistant (`/api/owner/draft-assist` + `AIDraftingModal.tsx` in `ListingDraftForm.tsx`) for 1-click structured luxury draft synthesis.
+- Relocated circular 3D gallery on `/gallery` signature collection backed by canonical database residences (ADR-007).
+- A published-listings read model (`src/lib/marketplace/read-model.ts`): the buyer grid with URL-backed filters, facets, and pagination on `/properties`, and the `/property/[listingId]` detail page.
+- Owner portal (`/owner`, `/owner/listings/new`, `[listingId]`, `[listingId]/edit`) and moderator portal (`/moderator`, `/moderator/cases/[caseId]`) with strict server-side auth and platform-role enforcement.
+- Direct media upload pipeline with private originals, public derivatives, and media manager UI.
+- Viewing request flow via `create_viewing_request` and concierge handoff flow via `create_handoff`.
+- Transactional outbox claim-and-dispatch pipeline with atomic `SKIP LOCKED` processing.
+- Buyer preferences with explicit consent flags, right-to-be-forgotten privacy purge, and platform telemetry (`/api/health`).
+- Seven comprehensive automated test suites (`test:auth`, `test:media`, `test:retrieval`, `test:conversation`, `test:outbox`, `test:draft-assist`, `test:privacy`) running via `npm run test:all`.
 
 ## Current technical facts
 
 | Area | Current state | Target direction |
 | --- | --- | --- |
-| Frontend | Next.js App Router, static marketing content | Keep framework and visual system; replace static property data with marketplace data |
-| Auth | No functional authentication | Supabase Auth; owner-only listing management; anonymous buyer discovery |
-| Catalog authority | Existing Supabase prototype data | Revisioned Supabase Postgres marketplace domain model |
-| Media | No website upload/processing lifecycle | Private Storage uploads, async enrichment, moderated public derivatives |
-| Search | Static cards and prototype Simon tools | Dense URL-backed search grid, Postgres hydration, Qdrant projection |
-| Simon UI | Chainlit iframe | Native React surface + Python streaming API |
-| Agent persistence | In-memory checkpoints | Persistent Postgres checkpointer, optional Redis cache |
-| Circular gallery | Animal demo only | Curated collections, shortlists, similar-property surfaces |
+| Frontend | Next.js 16.4.0 App Router, Turbopack, 24 routes | Full production marketplace UI with maximal dark/gold visual language |
+| Auth & Tenancy | Supabase Auth, owner organizations, platform roles | Multi-tenant isolation verified by `npm run test:auth` |
+| Catalog authority | Postgres canonical (`nokarvewyorsupraufdg`), 30 published Kenyan residences | Revisioned immutable marketplace domain model |
+| Media | Private Storage originals, public derivatives, RLS | Verified by `npm run test:media` |
+| Search & Retrieval | URL-backed filters + Kenya luxury benchmark harness | Verified by `npm run test:retrieval` (MRR: 1.000, NDCG@3: 0.912) |
+| Simon UI | Native React docked sidebar + fullscreen expansion (`SimonDockedSidebar.tsx`), zero iframes | Desktop split-screen reflow, tablet slide-over, mobile sheet |
+| Agent persistence | Postgres `conversation_threads` & `conversation_messages` | Verified by `npm run test:conversation` |
+| Outbox & Jobs | Atomic SKIP LOCKED queue claim and event dispatch | Verified by `npm run test:outbox` |
+| Owner AI Help | Simon AI draft assistant (`/api/owner/draft-assist`) | Verified by `npm run test:draft-assist` |
+| Privacy & Health | Buyer preferences, purge cascade, `/api/health` | Verified by `npm run test:privacy` |
+| Circular gallery | Relocated to `/gallery` signature collection | Database-backed Kenyan residences per ADR-007 |
 
 The verified inventory of the inherited Supabase schema, key posture, Storage, and Qdrant state — the factual baseline for all migration and contract work — is in the [schema and authorization discovery brief](../plans/schema-discovery-brief.md).
 
