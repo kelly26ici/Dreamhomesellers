@@ -29,7 +29,7 @@ This commit added **84 files / 48,012 insertions** of project-unrelated junk, no
 
 Delegated to a subagent writing to `audit-findings/plans-compliance.md` (in progress).
 
-## STATUS: commit investigation COMPLETE; plans-compliance agent pending.
+## STATUS: commit investigation COMPLETE; plans-compliance subagent still running (check audit-findings/plans-compliance.md when it lands).
 
 ---
 
