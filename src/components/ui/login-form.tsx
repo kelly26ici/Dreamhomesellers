@@ -7,6 +7,7 @@ import {
   useSyncExternalStore,
   type FormEvent,
 } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useReducedMotion } from "framer-motion";
@@ -86,6 +87,22 @@ export function LoginForm() {
     const raw = searchParams.get("next");
     return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
   })();
+
+  // Google identity provider: the redirect lands on /auth/callback, which
+  // exchanges the PKCE code server-side and resumes nextPath.
+  async function handleGoogleSignIn() {
+    setFormError(null);
+    try {
+      await getSupabaseBrowserClient().auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        },
+      });
+    } catch {
+      setFormError("Could not start Google sign-in. Please try again.");
+    }
+  }
 
   async function handleSignIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -221,7 +238,7 @@ export function LoginForm() {
 
         <div className="flex items-center justify-between" data-login="fade">
           <a href="#" className="text-xs text-muted transition hover:text-white">
-            Forgot Password?
+            <Link href="/forgot-password">Forgot Password?</Link>
           </a>
         </div>
 
@@ -249,6 +266,7 @@ export function LoginForm() {
         {/* Google Login Button */}
         <button
           type="button"
+          onClick={handleGoogleSignIn}
           className="w-full border border-white/30 px-4 py-2.5 text-sm tracking-[0.15em] text-white transition-all duration-300 hover:border-white hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505]"
         >
           <svg className="mr-2 inline h-5 w-5" viewBox="0 0 48 48" aria-hidden>
@@ -262,12 +280,12 @@ export function LoginForm() {
       </form>
       <p className="text-center text-xs text-muted" data-login="fade">
         Don&apos;t have an account?{" "}
-        <a
-          href="#"
+        <Link
+          href="/signup"
           className="font-semibold text-gold transition hover:text-champagne"
         >
           Sign Up
-        </a>
+        </Link>
       </p>
     </div>
   );
