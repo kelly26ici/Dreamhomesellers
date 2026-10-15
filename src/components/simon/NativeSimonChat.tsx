@@ -2,6 +2,7 @@
 
 /**
  * Native LUXONN Simon Concierge Chat Interface.
+ * 100% Native React — zero iframes.
  * Built with the maximal dark/gold visual language (glassmorphism, gold accents, Bebas Neue).
  * Grounded in verified Postgres facts per ADR-008.
  */
@@ -14,38 +15,65 @@ import {
   Loader2,
   Building2,
   ArrowUpRight,
-  ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 import type { SimonMessage } from '@/lib/simon/types';
 import type { PageContext } from '@/lib/contracts/page-context';
+import { useSimon } from '@/context/SimonContext';
 
 interface NativeSimonChatProps {
   pageContext?: Partial<PageContext>;
+  activeListingTitle?: string | null;
   onSwitchToLegacy?: () => void;
 }
 
 export function NativeSimonChat({
-  pageContext,
-  onSwitchToLegacy,
+  pageContext: propPageContext,
+  activeListingTitle: propTitle,
 }: NativeSimonChatProps) {
-  const [messages, setMessages] = useState<SimonMessage[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content:
-        'Greetings. I am Simon, your LUXONN personal property concierge. I can guide you through Kenya’s premier architectural estates, clarify specifications, or arrange confidential viewings.\n\nHow may I serve your search today?',
-      timestamp: '',
-      suggestedFollowUps: [
-        'Explore residences in Karen',
-        'Show penthouses in Nairobi',
-        'How does private viewing work?',
-      ],
-    },
-  ]);
+  const {
+    pageContext: ctxPageContext,
+    initialPrompt,
+    clearInitialPrompt,
+    activeListingTitle: ctxTitle,
+  } = useSimon();
+
+  const effectiveContext = propPageContext || ctxPageContext;
+  const effectiveTitle = propTitle || ctxTitle;
+
+  const [messages, setMessages] = useState<SimonMessage[]>(() => {
+    const isListingPage = Boolean(effectiveContext?.active_listing_id);
+
+    return [
+      {
+        id: 'welcome',
+        role: 'assistant',
+        content: isListingPage
+          ? `Greetings. I am Simon, your LUXONN personal property concierge. I am actively reviewing the verified architectural facts for this residence.\n\nYou can ask "what is this?", explore dimensions, request verified pricing, or arrange a confidential viewing.`
+          : 'Greetings. I am Simon, your LUXONN personal property concierge. I can guide you through Kenya’s premier architectural estates, clarify specifications, or arrange confidential viewings.\n\nHow may I serve your search today?',
+        timestamp: '',
+        suggestedFollowUps: isListingPage
+          ? [
+              'What is this residence?',
+              'What are the specs & dimensions?',
+              'What amenities are included?',
+              'Can I schedule a viewing?',
+            ]
+          : [
+              'What residences are on my screen?',
+              'Explore residences in Karen',
+              'Show penthouses in Nairobi',
+              'How does private viewing work?',
+            ],
+      },
+    ];
+  });
+
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const conversationIdRef = useRef<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const initialPromptSentRef = useRef<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -80,7 +108,7 @@ export function NativeSimonChat({
         body: JSON.stringify({
           message: text,
           conversationId: conversationIdRef.current,
-          pageContext,
+          pageContext: effectiveContext,
         }),
       });
 
@@ -92,7 +120,7 @@ export function NativeSimonChat({
       if (data.message) {
         setMessages((prev) => [...prev, data.message]);
       }
-    } catch (err) {
+    } catch {
       const errorMsg: SimonMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -106,6 +134,15 @@ export function NativeSimonChat({
     }
   };
 
+  // Auto-send initial prompt if triggered by page action (e.g., "Ask Simon about this residence")
+  useEffect(() => {
+    if (initialPrompt && initialPrompt !== initialPromptSentRef.current) {
+      initialPromptSentRef.current = initialPrompt;
+      clearInitialPrompt();
+      sendMessage(initialPrompt);
+    }
+  }, [initialPrompt, clearInitialPrompt]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(input);
@@ -113,23 +150,25 @@ export function NativeSimonChat({
 
   return (
     <div className="flex h-full flex-col bg-background text-foreground">
-      {/* Top Banner / Mode Switcher */}
-      {onSwitchToLegacy && (
-        <div className="flex items-center justify-between border-b border-white/5 bg-black/40 px-4 py-2 text-[10px] text-muted">
-          <span className="flex items-center gap-1.5 text-champagne">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            NATIVE VERIFIED ENGINE
+      {/* Grounded Context Header Strip */}
+      <div className="flex items-center justify-between border-b border-white/10 bg-black/50 px-4 py-2 text-[10px]">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <ShieldCheck className="h-3.5 w-3.5 text-gold shrink-0" />
+          <span className="truncate text-champagne/90 tracking-wider">
+            {effectiveContext?.active_listing_id
+              ? `GROUNDED: ${effectiveTitle ? effectiveTitle : 'ACTIVE RESIDENCE'}`
+              : effectiveContext?.route?.startsWith('/properties')
+              ? 'GROUNDED: NAIROBI LUXURY CATALOG'
+              : effectiveContext?.route?.startsWith('/gallery')
+              ? 'GROUNDED: 3D SIGNATURE COLLECTION'
+              : 'GROUNDED: POSTGRES MARKETPLACE KNOWLEDGE'}
           </span>
-          <button
-            type="button"
-            onClick={onSwitchToLegacy}
-            className="flex items-center gap-1 text-muted hover:text-gold transition-colors"
-          >
-            <span>Legacy Chainlit</span>
-            <ExternalLink className="h-3 w-3" />
-          </button>
         </div>
-      )}
+        <span className="flex items-center gap-1 text-[9px] uppercase tracking-widest text-gold/70 shrink-0">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          LIVE
+        </span>
+      </div>
 
       {/* Message Thread */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-color:var(--gold)_transparent] [scrollbar-width:thin]">
@@ -142,19 +181,19 @@ export function NativeSimonChat({
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-lg ${
+                className={`max-w-[88%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-lg ${
                   isUser
                     ? 'rounded-tr-xs bg-gold/20 border border-gold/40 text-foreground'
                     : 'rounded-tl-xs bg-surface-1/90 border border-white/10 text-muted'
                 }`}
               >
                 {!isUser && (
-                  <div className="mb-1 flex items-center gap-1 text-[10px] tracking-widest text-gold uppercase">
+                  <div className="mb-1 flex items-center gap-1 text-[10px] tracking-widest text-gold uppercase font-medium">
                     <Sparkles className="h-3 w-3" />
-                    <span>SIMON</span>
+                    <span>SIMON CONCIERGE</span>
                   </div>
                 )}
-                <div className="whitespace-pre-line text-foreground/90">
+                <div className="whitespace-pre-line text-foreground/95">
                   {msg.content}
                 </div>
               </div>
@@ -222,14 +261,14 @@ export function NativeSimonChat({
       {/* Input Form */}
       <form
         onSubmit={handleSubmit}
-        className="border-t border-white/10 bg-surface-1/90 p-3"
+        className="border-t border-white/10 bg-surface-1/90 p-3 pb-safe"
       >
         <div className="relative flex items-center">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about verified residences, prices, or locations..."
+            placeholder="Ask about this residence, specs, prices..."
             disabled={isLoading}
             className="w-full rounded-xl border border-gold/30 bg-black/70 py-2.5 pl-4 pr-12 text-xs text-foreground placeholder:text-muted/60 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold disabled:opacity-50"
           />
