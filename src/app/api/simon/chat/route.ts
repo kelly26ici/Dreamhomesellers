@@ -23,7 +23,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Attempt to stream from the Python Simon FastAPI companion service if configured
+    // 1. Real Simon LLM brain: the FastAPI companion service (ADR-008) wraps
+    // the LangChain agent. Timeout is generous — an agentic turn with tool
+    // calls can legitimately take tens of seconds — and the keyword-matching
+    // handler below is only an explicit OFFLINE fallback, surfaced to the
+    // user as degraded (ADR-016 soft escalation).
     const simonApiUrl = process.env.SIMON_API_URL;
     if (simonApiUrl) {
       try {
@@ -37,15 +41,35 @@ export async function POST(req: NextRequest) {
             conversation_id: conversationId,
             page_context: pageContext,
           }),
-          signal: AbortSignal.timeout(4000),
+          signal: AbortSignal.timeout(60_000),
         });
 
         if (upstreamRes.ok) {
-          const upstreamData = await upstreamRes.json();
-          return NextResponse.json(upstreamData);
+          const upstreamData = (await upstreamRes.json()) as {
+            message?: Partial<SimonMessage>;
+            conversationId?: string;
+          };
+          if (upstreamData.message?.content) {
+            const upstreamMsg: SimonMessage = {
+              id: upstreamData.message.id ?? crypto.randomUUID(),
+              role: 'assistant',
+              content: upstreamData.message.content,
+              timestamp: upstreamData.message.timestamp || new Date().toISOString(),
+              listingCards: upstreamData.message.listingCards,
+              suggestedFollowUps: upstreamData.message.suggestedFollowUps,
+            };
+            void persistTurn(conversationId, message, upstreamMsg).catch(() => {});
+            return NextResponse.json({
+              message: upstreamMsg,
+              conversationId: upstreamData.conversationId ?? conversationId,
+              source: 'simon-agent',
+            });
+          }
         }
       } catch {
-        // Fall through to native grounded handler if upstream is unreachable
+        // Upstream unreachable: fall through to the offline fallback below.
+        // The response is tagged source: 'offline-fallback' so the UI can
+        // show a degraded-state notice instead of pretending the agent is up.
       }
     }
 
@@ -194,25 +218,17 @@ export async function POST(req: NextRequest) {
       suggestedFollowUps: followUps.length > 0 ? followUps : undefined,
     };
 
-    // Persist conversation turn into Postgres
-    try {
-      const supabase = await createAuthServerClient();
-      await supabase.rpc('save_conversation_turn', {
-        p_thread_id: conversationId,
-        p_session_id: conversationId,
-        p_user_content: message,
-        p_assistant_content: replyText,
-        p_page_context: pageContext || {},
-        p_referenced_listing_ids: cards.map((c) => c.listingId),
-        p_suggested_follow_ups: followUps,
-      });
-    } catch (persistErr) {
-      console.warn('Failed to persist conversation turn:', persistErr);
-    }
+    // Persist conversation turn into Postgres (best-effort)
+    void persistTurn(conversationId, message, {
+      ...assistantMsg,
+      listingCards: cards.length > 0 ? cards : undefined,
+      suggestedFollowUps: followUps.length > 0 ? followUps : undefined,
+    });
 
     return NextResponse.json({
       message: assistantMsg,
       conversationId,
+      source: 'offline-fallback',
     });
   } catch (error) {
     console.error('Simon chat endpoint error:', error);
@@ -220,5 +236,30 @@ export async function POST(req: NextRequest) {
       { error: 'An unexpected concierge processing error occurred.' },
       { status: 500 }
     );
+  }
+}
+
+/** Fire-and-forget persistence of one conversation turn (best-effort; the
+ * user's reply never waits on Postgres). */
+async function persistTurn(
+  conversationId: string,
+  userContent: string,
+  assistantMsg: SimonMessage
+): Promise<void> {
+  try {
+    const supabase = await createAuthServerClient();
+    await supabase.rpc('save_conversation_turn', {
+      p_thread_id: conversationId,
+      p_session_id: conversationId,
+      p_user_content: userContent,
+      p_assistant_content: assistantMsg.content,
+      p_page_context: {},
+      p_referenced_listing_ids: (assistantMsg.listingCards ?? []).map(
+        (c) => c.listingId
+      ),
+      p_suggested_follow_ups: assistantMsg.suggestedFollowUps ?? [],
+    });
+  } catch (persistErr) {
+    console.warn('Failed to persist conversation turn:', persistErr);
   }
 }

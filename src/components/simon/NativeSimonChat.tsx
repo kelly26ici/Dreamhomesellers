@@ -41,9 +41,11 @@ export function NativeSimonChat({
   const effectiveContext = propPageContext || ctxPageContext;
   const effectiveTitle = propTitle || ctxTitle;
 
-  const [messages, setMessages] = useState<SimonMessage[]>(() => {
-    const isListingPage = Boolean(effectiveContext?.active_listing_id);
+  const [degradedNotice, setDegradedNotice] = useState<string | null>(null);
 
+  const [messages, setMessages] = useState<SimonMessage[]>(() => {
+
+    const isListingPage = Boolean(effectiveContext?.active_listing_id);
     return [
       {
         id: 'welcome',
@@ -119,6 +121,16 @@ export function NativeSimonChat({
       const data = await res.json();
       if (data.message) {
         setMessages((prev) => [...prev, data.message]);
+        // ADR-016 soft escalation: when the agent service is unreachable and
+        // the keyword fallback answered instead, say so honestly rather than
+        // pretending the full concierge is online.
+        if (data.source === 'offline-fallback') {
+          setDegradedNotice(
+            'Simon’s AI concierge service is temporarily offline — you’re getting basic verified-fact answers only. Full intelligence returns when the service reconnects.'
+          );
+        } else {
+          setDegradedNotice(null);
+        }
       }
     } catch {
       const errorMsg: SimonMessage = {
@@ -172,6 +184,14 @@ export function NativeSimonChat({
 
       {/* Message Thread */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-color:var(--gold)_transparent] [scrollbar-width:thin]">
+        {degradedNotice && (
+          <div
+            role="status"
+            className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200"
+          >
+            {degradedNotice}
+          </div>
+        )}
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
 
