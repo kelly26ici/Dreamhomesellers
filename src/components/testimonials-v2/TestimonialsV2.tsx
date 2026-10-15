@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Canvas } from "@react-three/fiber";
-import { Sparkles } from "@react-three/drei";
 import {
   motion,
   useMotionValue,
@@ -14,8 +12,13 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import { Quote } from "lucide-react";
+import dynamic from "next/dynamic";
 
 gsap.registerPlugin(ScrollTrigger);
+
+// three.js weighs ~600KB gzipped — keep it out of the initial JS by loading
+// the R3F canvas from its own client-only chunk.
+const SparkleScene = dynamic(() => import("./SparkleScene"), { ssr: false });
 
 const TESTIMONIALS_ROW_1 = [
   {
@@ -206,8 +209,14 @@ export default function TestimonialsV2() {
   const reduceMotion = useReducedMotion();
   // Mount gate: SSR and the first client render must agree (no canvas on
   // either), or React 19 flags a hydration mismatch for reduced-motion users.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // useSyncExternalStore does this without the setState-in-effect cascade
+  // the classic `useState(false) + useEffect` gate triggers (same pattern as
+  // ui/login-form.tsx).
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
 
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
@@ -331,20 +340,7 @@ export default function TestimonialsV2() {
 
       {mounted && !reduceMotion && (
         <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
-          <Canvas
-            dpr={[1, 1.5]}
-            camera={{ position: [0, 0, 10], fov: 60 }}
-            gl={{ alpha: true, antialias: false }}
-          >
-            <Sparkles
-              count={130}
-              scale={[24, 9, 2]}
-              size={2.2}
-              speed={0.25}
-              opacity={0.5}
-              color="#d4a95f"
-            />
-          </Canvas>
+          <SparkleScene />
         </div>
       )}
 
