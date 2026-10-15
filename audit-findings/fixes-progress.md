@@ -22,3 +22,9 @@ In progress...
 - tsc --noEmit passes.
 
 ## 2. ADR-016 rate limiting — IN PROGRESS
+
+## 2. ADR-016 rate limiting — DONE
+- `src/lib/rate-limit.ts`: in-process sliding window + daily backstop, tiers chat/draftAssist/viewing, IP-keyed, memory-capped. 429+Retry-After wired into /api/simon/chat and /api/owner/draft-assist. tsc passes. Viewing tier kept for future use (DB layer already enforces 5/24h in migration 0002).
+
+## 3. Security headers + CSRF — DONE (commit 5b29f85)
+## 4. Plan-doc corrections — DONE (this commit)

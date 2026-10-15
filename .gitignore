@@ -44,3 +44,12 @@ next-env.d.ts
 # local tooling
 .poolside/
 .claude/settings.local.yaml
+
+# local artifacts (untracked 2026-10-15 after accidental commit in b01ecb4)
+.playwright-mcp/
+.claude-flow/
+logs/
+*.tsbuildinfo
+prompt.txt
+properties-grid.png
+simon-iframe-check.png
