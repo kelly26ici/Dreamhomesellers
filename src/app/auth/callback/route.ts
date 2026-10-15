@@ -5,17 +5,17 @@ import { createAuthServerClient } from '@/lib/auth/supabase-server';
 /**
  * OAuth + email-link callback.
  *
- * One route serves three link types Supabase sends:
- *   - Google sign-in (?code=…)
- *   - Email confirmation after sign-up (?code=…, next=/owner)
- *   - Password recovery (?code=…, next=/reset-password)
- *
- * The PKCE code is exchanged server-side with the cookie-aware client so
- * the new session is written onto the response cookies the proxy refreshes.
+ * Serves three link types: Google sign-in, email confirmation after
+ * sign-up, and password recovery. The PKCE `?code=` form (what the
+ * browser client sends) is exchanged server-side; the implicit-flow
+ * `#access_token` / `?token_hash=` fallbacks are handled too so a
+ * server-generated or misconfigured link still lands a session.
  */
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = req.nextUrl;
   const code = searchParams.get('code');
+  const tokenHash = searchParams.get('token_hash');
+  const type = searchParams.get('type');
   const nextParam = searchParams.get('next');
   const errorParam = searchParams.get('error_description') ?? searchParams.get('error');
 
@@ -31,43 +31,60 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  if (!code) {
-    // A bare callback visit (no code): treat as sign-in entry.
+  const supabase = await createAuthServerClient();
+
+  if (code) {
+    // PKCE: the browser client's flow (what our own emails carry once the
+    // site_url/uri_allow_list are production — set 2026-10-15).
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      return NextResponse.redirect(
+        `${origin}/login?error=${encodeURIComponent(error.message)}`,
+      );
+    }
+  } else if (tokenHash) {
+    // Email OTP / token-hash confirmation links.
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: type === 'recovery' ? 'recovery' : type === 'invite' ? 'invite' : 'signup',
+    });
+    if (error) {
+      return NextResponse.redirect(
+        `${origin}/login?error=${encodeURIComponent(error.message)}`,
+      );
+    }
+  } else {
+    // No exchangeable credential: bare callback visit.
     return NextResponse.redirect(`${origin}/login`);
   }
 
-  const supabase = await createAuthServerClient();
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-  if (error) {
-    return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(error.message)}`,
-    );
-  }
-
-  // ADR-012: a first-time Google sign-in has no organization membership,
-  // which would strand the user at /owner. Bootstrap the solo org from the
-  // Google profile name. Failures are non-fatal (the portal prompts for
-  // org creation when the membership is missing) and never block the
-  // redirect — the session is already established at this point.
-  if (data.user && next !== '/reset-password') {
+  // ADR-012 org bootstrap for first-time sign-ins (Google users land here
+  // with no membership). Non-fatal — the owner portal prompts for org
+  // creation when it is missing. Recovery sessions skip it: they must
+  // update a password, not create tenants.
+  if (next !== '/reset-password') {
     try {
-      const { data: memberships } = await supabase
-        .from('owner_organizations_memberships')
-        .select('organization_id')
-        .limit(1);
-      if (!memberships || memberships.length === 0) {
-        await supabase.rpc('create_solo_organization', {
-          p_display_name:
-            data.user.user_metadata?.display_name ??
-            data.user.user_metadata?.full_name ??
-            data.user.email?.split('@')[0] ??
-            'My Listings',
-          p_idempotency_key: crypto.randomUUID(),
-        });
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: memberships } = await supabase
+          .from('owner_organizations_memberships')
+          .select('organization_id')
+          .limit(1);
+        if (!memberships || memberships.length === 0) {
+          await supabase.rpc('create_solo_organization', {
+            p_display_name:
+              user.user_metadata?.display_name ??
+              user.user_metadata?.full_name ??
+              user.email?.split('@')[0] ??
+              'My Listings',
+            p_idempotency_key: crypto.randomUUID(),
+          });
+        }
       }
     } catch {
-      // Non-fatal — see comment above.
+      // Session is already established; never block the redirect on this.
     }
   }
 
