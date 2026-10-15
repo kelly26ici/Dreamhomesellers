@@ -8,13 +8,16 @@ import {
   type FormEvent,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Canvas } from "@react-three/fiber";
-import { Sparkles } from "@react-three/drei";
+import dynamic from "next/dynamic";
 import { useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { User, Lock, ArrowRight } from "lucide-react";
 
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
+
+// Keep three.js out of the /login initial bundle — the R3F canvas loads from
+// its own client-only chunk after hydration.
+const LoginSparkles = dynamic(() => import("./LoginSparkles"), { ssr: false });
 
 // Constant subscription for the mount gate below — nothing to observe,
 // the client snapshot differing from the server snapshot is the signal.
@@ -50,20 +53,11 @@ export function LoginAmbient({
       <div className="absolute bottom-[-30%] right-[-15%] h-[55vh] w-[55vw] rounded-full bg-champagne/[0.04] blur-[100px]" />
 
       {mounted && !reduceMotion && (
-        <Canvas
-          dpr={[1, 1.5]}
-          camera={{ position: [0, 0, 10], fov: 60 }}
-          gl={{ alpha: true, antialias: false }}
-        >
-          <Sparkles
-            count={130}
-            scale={[24, 12, 4]}
-            size={2.4}
-            speed={0.2}
-            opacity={0.5}
-            color="#d4a95f"
-          />
-        </Canvas>
+        <LoginSparkles
+          scale={[24, 12, 4]}
+          size={2.4}
+          speed={0.2}
+        />
       )}
     </div>
   );
