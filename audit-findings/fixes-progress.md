@@ -28,3 +28,9 @@ In progress...
 
 ## 3. Security headers + CSRF — DONE (commit 5b29f85)
 ## 4. Plan-doc corrections — DONE (this commit)
+
+## 5. Git hygiene — DONE
+- Untracked 38 artifact paths (index-only; files on disk untouched): .playwright-mcp/, logs/, .claude-flow/, prompt.txt, both PNGs. .gitignore extended. tsconfig.tsbuildinfo was already untracked.
+
+## 6. CI workflow — DONE (fe9b026): lint+typecheck+build, placeholder env, live-DB suites excluded pending dev-branch.
+## 7. Env hygiene — DONE: PROPERTY_ADMIN_USER/PASSWORD lines deleted from .env.local and Simon.env via line-pattern match (values never read, per project rule). Remaining keys: 29 (.env.local), 43 (Simon.env).
