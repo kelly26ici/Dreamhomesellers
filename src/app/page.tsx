@@ -13,7 +13,6 @@ import About from "@/components/About";
 import PropertyShowcase from "@/components/PropertyShowcase";
 import Services from "@/components/Services";
 import TestimonialsV2 from "@/components/testimonials-v2/TestimonialsV2";
-import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { fetchPublishedFeatured } from "@/lib/marketplace/read-model";
 
@@ -32,7 +31,6 @@ export default function Home() {
         </Suspense>
         <Services />
         <TestimonialsV2 />
-        <Contact />
       </main>
       <Footer />
     </>

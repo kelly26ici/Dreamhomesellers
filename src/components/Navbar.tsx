@@ -2,30 +2,49 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Search, Menu } from "lucide-react";
+import { Search, Menu, LogOut, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { useLenis } from "lenis/react";
+import { useRouter } from "next/navigation";
+import { getSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const NAV_LINKS = [
   { label: "Home", href: "#home" },
   { label: "Properties", href: "#properties" },
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
-  { label: "Contact", href: "#contact" },
 ];
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const rootRef = useRef<HTMLElement>(null);
   const magnetRef = useRef<HTMLButtonElement>(null);
   const lenis = useLenis();
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 50);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    supabase.auth.getUser().then(({ data }: { data: { user: SupabaseUser | null } }) => {
+      setUser(data.user);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event: string, session: { user: SupabaseUser | null } | null) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -68,6 +87,15 @@ export default function Navbar() {
     }
   };
 
+  const handleSignOut = async () => {
+    const supabase = getSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setMenuOpen(false);
+    router.replace("/");
+    router.refresh();
+  };
+
   return (
     <header
       ref={rootRef}
@@ -105,27 +133,51 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-4">
-          <button
-            type="button"
+          <Link
+            href="/properties"
             aria-label="Search"
             className="hidden text-muted transition-colors hover:text-white sm:block"
           >
             <Search className="h-5 w-5" />
-          </button>
-          <Link
-            href="/login"
-            className="hidden text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold sm:block"
-          >
-            Sign In
           </Link>
-          <button
-            ref={magnetRef}
-            type="button"
-            onClick={() => scrollTo("#contact")}
-            className="hidden border border-gold/60 px-6 py-2.5 text-sm tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_30px_rgba(212,169,95,0.35)] md:block"
-          >
-            Book Viewing
-          </button>
+
+          {user ? (
+            <>
+              <Link
+                href="/owner"
+                className="hidden items-center gap-2 border border-gold/60 px-5 py-2 text-xs tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_25px_rgba(212,169,95,0.35)] sm:flex"
+              >
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                <span>OWNER PORTAL</span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                aria-label="Sign Out"
+                className="hidden items-center gap-1.5 text-xs tracking-[0.15em] text-muted hover:text-red-400 sm:flex"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>LOGOUT</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="hidden text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold sm:block"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/login?next=/owner/listings/new"
+                ref={magnetRef as any}
+                className="hidden border border-gold/60 px-6 py-2.5 text-sm tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_30px_rgba(212,169,95,0.35)] md:block"
+              >
+                List Property
+              </Link>
+            </>
+          )}
+
           <button
             type="button"
             aria-label="Open menu"
@@ -153,13 +205,41 @@ export default function Navbar() {
               </li>
             ))}
             <li className="border-t border-white/10 pt-2">
-              <Link
-                href="/login"
-                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold hover:text-champagne"
-                onClick={() => setMenuOpen(false)}
-              >
-                Sign In
-              </Link>
+              {user ? (
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href="/owner"
+                    className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold hover:text-champagne font-semibold"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    OWNER PORTAL
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="block w-full py-2 text-left text-sm tracking-[0.2em] text-red-400 hover:text-red-300"
+                  >
+                    LOGOUT
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href="/login"
+                    className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold hover:text-champagne"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/login?next=/owner/listings/new"
+                    className="block w-full py-2 text-left text-sm tracking-[0.2em] text-white/80 hover:text-gold"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    List Property
+                  </Link>
+                </div>
+              )}
             </li>
           </ul>
         </div>

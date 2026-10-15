@@ -13,8 +13,8 @@ const COLUMNS = [
     links: ["About", "Advisors", "Press", "Careers"],
   },
   {
-    title: "Contact",
-    links: ["private@luxonn.com", "+44 20 7 946 0958", "One Hyde Park, London"],
+    title: "Concierge",
+    links: ["Simon AI Assistant", "Nairobi, Kenya", "Private Viewings"],
   },
 ];
 
