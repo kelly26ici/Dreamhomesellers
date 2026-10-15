@@ -10,9 +10,23 @@ import type {
   SimonMessage,
   SimonListingCardRef,
 } from '@/lib/simon/types';
+import { checkRateLimit, clientIpFrom } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    // ADR-016: chat turns are expensive (model calls); tightly limited,
+    // soft escalation via Retry-After before hard block.
+    const rl = checkRateLimit('chat', clientIpFrom(req));
+    if (!rl.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            'You’ve reached the concierge’s temporary request limit. Please wait a moment before asking again.',
+        },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } }
+      );
+    }
+
     const body = (await req.json()) as SimonChatRequest;
     const { message, conversationId = crypto.randomUUID(), pageContext } = body;
 

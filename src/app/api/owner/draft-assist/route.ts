@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAuthServerClient } from '@/lib/auth/supabase-server';
+import { checkRateLimit, clientIpFrom } from '@/lib/rate-limit';
 
 export interface AIDraftRequest {
   notes: string;
@@ -28,6 +29,15 @@ export interface AIDraftResponse {
 
 export async function POST(req: NextRequest) {
   try {
+    // ADR-016: draft assist proxies to Simon (model calls); rate-limited.
+    const rl = checkRateLimit('draftAssist', clientIpFrom(req));
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Draft assistant rate limit reached. Please try again shortly.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } }
+      );
+    }
+
     // 1. Verify caller is authenticated owner
     const supabase = await createAuthServerClient();
     const {
