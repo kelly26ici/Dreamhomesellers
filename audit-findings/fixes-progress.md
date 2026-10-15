@@ -43,3 +43,7 @@ In progress...
 - Conversation retention/partitioning: DEFERRED (needs owner retention-period decision per open-questions).
 - owner_listings_summary pagination: DEFERRED (RPC signature change ripples into owner UI; needs its own pass).
 - ADR-014 active-image field in PageContext + dossier writer worker: DEFERRED (larger feature work; documented in plans).
+
+## 10. Migration 0011 — DONE (commit 6427962)
+- Indexes: handoffs(listing_id) [handoffs_listing_idx], handoffs(requester_user_id) [handoffs_requester_user_idx], viewing_requests(requester_user_id) [viewing_requests_requester_user_idx], audit_records(actor_id, occurred_at DESC) [audit_records_actor_time_idx]. All verified present in pg_indexes; none duplicated existing coverage.
+- updated_at auto-touch: generic public.touch_updated_at() (plain plpgsql, search_path=pg_catalog) + BEFORE UPDATE triggers on listings, listing_revisions, buyer_preferences, conversation_threads — guarded so explicit sets by domain commands are not overridden (fires only when OLD.updated_at IS NOT DISTINCT FROM NEW.updated_at). All 4 triggers verified enabled ('O') in pg_trigger. Applied via apply_migration (name: indexes_and_touch_triggers). Idempotent (IF NOT EXISTS / DROP TRIGGER IF EXISTS).
