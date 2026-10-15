@@ -154,7 +154,7 @@ function synthesizeLuxuryDraft(
 
   // Detect Price
   let price = '95000000';
-  let period: 'one_time' | 'per_month' | 'per_night' =
+  const period: 'one_time' | 'per_month' | 'per_night' =
     listingKind === 'rent' ? 'per_month' : listingKind === 'shortlet' ? 'per_night' : 'one_time';
 
   const priceMatchM = lower.match(/(\d+(?:\.\d+)?)\s*(?:m|million|m\b)/);
