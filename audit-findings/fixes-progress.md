@@ -34,3 +34,12 @@ In progress...
 
 ## 6. CI workflow — DONE (fe9b026): lint+typecheck+build, placeholder env, live-DB suites excluded pending dev-branch.
 ## 7. Env hygiene — DONE: PROPERTY_ADMIN_USER/PASSWORD lines deleted from .env.local and Simon.env via line-pattern match (values never read, per project rule). Remaining keys: 29 (.env.local), 43 (Simon.env).
+
+## 8. DB-layer criticals (migration 0010) — DONE, APPLIED, VERIFIED
+- Backoff + dead letters + search_path pins + health anon-revoke + purge cascade (viewings+handoffs). test:outbox ✓ test:privacy ✓
+
+## 9. Remaining audit items not in the "first wave" (status)
+- Missing indexes (handoffs.listing_id, audit_records.actor_id): DEFERRED to next migration — deliberate, keeping 0010 single-purpose; will ride with 0011 alongside updated_at triggers.
+- Conversation retention/partitioning: DEFERRED (needs owner retention-period decision per open-questions).
+- owner_listings_summary pagination: DEFERRED (RPC signature change ripples into owner UI; needs its own pass).
+- ADR-014 active-image field in PageContext + dossier writer worker: DEFERRED (larger feature work; documented in plans).
