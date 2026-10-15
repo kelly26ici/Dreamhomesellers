@@ -12,7 +12,11 @@ import { createAuthServerClient } from '@/lib/auth/supabase-server';
  * server-generated or misconfigured link still lands a session.
  */
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = req.nextUrl;
+  const { searchParams } = req.nextUrl;
+  const forwardedHost = req.headers.get('x-forwarded-host');
+  const forwardedProto = req.headers.get('x-forwarded-proto') || 'https';
+  const host = forwardedHost || req.headers.get('host') || req.nextUrl.host;
+  const origin = host.includes('localhost') && !forwardedHost ? req.nextUrl.origin : `${forwardedProto}://${host}`;
   const code = searchParams.get('code');
   const tokenHash = searchParams.get('token_hash');
   const type = searchParams.get('type');
