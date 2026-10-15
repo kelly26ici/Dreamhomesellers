@@ -57,3 +57,9 @@ In progress...
 - CSRF live: cross-origin POST /api/oauth/decision → 403; same-origin (no Origin) → reaches handler (400 on bad input).
 - Security headers live: nosniff, DENY, Referrer-Policy, full CSP present on /.
 - Migration 0012 applied + verified (ownership gate + pins live).
+
+## 13. Frontend perf (three.js bundle) — DONE (a0eabeb)
+- SparkleScene shared module + next/dynamic ssr:false in login + testimonials. All 7 test suites pass; tsc + production build pass.
+
+## STATUS: first-wave fix run COMPLETE.
+Outstanding (deliberately deferred, documented): conversation retention decision, owner_listings_summary pagination, dossier-writer worker (ADR-010), Qdrant projection pipeline, remaining search_path pins (create_handoff, preferences pair), draft-assist Deep Agent upgrade, retrieval embedding pipeline.
