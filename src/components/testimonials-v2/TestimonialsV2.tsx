@@ -16,6 +16,10 @@ import dynamic from "next/dynamic";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Constant subscription for the mount gate below — nothing to observe,
+// the client snapshot differing from the server snapshot is the signal.
+const subscribeNoop = () => () => {};
+
 // three.js weighs ~600KB gzipped — keep it out of the initial JS by loading
 // the R3F canvas from its own client-only chunk.
 const SparkleScene = dynamic(() => import("./SparkleScene"), { ssr: false });
