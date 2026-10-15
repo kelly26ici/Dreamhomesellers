@@ -41,6 +41,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://images.unsplash.com https://strvid.nyc3.cdn.digitaloceanspaces.com https://i.pravatar.cc",
+              "media-src 'self' data: blob: https://strvid.nyc3.cdn.digitaloceanspaces.com",
               "font-src 'self' data:",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
               "frame-ancestors 'none'",
