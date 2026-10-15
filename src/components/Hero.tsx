@@ -112,7 +112,7 @@ export default function Hero() {
             </a>
             <a
               data-hero="cta"
-              href="#contact"
+              href="/properties"
               className="border border-white/30 px-8 py-4 text-sm tracking-[0.15em] text-white transition-all duration-300 hover:border-white hover:bg-white/5"
             >
               Book a Private Viewing
