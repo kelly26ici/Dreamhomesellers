@@ -7,12 +7,6 @@ import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const STATS = [
-  { value: "25+", label: "Years of Expertise" },
-  { value: "4B+", label: "In Sales Volume" },
-  { value: "Kenya", label: "One Home Market" },
-];
-
 export default function About() {
   const rootRef = useRef<HTMLElement>(null);
 
@@ -32,18 +26,6 @@ export default function About() {
             end: "bottom top",
             scrub: true,
           },
-        }
-      );
-      gsap.fromTo(
-        "[data-about='stat']",
-        { y: 40, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          stagger: 0.12,
-          ease: "power3.out",
-          scrollTrigger: { trigger: "[data-about='stats']", start: "top 85%" },
         }
       );
     }, root);
@@ -69,32 +51,16 @@ export default function About() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
           <h2 className="font-display text-5xl tracking-wide text-white md:text-6xl">
             ARCHITECTURAL MASTERPIECES
           </h2>
           <p className="text-lg leading-relaxed text-muted">
-            LUXONN exists for one reason: to place extraordinary people inside
-            extraordinary spaces. We travel Kenya to find residences that
-            are not merely built, but composed — homes where light, material,
-            and proportion work in concert.
+            LUXONN was built around a straightforward conviction: exceptional architecture deserves a quiet, honest marketplace. We bring together Kenya’s landmark residences—from secluded Karen estates to contemporary high-rise penthouses in Westlands—directly from the owners who built and care for them.
           </p>
           <p className="text-lg leading-relaxed text-muted">
-            Our advisors do not sell listings. They curate introductions
-            between discerning buyers and the properties that deserve them,
-            handling every negotiation with absolute discretion.
+            Every price, specification, and detail is verified straight from the source. Whether you are listing a family residence or seeking your next sanctuary, the process is direct, transparent, and handled with complete discretion.
           </p>
-
-          <div data-about="stats" className="mt-4 grid grid-cols-3 gap-6">
-            {STATS.map((stat) => (
-              <div key={stat.label} data-about="stat" className="flex flex-col gap-2">
-                <p className="font-display text-4xl text-gold md:text-5xl">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-muted">{stat.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>

@@ -2,27 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Search, Menu, LogOut, LayoutDashboard } from "lucide-react";
+import { Search, Menu, LogOut, LayoutDashboard, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useLenis } from "lenis/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-
-const NAV_LINKS = [
-  { label: "Home", href: "#home" },
-  { label: "Properties", href: "#properties" },
-  { label: "About", href: "#about" },
-];
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const rootRef = useRef<HTMLElement>(null);
-  const magnetRef = useRef<HTMLButtonElement>(null);
+  const magnetRef = useRef<HTMLAnchorElement>(null);
   const lenis = useLenis();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 50);
@@ -75,14 +70,18 @@ export default function Navbar() {
       magnet.removeEventListener("mousemove", onMove);
       magnet.removeEventListener("mouseleave", onLeave);
     };
-  }, []);
+  }, [user]);
 
-  const scrollTo = (href: string) => {
+  const scrollToAbout = () => {
     setMenuOpen(false);
-    if (lenis) {
-      lenis.scrollTo(href, { offset: -72 });
+    if (pathname === "/") {
+      if (lenis) {
+        lenis.scrollTo("#about", { offset: -72 });
+      } else {
+        document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
+      }
     } else {
-      document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+      router.push("/#about");
     }
   };
 
@@ -105,9 +104,8 @@ export default function Navbar() {
       }`}
     >
       <nav className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-6 lg:px-12">
-        <button
-          type="button"
-          onClick={() => scrollTo("#home")}
+        <Link
+          href="/"
           className="flex items-center gap-2"
           aria-label="LUXONN home"
         >
@@ -115,27 +113,51 @@ export default function Navbar() {
             <span className="font-display text-lg leading-none text-gold">L</span>
           </span>
           <span className="font-display text-2xl tracking-widest">LUXONN</span>
-        </button>
+        </Link>
 
-        <ul className="hidden items-center gap-10 md:flex">
-          {NAV_LINKS.map((link) => (
-            <li key={link.label}>
-              <button
-                type="button"
-                onClick={() => scrollTo(link.href)}
-                className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-white"
-              >
-                {link.label}
-              </button>
-            </li>
-          ))}
+        {/* Primary Buyer Nav */}
+        <ul className="hidden items-center gap-8 md:flex">
+          <li>
+            <Link
+              href="/properties?kind=sale"
+              className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold"
+            >
+              BUY
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/properties?kind=rent"
+              className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold"
+            >
+              RENT
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/properties"
+              className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-white"
+            >
+              ALL PROPERTIES
+            </Link>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={scrollToAbout}
+              className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-white"
+            >
+              ABOUT
+            </button>
+          </li>
         </ul>
 
+        {/* Right Action Cluster */}
         <div className="flex items-center gap-4">
           <Link
             href="/properties"
-            aria-label="Search"
-            className="hidden text-muted transition-colors hover:text-white sm:block"
+            aria-label="Search properties"
+            className="hidden text-muted transition-colors hover:text-gold sm:block"
           >
             <Search className="h-5 w-5" />
           </Link>
@@ -143,8 +165,15 @@ export default function Navbar() {
           {user ? (
             <>
               <Link
+                href="/owner/listings/new"
+                className="hidden items-center gap-1.5 border border-gold/40 bg-gold/10 px-4 py-2 text-xs tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/20 sm:flex"
+              >
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span>LIST RESIDENCE</span>
+              </Link>
+              <Link
                 href="/owner"
-                className="hidden items-center gap-2 border border-gold/60 px-5 py-2 text-xs tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_25px_rgba(212,169,95,0.35)] sm:flex"
+                className="hidden items-center gap-2 border border-gold/70 bg-gold px-5 py-2 text-xs font-semibold tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_30px_rgba(212,169,95,0.4)] sm:flex"
               >
                 <LayoutDashboard className="h-3.5 w-3.5" />
                 <span>OWNER PORTAL</span>
@@ -153,7 +182,7 @@ export default function Navbar() {
                 type="button"
                 onClick={handleSignOut}
                 aria-label="Sign Out"
-                className="hidden items-center gap-1.5 text-xs tracking-[0.15em] text-muted hover:text-red-400 sm:flex"
+                className="hidden items-center gap-1.5 text-xs tracking-[0.15em] text-muted transition-colors hover:text-red-400 sm:flex"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 <span>LOGOUT</span>
@@ -169,7 +198,7 @@ export default function Navbar() {
               </Link>
               <Link
                 href="/login?next=/owner/listings/new"
-                ref={magnetRef as any}
+                ref={magnetRef}
                 className="hidden border border-gold/60 px-6 py-2.5 text-sm tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_30px_rgba(212,169,95,0.35)] md:block"
               >
                 List Property
@@ -189,26 +218,59 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* Mobile Drawer */}
       {menuOpen && (
         <div className="glass border-t border-white/10 md:hidden">
           <ul className="flex flex-col gap-1 px-6 py-4">
-            {NAV_LINKS.map((link) => (
-              <li key={link.label}>
-                <button
-                  type="button"
-                  className="w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-white"
-                  onClick={() => scrollTo(link.href)}
-                >
-                  {link.label}
-                </button>
-              </li>
-            ))}
-            <li className="border-t border-white/10 pt-2">
+            <li>
+              <Link
+                href="/properties?kind=sale"
+                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-gold"
+                onClick={() => setMenuOpen(false)}
+              >
+                BUY
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/properties?kind=rent"
+                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-gold"
+                onClick={() => setMenuOpen(false)}
+              >
+                RENT
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/properties"
+                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-white"
+                onClick={() => setMenuOpen(false)}
+              >
+                ALL PROPERTIES
+              </Link>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-white"
+                onClick={scrollToAbout}
+              >
+                ABOUT
+              </button>
+            </li>
+            <li className="border-t border-white/10 pt-2 mt-2">
               {user ? (
                 <div className="flex flex-col gap-2">
                   <Link
+                    href="/owner/listings/new"
+                    className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold font-semibold"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    + LIST RESIDENCE
+                  </Link>
+                  <Link
                     href="/owner"
-                    className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold hover:text-champagne font-semibold"
+                    className="block w-full py-2 text-left text-sm tracking-[0.2em] text-gold font-semibold"
                     onClick={() => setMenuOpen(false)}
                   >
                     OWNER PORTAL
