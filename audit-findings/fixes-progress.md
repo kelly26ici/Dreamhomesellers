@@ -47,3 +47,13 @@ In progress...
 ## 10. Migration 0011 — DONE (commit 6427962)
 - Indexes: handoffs(listing_id) [handoffs_listing_idx], handoffs(requester_user_id) [handoffs_requester_user_idx], viewing_requests(requester_user_id) [viewing_requests_requester_user_idx], audit_records(actor_id, occurred_at DESC) [audit_records_actor_time_idx]. All verified present in pg_indexes; none duplicated existing coverage.
 - updated_at auto-touch: generic public.touch_updated_at() (plain plpgsql, search_path=pg_catalog) + BEFORE UPDATE triggers on listings, listing_revisions, buyer_preferences, conversation_threads — guarded so explicit sets by domain commands are not overridden (fires only when OLD.updated_at IS NOT DISTINCT FROM NEW.updated_at). All 4 triggers verified enabled ('O') in pg_trigger. Applied via apply_migration (name: indexes_and_touch_triggers). Idempotent (IF NOT EXISTS / DROP TRIGGER IF EXISTS).
+
+## 11. Skill-conformance fixes (migration 0012) — DONE, APPLIED, VERIFIED
+- save_conversation_turn ownership gate (the REQUIRED violation: cross-tenant write surface) + both conversation RPCs pinned pg_catalog-first. test:conversation ✓. Remaining public-first pins (create_handoff, preferences pair) noted for a later pass — they have in-body user checks but keep the soft pin deviation.
+
+## 12. E2E verification (main session) — DONE
+- Full chain live: Next.js dev → /api/simon/chat → FastAPI agent → real LLM answer with actual Westlands inventory (source: simon-agent).
+- Rate limiting live: 10x 200 then 429s on flood (X-Forwarded-For-keyed).
+- CSRF live: cross-origin POST /api/oauth/decision → 403; same-origin (no Origin) → reaches handler (400 on bad input).
+- Security headers live: nosniff, DENY, Referrer-Policy, full CSP present on /.
+- Migration 0012 applied + verified (ownership gate + pins live).
