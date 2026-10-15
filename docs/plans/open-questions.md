@@ -25,6 +25,8 @@ Decisions the owner must still make. Each item names the stakes, the options, an
 
 **Recommendation:** Provide all four when convenient. The Gemini key matters most for fallback resilience; the DB password matters most for the Phase 1 listing lifecycle.
 
+**Status update 2026-10-15 (re-triage):** Phase 1–6 landed without direct Postgres (all work via REST/MCP, as recorded in current-state.md), so the DB password is now an optimization, not a Phase 1 blocker — its remaining value is the Postgres-backed LangGraph checkpointer (ADR-011). `TAVILY_API_KEY` is present by name in `Simon.env` as of the 2026-10-15 env audit but its validity has not been re-tested since 2026-10-12. The Gemini key and LangSmith 403 remain unresolved; NVIDIA stays the working primary. None of the four blocks the native Simon path — the FastAPI service uses the existing working provider set.
+
 ## 9. Unknown external writer of the non-marketplace tables
 
 **Question:** What is the component outside the simon repository that writes `conversation_messages`, `customer_profiles`, `property_submissions`, `request_outbox`, `mpesa_transactions`, and `schema_migrations` — and must it keep running during the migration?
