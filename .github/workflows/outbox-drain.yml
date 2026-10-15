@@ -1,0 +1,39 @@
+name: Outbox Drain
+
+# ADR-005 requires the transactional outbox to be drained by a worker.
+# Render cron jobs are paid-tier, so this scheduled workflow pings the
+# internal consumer endpoint on the deployed site every 5 minutes instead.
+# The endpoint is protected by the OUTBOX_CONSUMER_SECRET header; the value
+# lives in GitHub Actions secrets -- never in this file.
+
+on:
+  schedule:
+    # Every 5 minutes, offset from :00/:30 to be a good API citizen.
+    - cron: "3-58/5 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: outbox-drain
+  cancel-in-progress: false
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping the outbox consumer
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CONSUMER_SECRET: ${{ secrets.OUTBOX_CONSUMER_SECRET }}
+        run: |
+          code=$(curl -s -o /tmp/outbox-resp.txt -w "%{http_code}" \
+            --max-time 60 \
+            -X POST \
+            -H "OUTBOX_CONSUMER_SECRET: $CONSUMER_SECRET" \
+            "$SITE_URL/api/internal/outbox")
+          echo "HTTP $code"
+          cat /tmp/outbox-resp.txt
+          if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
+            echo "::error::outbox consumer returned HTTP $code"
+            exit 1
+          fi
