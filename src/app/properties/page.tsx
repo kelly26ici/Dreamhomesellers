@@ -33,11 +33,34 @@ export const metadata = {
     'Browse verified premium properties across Kenya — Nairobi, Mombasa, Nakuru and beyond.',
 };
 
-type SearchParams = Record<string, string | string[] | undefined>;
+// The shell reads searchParams to derive its kind heading, and the layout's
+// SimonProvider holds a useSearchParams() sync hook. Under cacheComponents a
+// static prerender of that pair is a blocking-prerender error, so this route
+// opts out — matching src/app/simon/page.tsx. The grid itself still streams
+// inside Suspense, so nothing about the data path became slower.
+export const instant = false;
 
-export default function PropertiesPage(
+const KIND_LABELS: Record<string, string> = {
+  sale: 'For Sale',
+  rent: 'For Rent',
+  shortlet: 'Shortlet',
+};
+
+export default async function PropertiesPage(
   props: PageProps<'/properties'>,
 ) {
+  const params = await props.searchParams;
+  const filters = parseListingFilters(params);
+
+  // Derive display label from URL kind param (ADR-006: URL is search state).
+  const activeKinds = filters.kinds ?? [];
+  const kindLabel =
+    activeKinds.length === 0
+      ? 'All Properties'
+      : activeKinds.length === 1
+        ? KIND_LABELS[activeKinds[0]] ?? 'Properties'
+        : `${activeKinds.length} Collections`;
+
   return (
     <main className="min-h-screen">
       {/* Static shell: renders instantly, even before data resolves. */}
@@ -48,7 +71,7 @@ export default function PropertiesPage(
               THE COLLECTION
             </p>
             <h1 className="mt-2 font-display text-5xl tracking-wide text-white md:text-6xl">
-              Properties
+              {kindLabel}
             </h1>
             <p className="mt-3 max-w-xl text-sm text-muted">
               Verified premium listings across Kenya. Every price, every fact,
@@ -57,7 +80,7 @@ export default function PropertiesPage(
           </div>
           <Link
             href="/saved"
-            className="glass rounded-lg px-4 py-2 text-xs tracking-widest text-gold transition-colors hover:border-gold/50 hover:text-white"
+            className="glass rounded-md px-4 py-2 text-xs tracking-widest text-gold transition-colors hover:border-gold/50 hover:text-white"
           >
             SAVED →
           </Link>
@@ -65,7 +88,7 @@ export default function PropertiesPage(
       </header>
 
       <Suspense fallback={<GridSkeleton />}>
-        <Results searchParams={props.searchParams} />
+        <Results filters={filters} />
       </Suspense>
     </main>
   );
@@ -80,7 +103,7 @@ function GridSkeleton() {
         {Array.from({ length: 6 }, (_, i) => (
           <div
             key={i}
-            className="h-80 animate-pulse rounded-xl border border-white/10 bg-surface"
+            className="h-80 animate-pulse rounded-lg border border-white/10 bg-surface"
           />
         ))}
       </div>
@@ -89,13 +112,10 @@ function GridSkeleton() {
 }
 
 async function Results({
-  searchParams,
+  filters,
 }: {
-  searchParams: Promise<SearchParams>;
+  filters: ReturnType<typeof parseListingFilters>;
 }) {
-  const params = await searchParams;
-  const filters = parseListingFilters(params);
-
   const [grid, counties, types] = await Promise.all([
     fetchPublishedGrid(filters),
     fetchPublishedCounties(),
@@ -104,6 +124,16 @@ async function Results({
 
   return (
     <>
+      {/* Promoted count: visible at top of viewport so BUY vs RENT counts are legible at a glance */}
+      <div className="border-b border-white/10 px-4 py-3">
+        <p
+          aria-live="polite"
+          className="mx-auto max-w-7xl text-xs uppercase tracking-[0.2em] text-gold"
+        >
+          {grid.total} LISTING{grid.total === 1 ? '' : 'S'} AVAILABLE
+        </p>
+      </div>
+
       <FilterBar
         filters={filters}
         counties={counties}
@@ -159,7 +189,7 @@ function EmptyState({ filtered }: { filtered: boolean }) {
       {filtered && (
         <Link
           href="/properties"
-          className="mt-8 rounded-lg border border-gold/60 px-5 py-2 text-sm tracking-widest text-gold transition-colors hover:bg-gold hover:text-black"
+          className="mt-8 rounded-md border border-gold/60 px-5 py-2 text-sm tracking-widest text-gold transition-colors hover:bg-gold hover:text-black"
         >
           CLEAR FILTERS
         </Link>
@@ -184,7 +214,7 @@ function Pagination({
   if (pageCount <= 1) return null;
 
   const linkClass =
-    'glass rounded-lg px-4 py-2 text-sm text-white transition-colors ' +
+    'glass rounded-md px-4 py-2 text-sm text-white transition-colors ' +
     'hover:border-gold/50 hover:text-gold';
 
   return (

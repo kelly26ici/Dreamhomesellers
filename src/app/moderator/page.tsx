@@ -48,7 +48,7 @@ function QueueSkeleton() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="h-24 w-full animate-pulse rounded-xl border border-gold/10 bg-surface-2/40"
+          className="h-24 w-full animate-pulse rounded-lg border border-gold/10 bg-surface-2/40"
         />
       ))}
     </div>
@@ -65,7 +65,7 @@ async function ModeratorQueue() {
 
   if (!user) {
     return (
-      <div className="mt-10 rounded-2xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+      <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
         <h2 className="text-2xl font-heading text-foreground">Staff sign in required</h2>
         <p className="mt-2 max-w-md text-sm text-muted">
           Sign in with your staff account to access the listing moderation queue.
@@ -73,7 +73,7 @@ async function ModeratorQueue() {
         <div className="mt-6">
           <Link
             href="/login?next=%2Fmoderator"
-            className="inline-block rounded-lg border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+            className="inline-block rounded-md border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
           >
             Sign in to continue
           </Link>
@@ -85,7 +85,7 @@ async function ModeratorQueue() {
   const isModerator = await checkCallerIsModerator();
   if (!isModerator) {
     return (
-      <div className="mt-10 rounded-2xl border border-red-500/20 bg-surface-1/80 p-8 backdrop-blur-md">
+      <div className="mt-10 rounded-lg border border-red-500/20 bg-surface-1/80 p-8 backdrop-blur-md">
         <h2 className="text-2xl font-heading text-foreground">Staff Authorization Required</h2>
         <p className="mt-2 max-w-md text-sm text-muted">
           Your account is signed in but does not hold a platform moderator or admin role.
@@ -101,7 +101,7 @@ async function ModeratorQueue() {
   const cases = await fetchModerationCases('open');
   if (!cases.ok) {
     return (
-      <div className="mt-10 rounded-xl border border-red-500/30 bg-red-500/5 p-6">
+      <div className="mt-10 rounded-lg border border-red-500/30 bg-red-500/5 p-6">
         <p className="text-sm text-red-300">{cases.message}</p>
       </div>
     );
@@ -121,7 +121,7 @@ async function ModeratorQueue() {
       </div>
 
       {cases.items.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-gold/10 bg-surface-2/30 p-12 text-center">
+        <div className="mt-6 rounded-lg border border-gold/10 bg-surface-2/30 p-12 text-center">
           <p className="text-sm text-muted">
             All submitted listings have been reviewed. New owner submissions will appear here.
           </p>
@@ -139,7 +139,7 @@ async function ModeratorQueue() {
 
 function CaseCard({ item }: { readonly item: ModeratorCaseSummary }) {
   return (
-    <li className="flex flex-col gap-4 rounded-xl border border-gold/15 bg-surface-2/30 p-6 transition-colors hover:border-gold/30 sm:flex-row sm:items-center sm:justify-between">
+    <li className="flex flex-col gap-4 rounded-lg border border-gold/15 bg-surface-2/30 p-6 transition-colors hover:border-gold/30 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs text-champagne">
@@ -190,7 +190,7 @@ function CaseCard({ item }: { readonly item: ModeratorCaseSummary }) {
 
       <Link
         href={`/moderator/cases/${item.caseId}`}
-        className="self-start rounded-lg border border-gold/40 bg-gold/10 px-4 py-2 text-xs font-semibold tracking-wider text-gold transition-colors hover:bg-gold/20 sm:self-center"
+        className="self-start rounded-md border border-gold/40 bg-gold/10 px-4 py-2 text-xs font-semibold tracking-wider text-gold transition-colors hover:bg-gold/20 sm:self-center"
       >
         REVIEW CASE →
       </Link>

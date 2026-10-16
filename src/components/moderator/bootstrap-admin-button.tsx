@@ -34,7 +34,7 @@ export function BootstrapAdminButton() {
         type="button"
         disabled={submitting}
         onClick={handleBootstrap}
-        className="rounded-lg border border-gold/40 bg-gold/15 px-4 py-2 text-xs font-semibold tracking-wider text-gold transition-colors hover:bg-gold/25 disabled:opacity-50"
+        className="rounded-md border border-gold/40 bg-gold/15 px-4 py-2 text-xs font-semibold tracking-wider text-gold transition-colors hover:bg-gold/25 disabled:opacity-50"
       >
         {submitting ? 'INITIALIZING…' : 'BOOTSTRAP AS FIRST PLATFORM ADMIN'}
       </button>

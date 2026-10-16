@@ -19,7 +19,14 @@ import { fetchPublishedFeatured } from "@/lib/marketplace/read-model";
 export default function Home() {
   return (
     <>
-      <Navbar />
+      {/* Navbar reads useSearchParams() to resolve the active BUY/RENT kind
+          (ADR-006: the URL is the search state). That hook is unavailable
+          during prerender, so Next requires a Suspense boundary here. The
+          fallback reserves the header's height so nothing shifts when the
+          real nav streams in. */}
+      <Suspense fallback={<div className="h-[72px] w-full" aria-hidden />}>
+        <Navbar />
+      </Suspense>
       <main>
         <Hero />
         <Suspense fallback={<RailSkeleton variant="grid" />}>

@@ -140,7 +140,7 @@ export default function ViewingRequestForm({
     return (
       <section
         aria-label="Viewing request received"
-        className="glass rounded-xl p-6"
+        className="glass rounded-lg p-6"
       >
         <h2 className="font-display text-2xl tracking-wide text-white">
           Request received
@@ -170,7 +170,7 @@ export default function ViewingRequestForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full rounded-lg bg-gold px-4 py-3 text-sm tracking-widest text-black transition-opacity hover:opacity-90"
+        className="w-full rounded-md bg-gold px-4 py-3 text-sm tracking-widest text-black transition-opacity hover:opacity-90"
       >
         REQUEST A VIEWING
       </button>
@@ -181,7 +181,7 @@ export default function ViewingRequestForm({
     <form
       onSubmit={handleSubmit}
       aria-label="Request a viewing"
-      className="glass rounded-xl p-6"
+      className="glass rounded-lg p-6"
     >
       <h2 className="font-display text-2xl tracking-wide text-white">
         Request a viewing
@@ -202,7 +202,7 @@ export default function ViewingRequestForm({
               type="button"
               onClick={() => setChannel(c)}
               aria-pressed={channel === c}
-              className={`flex-1 rounded-lg border px-3 py-2 text-xs tracking-widest transition-colors ${
+              className={`flex-1 rounded-md border px-3 py-2 text-xs tracking-widest transition-colors ${
                 channel === c
                   ? 'border-gold text-gold'
                   : 'border-white/20 text-muted hover:border-white/40 hover:text-white'
@@ -223,7 +223,7 @@ export default function ViewingRequestForm({
             onChange={(event) => setContactValue(event.target.value)}
             required
             disabled={submitting}
-            className="mt-1 w-full rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
+            className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
           />
         </label>
 
@@ -237,7 +237,7 @@ export default function ViewingRequestForm({
             onChange={(event) => setDisplayName(event.target.value)}
             maxLength={120}
             disabled={submitting}
-            className="mt-1 w-full rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
+            className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
           />
         </label>
 
@@ -252,7 +252,7 @@ export default function ViewingRequestForm({
             maxLength={500}
             rows={3}
             disabled={submitting}
-            className="mt-1 w-full rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
+            className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
           />
         </label>
 
@@ -267,7 +267,7 @@ export default function ViewingRequestForm({
               onChange={(event) => setViewingDate(event.target.value)}
               required
               disabled={submitting}
-              className="mt-1 w-full rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
+              className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
             />
           </label>
           <label className="block">
@@ -283,7 +283,7 @@ export default function ViewingRequestForm({
               onChange={(event) => setDurationMinutes(event.target.value)}
               required
               disabled={submitting}
-              className="mt-1 w-full rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
+              className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
             />
           </label>
         </div>
@@ -295,7 +295,7 @@ export default function ViewingRequestForm({
               type="button"
               onClick={() => setMode(m)}
               aria-pressed={mode === m}
-              className={`flex-1 rounded-lg border px-3 py-2 text-xs tracking-widest transition-colors ${
+              className={`flex-1 rounded-md border px-3 py-2 text-xs tracking-widest transition-colors ${
                 mode === m
                   ? 'border-gold text-gold'
                   : 'border-white/20 text-muted hover:border-white/40 hover:text-white'
@@ -316,7 +316,7 @@ export default function ViewingRequestForm({
             maxLength={1000}
             rows={2}
             disabled={submitting}
-            className="mt-1 w-full rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
+            className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
           />
         </label>
 
@@ -339,7 +339,7 @@ export default function ViewingRequestForm({
           <button
             type="submit"
             disabled={submitting}
-            className="flex-1 rounded-lg bg-gold px-4 py-2.5 text-sm tracking-widest text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex-1 rounded-md bg-gold px-4 py-2.5 text-sm tracking-widest text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? 'Sending…' : 'SEND REQUEST'}
           </button>
@@ -347,7 +347,7 @@ export default function ViewingRequestForm({
             type="button"
             onClick={() => setOpen(false)}
             disabled={submitting}
-            className="rounded-lg border border-white/20 px-4 py-2.5 text-sm tracking-widest text-muted transition-colors hover:border-white/50 hover:text-white"
+            className="rounded-md border border-white/20 px-4 py-2.5 text-sm tracking-widest text-muted transition-colors hover:border-white/50 hover:text-white"
           >
             CANCEL
           </button>

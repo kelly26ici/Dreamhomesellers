@@ -121,7 +121,7 @@ export function SimonDockedSidebar() {
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-muted transition-colors hover:border-gold/50 hover:text-gold"
+              className="hidden md:flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-muted transition-colors hover:border-gold/50 hover:text-gold"
               aria-label={isFullscreen ? 'Restore to sidebar dock' : 'Expand to full screen'}
               title={isFullscreen ? 'Restore to sidebar' : 'Expand to full screen'}
             >
@@ -136,7 +136,7 @@ export function SimonDockedSidebar() {
             <button
               type="button"
               onClick={closeSimon}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-muted transition-colors hover:border-gold/50 hover:text-gold active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-muted transition-colors hover:border-gold/50 hover:text-gold active:scale-95"
               aria-label="Close Simon concierge"
             >
               <X className="h-5 w-5" />

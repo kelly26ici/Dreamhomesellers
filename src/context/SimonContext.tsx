@@ -14,7 +14,7 @@ import React, {
   useCallback,
   useRef,
   useTransition,
-  Suspense,
+  useSyncExternalStore,
 } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { PageContext, PageViewMode, SearchFilters } from '@/lib/contracts/page-context';
@@ -72,6 +72,37 @@ function SearchParamsSynchronizer({
   }, [pathname, searchParams, onSync]);
 
   return null;
+}
+
+/**
+ * Client-only gate around SearchParamsSynchronizer.
+ *
+ * `useSearchParams()` is a client hook Next.js cannot resolve during a static
+ * prerender (CLIENT_HOOK_DYNAMIC). SimonProvider wraps the whole app from the
+ * root layout, so without this gate every prerendered page inherits that hook
+ * and the production build fails.
+ *
+ * The gate makes the hook unreachable during SSR: server and first client
+ * render both return null, and the real synchronizer mounts only after
+ * hydration. The sync is a useEffect side effect that only means anything in
+ * the browser, so deferring it loses nothing.
+ */
+const subscribeNoop = () => () => {};
+
+function SimonRouteSync({
+  onSync,
+}: {
+  onSync: (pathname: string, searchParams: URLSearchParams | null) => void;
+}) {
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
+
+  if (!mounted) return null;
+
+  return <SearchParamsSynchronizer onSync={onSync} />;
 }
 
 export function SimonProvider({ children }: { children: React.ReactNode }) {
@@ -196,9 +227,9 @@ export function SimonProvider({ children }: { children: React.ReactNode }) {
         setPageContextOverride,
       }}
     >
-      <Suspense fallback={null}>
-        <SearchParamsSynchronizer onSync={handleRouteSync} />
-      </Suspense>
+      {/* No Suspense needed: SimonRouteSync returns null until mounted, so
+          prerender never reaches the useSearchParams() inside it. */}
+      <SimonRouteSync onSync={handleRouteSync} />
       {children}
     </SimonContext.Provider>
   );

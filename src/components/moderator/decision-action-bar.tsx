@@ -21,7 +21,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
 
   if (!isCaseOpen) {
     return (
-      <div className="rounded-xl border border-white/10 bg-surface-2/40 p-4 text-center">
+      <div className="rounded-lg border border-white/10 bg-surface-2/40 p-4 text-center">
         <p className="text-xs tracking-widest text-muted">CASE IS RESOLVED — DECISIONS LOCKED</p>
       </div>
     );
@@ -58,7 +58,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
   }
 
   return (
-    <div className="rounded-2xl border border-gold/20 bg-surface-1/90 p-6 backdrop-blur-md">
+    <div className="rounded-lg border border-gold/20 bg-surface-1/90 p-6 backdrop-blur-md">
       <h3 className="font-heading text-lg tracking-wide text-foreground">Moderator Action</h3>
       <p className="mt-1 text-xs text-muted">
         Audited platform decision. Approved submissions publish immediately to buyers.
@@ -82,7 +82,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
             type="button"
             onClick={() => handleExecuteDecision('approve')}
             disabled={submitting}
-            className="flex-1 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-4 py-2.5 text-xs font-semibold tracking-wider text-emerald-300 transition-colors hover:bg-emerald-500/25 disabled:opacity-50"
+            className="flex-1 rounded-md border border-emerald-500/40 bg-emerald-500/15 px-4 py-2.5 text-xs font-semibold tracking-wider text-emerald-300 transition-colors hover:bg-emerald-500/25 disabled:opacity-50"
           >
             APPROVE & PUBLISH
           </button>
@@ -93,7 +93,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
               setReasonCode('changes_requested');
             }}
             disabled={submitting}
-            className="flex-1 rounded-lg border border-gold/40 bg-gold/15 px-4 py-2.5 text-xs font-semibold tracking-wider text-gold transition-colors hover:bg-gold/25 disabled:opacity-50"
+            className="flex-1 rounded-md border border-gold/40 bg-gold/15 px-4 py-2.5 text-xs font-semibold tracking-wider text-gold transition-colors hover:bg-gold/25 disabled:opacity-50"
           >
             REQUEST CHANGES
           </button>
@@ -104,7 +104,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
               setReasonCode('policy_violation');
             }}
             disabled={submitting}
-            className="flex-1 rounded-lg border border-red-500/40 bg-red-500/15 px-4 py-2.5 text-xs font-semibold tracking-wider text-red-300 transition-colors hover:bg-red-500/25 disabled:opacity-50"
+            className="flex-1 rounded-md border border-red-500/40 bg-red-500/15 px-4 py-2.5 text-xs font-semibold tracking-wider text-red-300 transition-colors hover:bg-red-500/25 disabled:opacity-50"
           >
             REJECT
           </button>
@@ -143,7 +143,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
               type="button"
               disabled={submitting}
               onClick={() => handleExecuteDecision(selectedDecision)}
-              className="flex-1 rounded-lg border border-gold/50 bg-gold/20 px-4 py-2 text-xs font-semibold tracking-wider text-gold hover:bg-gold/30 disabled:opacity-50"
+              className="flex-1 rounded-md border border-gold/50 bg-gold/20 px-4 py-2 text-xs font-semibold tracking-wider text-gold hover:bg-gold/30 disabled:opacity-50"
             >
               {submitting ? 'RECORDING…' : `CONFIRM ${selectedDecision.toUpperCase()}`}
             </button>
@@ -151,7 +151,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
               type="button"
               disabled={submitting}
               onClick={() => setSelectedDecision(null)}
-              className="rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-xs tracking-wider text-muted hover:bg-white/10"
+              className="rounded-md border border-white/20 bg-white/5 px-4 py-2 text-xs tracking-wider text-muted hover:bg-white/10"
             >
               CANCEL
             </button>

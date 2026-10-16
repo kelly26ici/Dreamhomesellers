@@ -53,7 +53,7 @@ export default function ListingCard({
   const href = `/property/${card.listingId}`;
 
   return (
-    <div className="group overflow-hidden rounded-xl border border-white/10 bg-surface transition-colors hover:border-gold/50">
+    <div className="group overflow-hidden rounded-lg border border-white/10 bg-surface transition-colors hover:border-gold/50">
       <Link href={href} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-surface-2">
           {hasMedia ? (

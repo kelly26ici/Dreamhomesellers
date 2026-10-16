@@ -56,7 +56,7 @@ export default function FilterBar({
   }
 
   const inputClass =
-    'glass rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted ' +
+    'glass rounded-md px-3 py-2 text-sm text-white placeholder:text-muted ' +
     'outline-none focus:ring-1 focus:ring-gold';
 
   return (
@@ -97,7 +97,7 @@ export default function FilterBar({
                   else set.add(value);
                   update({ kinds: set.size ? [...set] : undefined });
                 }}
-                className={`rounded-lg px-3 py-2 text-sm transition-colors ${
+                className={`rounded-md px-3 py-2 text-sm transition-colors ${
                   active
                     ? 'bg-gold text-black'
                     : 'glass text-white hover:text-gold'

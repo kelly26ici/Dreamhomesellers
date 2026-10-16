@@ -108,7 +108,7 @@ export function OwnerOnboardingForm() {
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="e.g. Jane Wanjiru Residences"
           disabled={submitting}
-          className="mt-2 w-full rounded-lg border border-gold/20 bg-surface-2/50 px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-gold/50 focus:outline-none disabled:opacity-50"
+          className="mt-2 w-full rounded-md border border-gold/20 bg-surface-2/50 px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-gold/50 focus:outline-none disabled:opacity-50"
         />
       </div>
 
@@ -127,7 +127,7 @@ export function OwnerOnboardingForm() {
           onChange={(e) => setPublicBio(e.target.value)}
           placeholder="A short line buyers will see next to your listings."
           disabled={submitting}
-          className="mt-2 w-full resize-none rounded-lg border border-gold/20 bg-surface-2/50 px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-gold/50 focus:outline-none disabled:opacity-50"
+          className="mt-2 w-full resize-none rounded-md border border-gold/20 bg-surface-2/50 px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-gold/50 focus:outline-none disabled:opacity-50"
         />
       </div>
 
@@ -140,7 +140,7 @@ export function OwnerOnboardingForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-lg border border-gold/40 bg-gold/10 px-4 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-md border border-gold/40 bg-gold/10 px-4 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitting ? 'Creating…' : 'Create organization'}
       </button>

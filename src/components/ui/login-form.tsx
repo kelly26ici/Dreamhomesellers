@@ -167,7 +167,7 @@ export function LoginForm() {
   return (
     <div
       ref={rootRef}
-      className="w-full max-w-sm space-y-8 rounded-3xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10"
+      className="w-full max-w-sm space-y-8 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10"
     >
       <div className="text-center">
         <h2
@@ -245,7 +245,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="group w-full border border-gold bg-gold px-8 py-3.5 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505] disabled:cursor-not-allowed disabled:opacity-60"
+          className="group w-full rounded-md border border-gold bg-gold px-8 py-3.5 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? "Signing In…" : "Sign In"}
           <ArrowRight
@@ -267,7 +267,7 @@ export function LoginForm() {
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          className="w-full border border-white/30 px-4 py-2.5 text-sm tracking-[0.15em] text-white transition-all duration-300 hover:border-white hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505]"
+          className="w-full rounded-md border border-white/30 px-4 py-2.5 text-sm tracking-[0.15em] text-white transition-all duration-300 hover:border-white hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505]"
         >
           <svg className="mr-2 inline h-5 w-5" viewBox="0 0 48 48" aria-hidden>
             <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039L38.802 8.841C34.553 4.806 29.613 2.5 24 2.5C11.983 2.5 2.5 11.983 2.5 24s9.483 21.5 21.5 21.5S45.5 36.017 45.5 24c0-1.538-.135-3.022-.389-4.417z"></path>

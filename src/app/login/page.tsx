@@ -37,7 +37,7 @@ function LoginFormFallback() {
     <div
       aria-busy="true"
       aria-label="Loading sign-in form"
-      className="w-full max-w-sm space-y-8 rounded-3xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10"
+      className="w-full max-w-sm space-y-8 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10"
     >
       <div className="h-8 w-48 animate-pulse rounded bg-surface-2" />
       <div className="h-10 w-full animate-pulse rounded bg-surface-2" />

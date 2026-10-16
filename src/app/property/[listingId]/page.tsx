@@ -42,7 +42,7 @@ function DetailSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading property" className="mx-auto max-w-5xl px-4 py-10">
       <div className="h-8 w-48 animate-pulse rounded bg-surface-2" />
-      <div className="mt-6 aspect-[16/9] animate-pulse rounded-xl bg-surface" />
+      <div className="mt-6 aspect-[16/9] animate-pulse rounded-lg bg-surface" />
       <div className="mt-6 h-6 w-2/3 animate-pulse rounded bg-surface-2" />
       <div className="mt-4 h-24 animate-pulse rounded bg-surface" />
     </div>
@@ -141,7 +141,7 @@ async function Detail({
         </p>
       </section>
 
-      <section aria-label="AI Concierge Guidance" className="mt-8 rounded-2xl border border-gold/25 bg-gradient-to-r from-gold/10 via-surface-1 to-black p-6 backdrop-blur-md">
+      <section aria-label="AI Concierge Guidance" className="mt-8 rounded-lg border border-gold/25 bg-gradient-to-r from-gold/10 via-surface-1 to-black p-6 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-[10px] tracking-[0.25em] text-gold uppercase">AI RESIDENCE CONCIERGE</p>

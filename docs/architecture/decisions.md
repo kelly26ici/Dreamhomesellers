@@ -232,3 +232,35 @@ LUXONN production data lives in the new Supabase project `nokarvewyorsupraufdg` 
 - Connection settings for the new project live in `.env.local` (gitignored). Client code uses the publishable key; server code uses the secret key; RLS remains the authorization boundary — the service-role path is for admin/import tooling only, never request-handling code.
 - Direct Postgres from the current network remains impossible until a Supavisor pooler is enabled on the new project (both projects' `db.*` hosts are IPv6-only on this IPv4-only network); until then the working paths are REST, the dashboard SQL editor, and the Supabase MCP server (registered 2026-10-12, pending owner `claude /mcp` authentication).
 
+## ADR-018 — Border radius follows an instrument-panel scale, not a soft-card scale
+
+**Date:** 2026-10-16  
+**Status:** accepted (owner decision)
+
+The rounding system follows the reference at orbit.jfernando.dev, whose computed values were read directly from the live page rather than inferred. It is an *instrument-panel* scale, not a soft-card scale: containers sit at 8px, and interactive controls sit at a deliberately **tighter** 6px, so a control nested inside a card never reads as softer than the surface holding it. The capsule tier (999px) is reserved for genuine nav shells, status pills, dots, and avatars — never for content cards. Headings and structural wrappers stay at 0.
+
+**Consequences**
+
+- `--radius-*` tokens in `src/app/globals.css` pin the scale explicitly (2/4/6/8/12/16/24px) so class names carry these values regardless of Tailwind default drift.
+- Mapping applied across the UI: `rounded-3xl` (24px) and `rounded-2xl` (16px) → `rounded-lg` (8px); `rounded-xl` (12px) → `rounded-lg` (8px) for cards, with `rounded-xl` retained for media surfaces; `rounded-lg` → `rounded-md` (6px) only on buttons and form controls; `rounded-full` unchanged.
+- Larger 16px (`rounded-2xl`) is retained only for full-screen modal and drawer shells, where the larger radius reads as depth separation rather than decoration.
+- ADR-002's maximal visual language is unaffected: this is a precision refinement within dark/gold LUXONN, not a move toward minimalism. Glassmorphism, gradients, and borders are unchanged.
+- Corner-only variants (`rounded-t-*`, `rounded-b-*`, and the 2px chat-bubble tails) drop one tier with their siblings.
+
+
+## ADR-019 — Sign-out belongs to the authenticated surface, not the marketing navbar
+
+**Date:** 2026-10-16  
+**Status:** accepted (owner decision)
+
+The navbar drops its sign-out control. Sign-out lives on the owner portal — the authenticated surface — at `POST /auth/signout`, rendered as a form button beside the `+ New listing` CTA.
+
+**Why:** the navbar is not rendered on `/owner` (`src/app/page.tsx` is its only call site, and the root layout does not mount it). A sign-out control in a component that is absent from the route where a signed-in owner actually works gives that owner no way to end a session. Removing it from the navbar without adding it to the portal would have left zero sign-out affordance site-wide. Sign-out is also not a discovery action: it is a session-management action, and it belongs beside the other management controls.
+
+**Consequences**
+
+- `POST /auth/signout` clears the session through the cookie-aware server client (the same one `/auth/callback` uses) rather than a browser-side `supabase.auth.signOut()`. In SSR mode the session cookies are written through Next's cookie store and a server component cannot mutate cookies during render, so clearing only the browser copy would leave the server-side refresh token alive — the mechanism behind "I signed out but the portal still shows my listings".
+- POST only. Sign-out is state-changing; a GET would let a prefetch, crawler, or any stray `<link>`/`<img>` silently end a visitor's session. `src/proxy.ts` already enforces same-origin on POSTs carrying cookies, and the guard deliberately permits a no-Origin HTML form post, so a real form reaches the handler while a forged cross-site POST does not.
+- The route takes `?next=` under the same open-redirect guard as `/auth/callback` (same-site paths only, defaulting to `/`), and responds 303 so the browser follows with GET.
+- The mobile drawer keeps a pointer ("SIGN OUT — FROM THE OWNER PORTAL") rather than dropping the affordance silently; the drawer has the vertical room and the owner needs to know where the action moved.
+- `handleSignOut` and the `LogOut` icon import were deleted from `Navbar.tsx` with the control. The `onAuthStateChange` subscription stays — it drives `OWNER PORTAL` / `LIST RESIDENCE` / the signed-out branch, not sign-out.

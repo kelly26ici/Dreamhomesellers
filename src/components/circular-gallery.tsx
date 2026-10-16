@@ -139,7 +139,7 @@ export function CircularGallery({
                 transition: 'opacity 0.25s linear',
               }}
             >
-              <div className="group relative flex h-full w-full flex-col justify-between overflow-hidden rounded-2xl border border-gold/25 bg-surface-1/90 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 hover:border-gold/60">
+              <div className="group relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border border-gold/25 bg-surface-1/90 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 hover:border-gold/60">
                 {/* Visual Imagery or Branded Architectural Canvas */}
                 <div className="relative aspect-[16/11] w-full overflow-hidden bg-black/60">
                   {resolvedImg ? (

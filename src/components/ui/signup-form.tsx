@@ -99,7 +99,7 @@ export function SignupForm() {
   }
 
   return (
-    <div className="w-full max-w-sm space-y-8 rounded-3xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10">
+    <div className="w-full max-w-sm space-y-8 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10">
       <div className="text-center">
         <h2 className="font-display text-4xl tracking-wide text-white">
           JOIN LUXONN
@@ -190,7 +190,7 @@ export function SignupForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="group w-full border border-gold bg-gold px-8 py-3.5 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505] disabled:cursor-not-allowed disabled:opacity-60"
+          className="group w-full rounded-md border border-gold bg-gold px-8 py-3.5 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? "CREATING ACCOUNT…" : "CREATE ACCOUNT"}
           <ArrowRight className="ml-2 inline h-4 w-4 transition-transform group-hover:translate-x-1" />
