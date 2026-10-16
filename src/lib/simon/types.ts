@@ -18,6 +18,15 @@ export interface SimonListingCardRef {
   readonly imageUrl?: string | null;
 }
 
+/**
+ * Which path produced this answer. The upstream agent and the Postgres-backed
+ * keyword fallback are both real, but they are not equivalent: one reasons over
+ * the catalogue, the other matches keywords against verified facts. The UI must
+ * be able to say which — per message, not just once per conversation, because a
+ * single thread can contain both when the agent service drops mid-session.
+ */
+export type SimonSource = 'simon-agent' | 'offline-fallback';
+
 export interface SimonMessage {
   readonly id: string;
   readonly role: SimonMessageRole;
@@ -25,6 +34,8 @@ export interface SimonMessage {
   readonly timestamp: string;
   readonly listingCards?: readonly SimonListingCardRef[];
   readonly suggestedFollowUps?: readonly string[];
+  /** Absent on hand-authored welcome messages, which are neither path. */
+  readonly source?: SimonSource;
 }
 
 export interface SimonChatRequest {
@@ -36,4 +47,5 @@ export interface SimonChatRequest {
 export interface SimonChatResponse {
   readonly message: SimonMessage;
   readonly conversationId: string;
+  readonly source: SimonSource;
 }
