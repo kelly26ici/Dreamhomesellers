@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import Link from "next/link";
 import { MapPin, Tag, Ruler } from "lucide-react";
 
 // Facts mirror the verified published record (demo listing b01: the Karen
@@ -110,13 +111,13 @@ export default function Hero() {
             >
               Explore the Collection
             </a>
-            <a
+            <Link
               data-hero="cta"
-              href="/properties"
-              className="border border-white/30 px-8 py-4 text-sm tracking-[0.15em] text-white transition-all duration-300 hover:border-white hover:bg-white/5"
+              href="/owner/listings/new"
+              className="rounded-md border border-white/30 px-8 py-4 text-sm tracking-[0.15em] text-white transition-all duration-300 hover:border-white hover:bg-white/5"
             >
-              Book a Private Viewing
-            </a>
+              List Your Residence
+            </Link>
           </div>
         </div>
 

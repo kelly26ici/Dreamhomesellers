@@ -2,12 +2,42 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Menu, LayoutDashboard, PlusCircle } from "lucide-react";
+import { Menu, Search, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useLenis } from "lenis/react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+
+/** Marketing sections the nav scrolls to. Mirrors the first commits. */
+const SECTIONS = ["home", "properties", "about", "services"] as const;
+
+const NAV_OFFSET = -72;
+
+/** Lenis is JS-driven, so the global reduced-motion CSS block does not cover it. */
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/**
+ * Lenis owns the scroll position when it is mounted (html.lenis), so native
+ * scrollIntoView/window.scrollBy are ignored. Route through lenis when present
+ * and fall back to native scrolling otherwise. Lenis is JS-driven, so the
+ * global prefers-reduced-motion CSS block does not cover it — check explicitly.
+ */
+function scrollToAnchor(id: string, lenis: ReturnType<typeof useLenis>) {
+  const reduced = prefersReducedMotion();
+  if (lenis && !reduced) {
+    lenis.scrollTo(`#${id}`, { offset: NAV_OFFSET });
+    return;
+  }
+  const target = document.getElementById(id);
+  if (!target) return;
+  target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+  if (!reduced) {
+    window.scrollBy(0, NAV_OFFSET);
+  }
+}
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -18,13 +48,6 @@ export default function Navbar() {
   const lenis = useLenis();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // Derive current kind from URL so nav links reflect active state (ADR-006:
-  // URL is the single source of truth). Mirrors FilterBar's kind vocabulary.
-  const currentKind = searchParams.get("kind");
-  const kinds = currentKind ? currentKind.split(",") : [];
-  const isKindActive = (kind: string) => kinds.includes(kind);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 50);
@@ -79,17 +102,28 @@ export default function Navbar() {
     };
   }, [user]);
 
-  const scrollToAbout = () => {
+  /**
+   * Section scroll that works from any route: on "/" scroll in place, elsewhere
+   * go home first and scroll once the target exists. The featured rail streams
+   * in inside a Suspense boundary, so the scroll is retried briefly until the
+   * anchor is present rather than silently doing nothing.
+   */
+  const scrollToSection = (id: string) => {
     setMenuOpen(false);
     if (pathname === "/") {
-      if (lenis) {
-        lenis.scrollTo("#about", { offset: -72 });
-      } else {
-        document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
-      }
-    } else {
-      router.push("/#about");
+      scrollToAnchor(id, lenis);
+      return;
     }
+    router.push("/");
+    let tries = 0;
+    const attempt = () => {
+      if (document.getElementById(id)) {
+        scrollToAnchor(id, lenis);
+        return;
+      }
+      if (tries++ < 40) requestAnimationFrame(attempt);
+    };
+    requestAnimationFrame(attempt);
   };
 
   return (
@@ -113,68 +147,21 @@ export default function Navbar() {
           <span className="font-display text-2xl tracking-widest">LUXONN</span>
         </Link>
 
-        {/* Primary Buyer Nav — active state derived from URL kind param (ADR-006) */}
+        {/* Primary nav — marketing sections, scrolling as the first commits did.
+            The featured listings rail (id="properties") is the target, so these
+            scroll rather than navigate; only SEARCH reaches the /properties grid. */}
         <ul className="hidden items-center gap-8 md:flex">
-          <li>
-            <Link
-              href="/properties?kind=sale"
-              className={`inline-flex items-center gap-1.5 text-sm tracking-[0.2em] transition-colors ${
-                isKindActive("sale")
-                  ? "font-semibold text-gold"
-                  : "text-muted hover:text-gold"
-              }`}
-              aria-current={isKindActive("sale") ? "page" : undefined}
-            >
-              <span
-                className={`h-1 w-1 rounded-full ${
-                  isKindActive("sale") ? "bg-gold" : "bg-white/20"
-                }`}
-                aria-hidden="true"
-              />
-              BUY
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/properties?kind=rent"
-              className={`inline-flex items-center gap-1.5 text-sm tracking-[0.2em] transition-colors ${
-                isKindActive("rent")
-                  ? "font-semibold text-gold"
-                  : "text-muted hover:text-gold"
-              }`}
-              aria-current={isKindActive("rent") ? "page" : undefined}
-            >
-              <span
-                className={`h-1 w-1 rounded-full ${
-                  isKindActive("rent") ? "bg-gold" : "bg-white/20"
-                }`}
-                aria-hidden="true"
-              />
-              RENT
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/properties"
-              className={`text-sm tracking-[0.2em] transition-colors ${
-                kinds.length === 0
-                  ? "font-semibold text-gold"
-                  : "text-muted hover:text-white"
-              }`}
-              aria-current={kinds.length === 0 ? "page" : undefined}
-            >
-              ALL PROPERTIES
-            </Link>
-          </li>
-          <li>
-            <button
-              type="button"
-              onClick={scrollToAbout}
-              className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-white"
-            >
-              ABOUT
-            </button>
-          </li>
+          {SECTIONS.map((id) => (
+            <li key={id}>
+              <button
+                type="button"
+                onClick={() => scrollToSection(id)}
+                className="text-sm tracking-[0.2em] text-muted uppercase transition-colors hover:text-gold"
+              >
+                {id}
+              </button>
+            </li>
+          ))}
         </ul>
 
         {/* Right Action Cluster */}
@@ -183,17 +170,23 @@ export default function Navbar() {
             <>
               <Link
                 href="/owner/listings/new"
-                className="hidden items-center gap-1.5 border border-gold/40 bg-gold/10 px-4 py-2 text-xs tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/20 sm:flex"
+                className="hidden items-center gap-1.5 rounded-md border border-gold/40 bg-gold/10 px-4 py-2 text-xs tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/20 sm:flex"
               >
                 <PlusCircle className="h-3.5 w-3.5" />
                 <span>LIST RESIDENCE</span>
               </Link>
               <Link
                 href="/owner"
-                className="hidden items-center gap-2 border border-gold/70 bg-gold px-5 py-2 text-xs font-semibold tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_30px_rgba(212,169,95,0.4)] sm:flex"
+                className="hidden items-center gap-2 rounded-md border border-white/20 px-4 py-2 text-xs tracking-[0.15em] text-muted transition-all duration-300 hover:border-gold/50 hover:text-gold sm:flex"
               >
-                <LayoutDashboard className="h-3.5 w-3.5" />
                 <span>OWNER PORTAL</span>
+              </Link>
+              <Link
+                href="/properties"
+                className="hidden items-center gap-2 rounded-md border border-gold bg-gold/10 px-4 py-2 text-xs font-semibold tracking-[0.15em] text-gold transition-all duration-300 hover:bg-gold/20 sm:flex"
+              >
+                <Search className="h-3.5 w-3.5" />
+                <span>SEARCH</span>
               </Link>
             </>
           ) : (
@@ -205,9 +198,16 @@ export default function Navbar() {
                 Sign In
               </Link>
               <Link
+                href="/properties"
+                className="hidden items-center gap-2 rounded-md border border-gold/60 px-5 py-2.5 text-sm tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_30px_rgba(212,169,95,0.35)] sm:flex"
+              >
+                <Search className="h-3.5 w-3.5" />
+                <span>SEARCH</span>
+              </Link>
+              <Link
                 href="/login?next=/owner/listings/new"
                 ref={magnetRef}
-                className="hidden border border-gold/60 px-6 py-2.5 text-sm tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_30px_rgba(212,169,95,0.35)] md:block"
+                className="hidden rounded-md border border-gold/60 px-6 py-2.5 text-sm tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[0_0_30px_rgba(212,169,95,0.35)] md:block"
               >
                 List Property
               </Link>
@@ -230,68 +230,26 @@ export default function Navbar() {
       {menuOpen && (
         <div className="glass border-t border-white/10 md:hidden">
           <ul className="flex flex-col gap-1 px-6 py-4">
-            <li>
-              <Link
-                href="/properties?kind=sale"
-                className={`flex w-full items-center gap-1.5 py-2 text-left text-sm tracking-[0.2em] transition-colors ${
-                  isKindActive("sale")
-                    ? "font-semibold text-gold"
-                    : "text-muted hover:text-gold"
-                }`}
-                aria-current={isKindActive("sale") ? "page" : undefined}
-                onClick={() => setMenuOpen(false)}
-              >
-                <span
-                  className={`h-1 w-1 rounded-full ${
-                    isKindActive("sale") ? "bg-gold" : "bg-white/20"
-                  }`}
-                  aria-hidden="true"
-                />
-                BUY
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/properties?kind=rent"
-                className={`flex w-full items-center gap-1.5 py-2 text-left text-sm tracking-[0.2em] transition-colors ${
-                  isKindActive("rent")
-                    ? "font-semibold text-gold"
-                    : "text-muted hover:text-gold"
-                }`}
-                aria-current={isKindActive("rent") ? "page" : undefined}
-                onClick={() => setMenuOpen(false)}
-              >
-                <span
-                  className={`h-1 w-1 rounded-full ${
-                    isKindActive("rent") ? "bg-gold" : "bg-white/20"
-                  }`}
-                  aria-hidden="true"
-                />
-                RENT
-              </Link>
-            </li>
+            {SECTIONS.map((id) => (
+              <li key={id}>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection(id)}
+                  className="block w-full py-2 text-left text-sm tracking-[0.2em] text-muted uppercase hover:text-gold"
+                >
+                  {id}
+                </button>
+              </li>
+            ))}
             <li>
               <Link
                 href="/properties"
-                className={`block w-full py-2 text-left text-sm tracking-[0.2em] transition-colors ${
-                  kinds.length === 0
-                    ? "font-semibold text-gold"
-                    : "text-muted hover:text-white"
-                }`}
-                aria-current={kinds.length === 0 ? "page" : undefined}
+                className="flex w-full items-center gap-2 py-2 text-left text-sm tracking-[0.2em] text-gold"
                 onClick={() => setMenuOpen(false)}
               >
-                ALL PROPERTIES
+                <Search className="h-4 w-4" />
+                SEARCH
               </Link>
-            </li>
-            <li>
-              <button
-                type="button"
-                className="w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-white"
-                onClick={scrollToAbout}
-              >
-                ABOUT
-              </button>
             </li>
             <li className="border-t border-white/10 pt-2 mt-2">
               {user ? (

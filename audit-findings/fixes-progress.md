@@ -376,3 +376,167 @@ DURABLE LESSON (added to verification backlog): a build check that only asserts
 exit code 0 is worthless here — this build exited 0 while producing no server
 output. The check must assert .next/BUILD_ID and .next/prerender-manifest.json
 EXIST after the build.
+
+## NEW BLOCKER (6th) — Simon's ASGI server is a DEV dependency (2026-10-16)
+
+Independently verified by reading ~/Projects/Production/simon/pyproject.toml:
+
+  dependencies = [
+      asyncpg, httpx, langchain, langchain-core, langchain-google-genai,
+      langchain-groq, langchain-nvidia-ai-endpoints, langchain-openai,
+      pydantic, pydantic-settings, qdrant-client, supabase
+  ]
+  -> fastapi: 0 occurrences. uvicorn: 0 occurrences.
+
+  [dependency-groups] dev = [ "chainlit==2.12.0", ... ]
+
+fastapi and uvicorn appear in uv.lock ONLY as transitive deps of chainlit, and chainlit
+lives ONLY in the dev group. So any reproducible production install
+(`uv sync --frozen --no-dev`, the standard for a service that is not the chainlit UI)
+does NOT install the ASGI server, and the documented start command
+`uvicorn simon.server.main:app` fails at launch with command-not-found.
+
+It runs locally only because `uv run` includes the dev group. This is invisible in
+development and fatal in production — exactly the same shape as the localhost-URL bug:
+the local path masks the production failure.
+
+CONSEQUENCE for the plan: deployability requires promoting fastapi + uvicorn into
+[project.dependencies]. Adding a Dockerfile alone is NOT sufficient.
+
+Also verified in the same pass:
+- /api/health returns {"status":"ok"} UNCONDITIONALLY — it probes nothing (not Supabase,
+  not Qdrant, not the LLM). A deploy with the legacy DB URL and dead keys boots "healthy"
+  and fails silently per turn. This is the opposite of a readiness gate.
+- No lifespan/startup hook exists at all. No fail-fast on missing credentials.
+- CORS is hardcoded localhost at main.py:40. `CORS_ALLOWED_ORIGINS` EXISTS as a key name in
+  .env but is NEVER read anywhere in src/ — dead config that makes the production origin
+  impossible to allow without a code change.
+- Both server-side timeouts are 45s (main.py:176, main.py:217) while the website proxy
+  allows 60s — so under load the server times out first, and the SSE path signals a timeout
+  through the same generic {"type":"error"} as any other failure (no distinguishable 504).
+- POSTGRES_DSN is declared in settings and documented in .env.example but ABSENT from the
+  actual .env — so the persistent-checkpointer fix has no configured DSN even locally.
+- SUPABASE_URL is a real-looking filled host (not a placeholder), which is precisely why
+  the wrong-database problem is dangerous rather than obvious.
+
+## TOOLING LESSON — workflow structured-output schemas (2026-10-16)
+
+The Simon planning workflow failed twice at the same phase for the same reason:
+
+  1st run: [plan:simon-restoration] failed — API Error 429 (upstream did not complete reliably)
+  2nd run: agent({schema}): subagent completed without calling StructuredOutput
+           (after in-conversation nudge)
+
+Root cause of the second failure: the plan agent's schema demanded a deeply nested
+structure — an array of objects where each object had five required string fields
+(`step`, `files`, `change`, `verification`, `skipRisk`) plus nine more top-level required
+fields. The agent produced its analysis but could not reliably emit that exact shape, so
+validation failed and the whole run was rejected even though the work was done.
+
+Fix: collapse the schema to ONE required string field (`plan`) and let the agent write the
+ordered plan as a markdown document inside it. Complexity lives in the PROMPT, not the
+schema.
+
+Rule for future workflow authoring here: for any agent whose deliverable is long-form
+structured prose, use a single string field. Reserve nested array-of-object schemas for
+genuinely machine-parsed outputs (findings lists, verdicts). The attack-phase schema (an
+array of flat finding objects with 5 fields) worked fine — it was the DEPTH plus the
+combination with nine sibling required fields that broke the plan agent.
+
+Also recorded: a resumed workflow replays cached agent results, so the expensive audit
+phase did not re-run. That makes schema fixes cheap to iterate on.
+
+## OWNER DECISIONS — nav/hero restructure (2026-10-16)
+
+Five decisions, all resolved:
+1. 768-1023px breakpoint  -> use the short label `SEARCH` (not `FIND PROPERTIES`), keep the
+   `md:` breakpoint. No tablet regression; the measured cluster (837.7px) fits once the label
+   is shortened (~85px saved).
+2. /owner link              -> KEEP a path back to /owner for signed-in users. Required: /owner
+   is where sign-out now lives (ADR-019), so dropping it would strand sign-out.
+3. Hero "Explore the Collection" -> KEEP routing to /properties. The nav PROPERTIES link owns
+   the scroll-to-featured intent; the hero CTA owns the "browse the full collection" intent.
+   Something gold must still reach the search grid.
+4. Q2 radius                -> the new SEARCH CTA is NOT square. Apply rounded-md (6px, ADR-018
+   control tier). This means LIST RESIDENCE also gains rounded-md so the pair is consistent
+   (a deliberate, size-limited deviation from "keep byte-identical").
+5. Q5 phone drawer          -> YES, add a SEARCH row to the drawer's marketing list for
+   desktop/drawer parity.
+
+Pending: Workflow A's adversarial attack findings, then implementation.
+
+## OWNER DECISIONS — nav/hero, final (2026-10-16)
+- Q2: NOTHING square, not even the sibling. Both LIST RESIDENCE and the new SEARCH CTA get
+  rounded-md (6px, ADR-018 control tier). This reverses the earlier "keep byte-identical"
+  note for LIST RESIDENCE.
+- Q3: hero "Explore the Collection" does NOT scroll. Keeps href="/properties".
+- Q5: add the SEARCH row to the phone drawer (owner: "if its good then add") — judged good,
+  added, for desktop/drawer parity.
+
+## WORKFLOW A (nav/hero) — ATTACK FINDINGS + IMPLEMENTATION (2026-10-16)
+
+The adversarial attack completed (verdict: ship with fixes). Two findings changed the
+implementation:
+
+1. **THE SCROLL SILENTLY DOES NOTHING WITHOUT LENIS.** My first implementation used
+   native scrollIntoView/window.scrollBy. Measured in a real browser: clicking PROPERTIES
+   left scrollY at 0 and #properties rect.top at 640. Root cause: SmoothScroll wraps the
+   page in Lenis, which OWNS the scroll position (html.lenis), so native scroll APIs are
+   ignored. The original scrollToAbout used lenis.scrollTo() — removed during the refactor.
+   FIX: route through lenis when mounted, fall back to native otherwise.
+   Verified after the fix in a real browser via CDP:
+     properties: scrollY 0 -> 568, pathname stays /, #properties rect.top = 72
+     about:     scrollY 0 -> 1529, rect.top = 72
+     services:  scrollY 0 -> 3729, rect.top = 72
+     home:      stays 0 (correct — already at top)
+   rect.top === 72 every time is the -72px header offset landing correctly.
+
+2. **`<a>` to an internal route fails lint** (Next's no-html-link-for-pages). The hero
+   CTA was converted to next/link.
+
+Also from the attack: the SECTIONS array is shared by desktop + drawer so the two
+clusters cannot drift; `id="services"` was added to Services.tsx, which still carried the
+stale `id="what-we-do"` (kept as data-legacy-anchor so existing deep links survive).
+
+Implemented per owner decisions: BUY/RENT/ALL PROPERTIES removed; HOME/PROPERTIES/ABOUT/
+SERVICES restored as scrolling section buttons; PROPERTIES scrolls to the featured rail
+(id already existed at FeaturedProperties.tsx:56, verified — nothing to build);
+hero "Book a Private Viewing" -> "List Your Residence" -> /owner/listings/new;
+hero "Explore the Collection" KEEPS /properties (owner Q3: no);
+signed-out branch gains a gold SEARCH CTA -> /properties; signed-in branch keeps
++ LIST RESIDENCE and OWNER PORTAL; every CTA rounded-md (ADR-018, nothing square per
+owner Q2); SEARCH added to the phone drawer (owner Q5: yes).
+The <Suspense> fence around <Navbar> in page.tsx is REMOVED — the nav's useSearchParams
+is gone, so the nav is back in the prerendered shell.
+
+## SIMON — ATTACK FOUND TWO BLOCKERS THAT INVALIDATE THE REPOINT (2026-10-16)
+
+The restoration workflow's attack phase returned 10 findings, verdict "DO NOT APPROVE AS
+WRITTEN". Independently verified both blockers myself:
+
+**BLOCKER 1 — the repoint gives Simon ZERO inventory, not stale inventory.**
+Simon's catalog.py queries five tables: properties, property_images, agents,
+scheduled_viewings, property_inquiries. The production schema (13 migrations, 22 tables)
+contains NONE of them — it uses listings, listing_revisions, listing_media,
+viewing_requests, handoffs, properties_lux. Verified:
+  grep -oE 'from_\("[a-z_]+"\)' ../simon/src/simon/catalog.py | sort -u
+    -> agents, properties, property_images, property_inquiries, scheduled_viewings
+  grep -rhoE 'CREATE TABLE ... public\.[a-z_]+' supabase/migrations/ | sort -u
+    -> 22 names, none matching the five above
+docs/plans/phase1-migration-runbook.md:62-72 states those relations exist ONLY in the
+inherited project. So after a repoint, all 8 tools 404 on unknown relation every turn.
+The plan diagnosed "stale inventory"; the real post-repoint state is "no inventory",
+which is worse. Required new gate STEP B0: either rewrite catalog.py + records.py + tools
+onto the marketplace domain model, or expose PostgREST-compatible views in production.
+
+**BLOCKER 2 — the repoint's verification greps test the wrong thing.**
+`grep -cF nokarvewyorsupraufdg simon/.env` passes while every tool still 404s. The
+acceptance test must probe the real authority path (listings?select=listing_id&
+lifecycle_state=eq.published via the ANON key, so RLS is enforced) and assert that
+internal-org and withdrawn/closed listings are never returned. The plan's verification
+used the service_role key, which bypasses RLS and would make a leaking view look healthy.
+
+Remaining attack findings (MAJOR/MINOR): rotation-ordering timeline unproven; the env
+guard passes the exact failure it exists to catch and never runs locally; the SSE fix
+omits two failure modes; Memory Option 1 unimplementable (no DSN, packages absent);
+tool-safety validates types but still leaves the agent authoritative for availability.
