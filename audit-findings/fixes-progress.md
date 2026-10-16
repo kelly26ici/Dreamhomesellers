@@ -540,3 +540,314 @@ Remaining attack findings (MAJOR/MINOR): rotation-ordering timeline unproven; th
 guard passes the exact failure it exists to catch and never runs locally; the SSE fix
 omits two failure modes; Memory Option 1 unimplementable (no DSN, packages absent);
 tool-safety validates types but still leaves the agent authoritative for availability.
+
+## SIMON — IMPLEMENTED (2026-10-16, per owner decisions D1-D6)
+
+Docs re-read before any code: AGENTS.md, docs/README, docs/architecture/*,
+docs/plans/*, docs/agent-service/simon-boundary.md, audit-findings/*. That last
+document was decisive — it already specifies create_agent for live turns, forbids
+Deep Agents for catalog search, and defines Postgres checkpointing as memory step 1.
+
+LangChain toolchain used: ecosystem-primer (layer selection) ->
+langgraph-persistence (checkpointer API) -> the LangChain docs MCP for the
+AsyncPostgresSaver reference. Layer verdict: LangChain create_agent, not Deep
+Agents and not raw LangGraph — a fixed toolset concierge, per the project's own
+boundary document.
+
+### DONE
+
+**1. Deployability (the 6th blocker + D1).** pyproject.toml: promoted fastapi and
+uvicorn out of the chainlit dev group into [project.dependencies]. They were
+dev-only, so `uv sync --frozen --no-dev` installed NO ASGI server and the start
+command failed at launch — the local path masked a production-only failure.
+Added render.yaml (no manifest existed at all): python 3.13, uv sync --frozen
+--no-dev, `--host 0.0.0.0 --port $PORT` (was 127.0.0.1), health path /api/health,
+every secret declared `sync: false` so nothing lands in the file.
+
+**2. Memory (D6, task 10).** New src/simon/checkpointer.py holding one shared
+AsyncPostgresSaver for the process; build_agent/make_agent now pass it, so the
+per-request InMemorySaver is gone and thread_id is load-bearing. Degrades to
+InMemorySaver with a recorded reason when POSTGRES_DSN is absent/unreachable —
+so the service still runs and the degradation is visible rather than silent.
+Lifespan warms it at boot and prunes via the built-in aprune.
+
+   VERIFIED against a real local Postgres (initdb, then removed):
+     - AsyncPostgresSaver connects; is_persistent() True
+     - two SEPARATE agent objects, same thread_id: second sees the first's
+       messages -> CROSS-INSTANCE RECALL: PASS
+     - two SEPARATE interpreter processes: second sees the first's messages
+       -> SURVIVES PROCESS RESTART: PASS
+   Both are the exact capability the old code lacked ("compare the first with
+   the second" was unanswerable).
+
+   Two API facts found only by running it: from_conn_string is a
+   generator-based async context manager that closes its connection on exit, so
+   the scope must be entered once and held for the process lifetime (my first
+   version left a dead connection); and the installed version ships aprune(), so
+   the hand-written DELETE I first wrote would have broken on a schema migration.
+
+**3. Health honesty.** /api/health reported {"status":"ok"} unconditionally — a
+deploy with no model key and no DSN looked green. Now it reports the resolved
+provider, whether memory is persistent, and the fallback reason. Verified by
+removing the key: status flips to "degraded" with
+provider "unconfigured (RuntimeError)". With the key present: status "ok",
+provider "nvidia/nemotron-3.5-lightning-30b-a3b", memory "process",
+memory_detail "POSTGRES_DSN is not set".
+
+**4. D2 provider chain.** build_model selected by key PRESENCE in a fixed
+order, so a future NVIDIA outage fell through to Gemini, whose key is documented
+dead (401). Replaced with an explicit PROVIDER_CHAIN = nvidia -> poolside ->
+groq, Gemini removed entirely. FAILS loudly listing the accepted keys.
+
+**5. SSE timeout signal.** The stream path emitted the same generic
+{"type":"error"} for a timeout as for a failed turn, so a cold start looked like
+an outage. asyncio.TimeoutError now emits {"type":"timeout"}. Docstring updated,
+and the documented bind fixed to 0.0.0.0 + $PORT.
+
+## SIMON TOOL RESTRUCTURE — owner requirement added (2026-10-16)
+
+Owner instruction (verbatim): "also can you make those tools each have their own file?
+then use pydantic with them? this is a part I gave you skills for. and also use the
+__init_.py well"
+
+The data-layer rewrite workflow was PAUSED and its brief amended (rather than run in
+parallel and conflict on src/simon/tools/__init__.py). Amended brief now requires:
+
+  src/simon/tools/
+    __init__.py   — re-exports only: TOOLS + the individual callables + __all__.
+                    No implementations. The current file is a 259-line grab bag.
+    _base.py      — shared result caps, contact redaction, structured-error helper
+    <tool>.py     — one per tool, each with a Pydantic Args model (typed fields,
+                    Field descriptions that read as LLM-facing docs, and real
+                    validators rather than inline checks)
+
+Tool count becomes 7: create_listing is removed per D3.
+
+Verification added to the workflow: the import
+  python3 -c 'from simon.tools import TOOLS; print(len(TOOLS))'
+must print 7 (agent.py and /api/health's len(TOOLS) both depend on it), and a grader
+explicitly checks the one-file-per-tool layout and Pydantic usage — a 259-line
+__init__.py with inline bodies is a MAJOR finding.
+
+## SIMON HONESTY — source attribution landed (2026-10-16)
+
+The structural gap was in the type, not the UI. `SimonMessage` had no `source`
+field, so the route's `source: 'offline-fallback'` lived only on the HTTP
+envelope. Once the message was appended to the thread the envelope was gone,
+which made per-message attribution structurally impossible — and a thread that
+mixes an agent answer with a fallback answer (exactly what happens when the
+service drops mid-conversation) lost its attribution permanently.
+
+Changes:
+1. src/lib/simon/types.ts — new `SimonSource` union; `SimonMessage.source?`
+   (optional, so hand-authored welcome messages stay valid) and required
+   `SimonChatResponse.source` (the route already returned it; the type now says
+   so, so a future route change cannot drop it silently).
+2. api/simon/chat/route.ts — stamps `source: 'simon-agent'` onto the message
+   object itself, not only the envelope, on both the upstream and fallback paths.
+   The 429 body now carries `source: 'rate-limited'` + retryAfterSeconds.
+3. NativeSimonChat.tsx — a 429 now reads Retry-After and tells the visitor to
+   wait N seconds instead of "momentary connection interruption"; a 2xx body
+   carrying an error surfaces that error rather than clearing the spinner with
+   nothing rendered.
+
+The LIVE/grounded badge rewrite itself is NOT in this change: it needs the badge
+to derive from the last assistant message's source, which is only meaningful
+once per-message source exists — that is why this step comes first.
+
+tsc --noEmit: exit 0.
+
+## SIMON DATA LAYER — REWRITE LANDED, independently verified (2026-10-16)
+
+Owner requirement that shaped it: one file per tool, Pydantic args, __init__.py used
+as the real package surface.
+
+Verified myself on disk (not taken from the agent's report):
+- src/simon/tools/ now has 8 modules: __init__.py + _base.py + 7 tool files.
+  create_listing.py DOES NOT EXIST (D3 removal held).
+- __init__.py is 2.0K and contains ONLY a docstring, re-exports, TOOLS, __all__.
+  Zero implementations. (Was a 259-line grab bag.)
+- `from simon.tools import TOOLS` -> prints 7, names correct:
+  search_properties, describe_property, compare_properties,
+  search_by_meaning, schedule_viewing, check_viewings, record_lead
+- Every tool's args is a Pydantic BaseModel with model_config = ConfigDict(
+  extra="forbid") — the LLM cannot smuggle an invented field — plus Field
+  descriptions written as meaning (what the model reads), ge= constraints, and
+  model_validator for cross-field rules.
+- catalog.py rewritten onto the marketplace model: PUBLISHED_REVISION_FK uses the
+  `listing_revisions!listings_published_revision_fk!inner` embed alias copied
+  verbatim from the working frontend read model, so a listing whose revision RLS
+  hides is dropped by the !inner join rather than leaking. All reads gate on
+  lifecycle_state = 'published'.
+- Writes go through SECURITY DEFINER domain commands over the SAME anon client
+  (create_viewing_request / create_handoff), not direct inserts — matching how
+  the website itself writes.
+- PII is impossible by construction, not filtered: records.py carries NO contact
+  field, because production has no `agents` table and organization_id stays
+  restricted so the org display block is not joinable. _base.py still runs a
+  shape test + key blocklist on every payload for in-bound buyer contact.
+- py_compile passes on all 9 files.
+- grep for the five legacy table names (properties, property_images, agents,
+  scheduled_viewings, property_inquiries) returns ZERO hits.
+
+Blocker 1 ("the repoint gives Simon zero inventory") is closed by this rewrite.
+Remaining before Simon can be pointed at production: the env repoint itself
+(task 12) and the frontend LIVE-badge derivation (task 13).
+
+## MISTAKE RECORD — a type-check I reported as clean was not (2026-10-16)
+
+After writing the Simon LIVE-badge change I ran `npx tsc --noEmit`, got exit 0, and
+reported the honesty work as landed. `next build` then failed with three errors:
+
+  TS2448 / TS2454  'messages' used before its declaration (I placed lastSource
+                   above the useState that declares it)
+  TS2304           'res' referenced in the catch block, but `const res` lives
+                   inside the try — different scope
+
+Why tsc missed them: bare `npx tsc --noEmit` does not see the Next.js-generated
+`PageProps`/`LayoutProps` globals in next-env.d.ts unless a build has just produced
+them, so it type-checks a partial picture. I also ran it before a fresh build in
+this session had regenerated that file.
+
+FIX: lastSource moved below the state it derives from; the scoped-`res` read in the
+catch replaced with a proper `RateLimited extends Error` thrown at the `!res.ok`
+check where res is in scope.
+
+RULE, recorded for the rest of this work: `next build` is the only reliable gate in
+this repo. And it is not sufficient on its own either — the earlier
+prerender-manifest failure exited 0 while producing NO server output at all. A
+build check must assert BOTH exit 0 AND that .next/BUILD_ID exists. tsc alone is a
+hint, not a gate.
+
+## SIMON LIVE BADGE — three-state, verified (2026-10-16)
+
+The old markup rendered a green pulsing LIVE unconditionally, directly above an amber
+banner saying the service was offline. Both were in the DOM at once.
+
+Now derived from the last assistant message's source:
+  simon-agent      -> emerald dot + LIVE
+  offline-fallback -> amber dot   + DATABASE MODE
+  no source yet    -> muted dot   + READY
+
+Verified: next build exit 0 AND .next/BUILD_ID present. Fresh /simon SSR shows READY
+and zero LIVE. POST to /api/simon/chat against the unreachable upstream returns
+source:'offline-fallback' on BOTH the envelope and the message object. Derivation
+logic checked across six histories:
+
+  welcome only              -> READY
+  after agent reply         -> LIVE
+  after fallback reply      -> DATABASE MODE
+  after user msg (no ans)   -> READY
+  agent then service drop   -> DATABASE MODE   <-- the case the old code got wrong
+  fallback then recovered   -> LIVE
+
+a11y: role="status" + aria-live="polite" so a mode change is announced; the dot is
+aria-hidden and the WORD carries the meaning, so it never relies on colour alone.
+animate-pulse removed (it meant "activity" and pulsed precisely when nothing was).
+
+BUG FOUND IN MY OWN FIRST VERSION: the binary `=== 'offline-fallback' ? amber : green`
+partition has a hidden third bucket — everything matching neither branch — and that
+bucket held the fresh-page case, so READY never happened and a brand-new visitor saw
+a green LIVE by default. Caught it by reading the SSR HTML rather than trusting the
+branch logic. Lesson: write the neutral case FIRST in the ternary so the fallback and
+empty cases must be handled explicitly.
+
+## TOOL VALIDATION — proved by execution, not declaration (2026-10-16)
+
+Ran the Pydantic models directly rather than trusting that they were declared:
+
+  SearchPropertiesArgs({'deal':'sale','bogus_field':1})  -> REJECTED (extra_forbidden)
+  SearchPropertiesArgs({'min_price':-5})                 -> REJECTED (ge=0)
+  SearchPropertiesArgs({'deal':'leasehold-nonsense'})    -> REJECTED (whitelist)
+  ComparePropertiesArgs({'listing_ids':['a','a']})       -> REJECTED (duplicate guard)
+  ComparePropertiesArgs({'listing_ids':['a']})           -> REJECTED (min_length=2)
+
+The third is the one that matters most: an invented `deal` value is refused by a
+literal whitelist, so a hallucinated filter produces a validation error the model
+can correct from instead of a silently wrong query. The old tools took whatever the
+model passed and interpolated it into a PostgREST filter.
+
+## VERIFICATION AUDIT VERDICT: PASS, ZERO BLOCKERS (2026-10-16)
+
+The adversarial audit of the data-layer rewrite could not break any of the six
+BLOCKER-class requirements. Notably it proved the published gate AT RUNTIME by
+capturing the generated PostgREST params, rather than by grepping for the string —
+the difference between "the code says lifecycle_state='published'" and "the wire
+request actually carries it".
+
+  compile    : py_compile passes on all 12 changed files; import prints 7
+  tableCheck : every from_() target exists in the migrations (4x listings, 1x listing_media)
+  rlsCheck   : client is RLS-enforcing by construction; zero service_role references in src/
+  piiCheck   : no path to owner contact at all (agents table gone, org id unjoinable for anon)
+  verdict    : PASS with MINOR findings
+
+### Three MINOR findings — all fixed and re-verified
+
+1. A raised Pydantic ValidationError escaped as a raw error instead of the promised
+   {"error": ...}, killing the turn at exactly the moment the model most needs to
+   recover. Fixed in _base.as_tool: validation now happens in the adapter, so a bad
+   argument returns a corrective dict. Verified through the REAL tool coroutine:
+     {"error":"Those arguments were rejected: property_ids...",
+      "invalid_arguments":[{"field":"property_ids","problem":"List should have at
+      least 2 items..."}]}
+   _validation_details reports FIELD NAMES AND MESSAGES ONLY, never the rejected
+   values, which are model-generated and could carry a buyer's data.
+
+2. THE SYSTEM PROMPT STILL PROMISED TWO CAPABILITIES THE REWRITE REMOVED — it told
+   the LLM it could post listings and run by-meaning search. The model would have
+   promised a buyer either, then hit a fail-closed tool. Rewritten: posting belongs
+   to the owner portal; the by-meaning tool is unavailable and Simon says so rather
+   than pretending it found nothing; and a submitted viewing is explicitly NOT a
+   confirmed booking.
+
+3. PropertyCard.town mapped from a never-selected column (always None) — left as a
+   known cosmetic gap, recorded, not fixed: the column list mirrors the website's
+   read model and widening it is a separate decision.
+
+### A bug found by RUNNING the tool rather than the model
+
+compare_properties' Field description said "The listing_ids to compare" while the
+field is named property_ids. The model supplied the documented name and was told
+the field was missing — it could not win. Fixed the description to match the field.
+
+## ENV MERGE + REPOINT — ACCEPTANCE PASSED (2026-10-16)
+
+Simon's .env merged with the marketplace's, in the direction that cannot lose data:
+started from Simon's own keys (the superset — the LLM/Qdrant/Cloudflare/LangSmith
+keys exist ONLY there) and overlaid the marketplace's Supabase/Postgres values under
+Simon's own names. Backup: simon/.env.bak-merge.
+
+  SUPABASE_URL  <- NEXT_PUBLIC_SUPABASE_URL    (CHANGED: legacy -> production)
+  SUPABASE_KEY  <- NEXT_PUBLIC_SUPABASE_ANON_KEY (CHANGED: 208-char RLS anon JWT,
+                    NOT the 47-char publishable key and NOT service_role)
+  POSTGRES_DSN  <- DATABASE_URL                 (CHANGED: was absent entirely)
+  TAVILY_API_KEY (unchanged)
+
+ACCEPTANCE, all passed:
+  grep production ref nokarvewyorsupraufdg : 2 hits
+  grep legacy ref   ahylzmgsfeghojpleozg : 0 hits
+  Simon's own LLM/Qdrant/Cloudflare/LangSmith keys all survive
+  published_grid(deal='rent') returns REAL Kenyan listings from production
+  anon-visible: 30 published / 0 draft / 0 withdrawn  (RLS enforces, not the code)
+  search_properties -> 6 cards; describe_property -> full card + gallery + media_pending
+  contact is the pointer string; no email/phone/@/+254 anywhere in tool output
+  full boot chain: 6 tools, NVIDIA chain, all three app routes import
+
+RENDER: still unauthorized. The stored key is rejected by Render itself —
+api.render.com/v1/owners returns 401 while the MCP handshake returns 200, so it is a
+revoked credential, not a config problem. The Render half of the merge is therefore
+NOT done and must be re-done from live values once a working key exists (direction:
+Render -> local, never the reverse; three keys are known to disagree).
+
+CHECKPOINTER: falls back to in-process as designed — the production Postgres host is
+IPv6-only and unreachable from this IPv4 machine. On Render the same DSN connects,
+and /api/health reports memory:"process" + the reason rather than lying about it.
+
+### Defect found by RUNNING the tool surface (not the models)
+
+search_properties returns cards keyed `listing_id`, so the model naturally passes
+`listing_id` into the tools that take one listing — but three of them named the field
+`property_id`, and under extra="forbid" the documented value was refused as an
+unexpected extra. The model supplied exactly what it was told and was rejected; it
+could not win. Fixed with validation_alias=AliasChoices on all four tools so the
+surface has ONE vocabulary. Verified both spellings work on all four.

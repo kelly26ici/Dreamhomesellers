@@ -17,9 +17,21 @@ import {
   ArrowUpRight,
   ShieldCheck,
 } from 'lucide-react';
-import type { SimonMessage } from '@/lib/simon/types';
+import type { SimonMessage, SimonSource } from '@/lib/simon/types';
 import type { PageContext } from '@/lib/contracts/page-context';
 import { useSimon } from '@/context/SimonContext';
+
+/**
+ * ADR-016: thrown when the concierge's rate limiter answers 429, carrying the
+ * wait. Distinct from a network failure so the catch can tell the visitor to
+ * wait rather than blaming a connection that never broke.
+ */
+class RateLimited extends Error {
+  constructor(readonly retryAfterSeconds: number) {
+    super('rate limited');
+    this.name = 'RateLimited';
+  }
+}
 
 interface NativeSimonChatProps {
   pageContext?: Partial<PageContext>;
@@ -71,6 +83,13 @@ export function NativeSimonChat({
     ];
   });
 
+  // Which path answered most recently. Undefined until the first reply, so the
+  // badge stays neutral rather than claiming LIVE before anything has happened.
+  const lastSource: SimonSource | undefined = messages
+    .slice()
+    .reverse()
+    .find((m) => m.role === 'assistant' && m.source)?.source;
+
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const conversationIdRef = useRef<string>('');
@@ -115,7 +134,13 @@ export function NativeSimonChat({
       });
 
       if (!res.ok) {
-        throw new Error('Failed to reach Simon concierge.');
+        // ADR-016: a 429 is not a connection failure. Read the wait here, while
+        // res is still in scope, so the catch below can tell the visitor how
+        // long to wait instead of blaming the network.
+        const wait = Number(res.headers.get('Retry-After'));
+        throw new RateLimited(
+          Number.isFinite(wait) && wait > 0 ? wait : 0
+        );
       }
 
       const data = await res.json();
@@ -131,13 +156,24 @@ export function NativeSimonChat({
         } else {
           setDegradedNotice(null);
         }
+        return;
       }
-    } catch {
+
+      // A 2xx body carrying an error but no message: surface the reason rather
+      // than letting the spinner clear with nothing rendered.
+      if (data.error) {
+        setDegradedNotice(data.error);
+        return;
+      }
+    } catch (err) {
+      // ADR-016: a rate limit is a wait, not a failure. Say so, with the wait.
+      const wait = err instanceof RateLimited ? err.retryAfterSeconds : 0;
       const errorMsg: SimonMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content:
-          'I apologize, but I encountered a momentary connection interruption. Please retry, or explore our verified properties grid directly.',
+        content: wait
+          ? `You’ve reached the concierge’s temporary request limit. Please try again in ${wait} second${wait === 1 ? '' : 's'}.`
+          : 'I apologize, but I encountered a momentary connection interruption. Please retry, or explore our verified properties grid directly.',
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -176,9 +212,41 @@ export function NativeSimonChat({
               : 'GROUNDED: POSTGRES MARKETPLACE KNOWLEDGE'}
           </span>
         </div>
-        <span className="flex items-center gap-1 text-[9px] uppercase tracking-widest text-gold/70 shrink-0">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          LIVE
+        {/* Derived from the last assistant message, not from a hope: a thread
+            can mix agent and fallback answers when the service drops
+            mid-conversation, so a global "LIVE" would be a lie for half of it.
+            Before the first reply there is no source, and the badge says so
+            rather than defaulting to LIVE. */}
+        <span
+          role="status"
+          aria-live="polite"
+          className="flex shrink-0 items-center gap-1 text-[9px] uppercase tracking-widest"
+        >
+          <span
+            aria-hidden="true"
+            className={`h-1.5 w-1.5 rounded-full ${
+              lastSource === 'offline-fallback'
+                ? 'bg-amber-400'
+                : lastSource === 'simon-agent'
+                  ? 'bg-emerald-400'
+                  : 'bg-white/30'
+            }`}
+          />
+          <span
+            className={
+              lastSource === 'offline-fallback'
+                ? 'text-amber-300'
+                : lastSource === 'simon-agent'
+                  ? 'text-gold/70'
+                  : 'text-muted'
+            }
+          >
+            {lastSource === 'offline-fallback'
+              ? 'DATABASE MODE'
+              : lastSource === 'simon-agent'
+                ? 'LIVE'
+                : 'READY'}
+          </span>
         </span>
       </div>
 

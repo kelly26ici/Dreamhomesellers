@@ -22,6 +22,11 @@ export async function POST(req: NextRequest) {
         {
           error:
             'You’ve reached the concierge’s temporary request limit. Please wait a moment before asking again.',
+          // Carried on the error bodies too: without it the client cannot tell
+          // "you are rate limited, wait" from "something broke", and a limited
+          // user gets told a connection blipped instead of being given a wait.
+          source: 'rate-limited',
+          retryAfterSeconds: rl.retryAfterSeconds,
         },
         { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } }
       );
@@ -71,6 +76,10 @@ export async function POST(req: NextRequest) {
               timestamp: upstreamData.message.timestamp || new Date().toISOString(),
               listingCards: upstreamData.message.listingCards,
               suggestedFollowUps: upstreamData.message.suggestedFollowUps,
+              // Stamped on the message too, not only the envelope: once this is
+              // appended to the thread the envelope is gone, and a thread that
+              // mixes agent and fallback answers loses its attribution forever.
+              source: 'simon-agent',
             };
             void persistTurn(conversationId, message, upstreamMsg).catch(() => {});
             return NextResponse.json({
@@ -230,6 +239,7 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
       listingCards: cards.length > 0 ? cards : undefined,
       suggestedFollowUps: followUps.length > 0 ? followUps : undefined,
+      source: 'offline-fallback',
     };
 
     // Persist conversation turn into Postgres (best-effort)
