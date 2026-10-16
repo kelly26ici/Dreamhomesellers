@@ -264,3 +264,20 @@ The navbar drops its sign-out control. Sign-out lives on the owner portal — th
 - The route takes `?next=` under the same open-redirect guard as `/auth/callback` (same-site paths only, defaulting to `/`), and responds 303 so the browser follows with GET.
 - The mobile drawer keeps a pointer ("SIGN OUT — FROM THE OWNER PORTAL") rather than dropping the affordance silently; the drawer has the vertical room and the owner needs to know where the action moved.
 - `handleSignOut` and the `LogOut` icon import were deleted from `Navbar.tsx` with the control. The `onAuthStateChange` subscription stays — it drives `OWNER PORTAL` / `LIST RESIDENCE` / the signed-out branch, not sign-out.
+
+## ADR-020 — Buyer discovery and owner listing creation are the two nav intents; BUY/RENT query filtering lives on /properties
+
+**Date:** 2026-10-16  
+**Status:** accepted (owner decision)
+
+The navbar drops BUY and RENT. Primary navigation returns to the marketing sections — HOME, PROPERTIES, ABOUT, SERVICES — and PROPERTIES scrolls to the featured-listings rail rather than navigating, as the first commits did. The two top-right actions are the two owner intents, deliberately opposite: `+ LIST RESIDENCE` (create) and `SEARCH` (discover). Kind filtering is a property of the /properties grid, not of the shell.
+
+**Why:** BUY and RENT were routed correctly all along (19 sale listings vs 10 rent), but both rendered with byte-identical styling and the page heading was hardcoded "Properties" in every state, so the pair read as duplicates. Kind is also not a primary intent for a premium marketplace buyer — price, area, and specification are — and the grid's filter bar already owns it with URL-backed state.
+
+**Consequences**
+
+- BUY/RENT, their `useSearchParams`-derived active state, and the `aria-current` attributes are gone. With the hook gone, the `<Suspense>` fence the nav required around the root layout is retired — the nav is back in the prerendered shell.
+- `id="services"` replaces the stale `id="what-we-do"` on the Services section; the old anchor survives as `data-legacy-anchor` so existing deep links do not 404. `id="home"`, `id="properties"`, and `id="about"` already existed.
+- Section scrolling routes through Lenis, which owns the scroll position once SmoothScroll mounts; native `scrollIntoView`/`window.scrollBy` are ignored and the scroll silently does nothing without it. Native scrolling is the fallback when Lenis is absent, and `prefers-reduced-motion` produces an instant jump (Lenis is JS-driven, so the global reduced-motion CSS block does not cover it).
+- The hero's "Book a Private Viewing" — a label promising what the link did not deliver — becomes "List Your Residence" pointing at the listing-creation route. "Explore the Collection" keeps `/properties`, so something gold still reaches the full search surface.
+- Supersedes ADR-019's drawer pointer: sign-out still lives at POST /auth/signout on the owner portal, and the portal keeps its nav entry for signed-in users so that route stays reachable.
