@@ -70,7 +70,7 @@ function PortalSkeleton() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="h-24 w-full animate-pulse rounded-xl border border-gold/10 bg-surface-2/40"
+          className="h-24 w-full animate-pulse rounded-lg border border-gold/10 bg-surface-2/40"
         />
       ))}
     </div>
@@ -118,7 +118,7 @@ async function Portal() {
 
 function SignInPrompt() {
   return (
-    <div className="mt-10 rounded-2xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+    <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
       <h2 className="text-2xl font-heading text-foreground">
         Owner sign in required
       </h2>
@@ -129,7 +129,7 @@ function SignInPrompt() {
       <div className="mt-6">
         <Link
           href="/login?next=%2Fowner"
-          className="inline-block rounded-lg border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+          className="inline-block rounded-md border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
         >
           Sign in to continue
         </Link>
@@ -140,7 +140,7 @@ function SignInPrompt() {
 
 function PortalError({ message }: { message: string }) {
   return (
-    <div className="mt-10 rounded-xl border border-red-500/30 bg-red-500/5 p-6">
+    <div className="mt-10 rounded-lg border border-red-500/30 bg-red-500/5 p-6">
       <p className="text-sm text-red-300">
         Something went wrong loading your portal. {message}
       </p>
@@ -157,7 +157,7 @@ function PortalError({ message }: { message: string }) {
 
 function Onboarding() {
   return (
-    <div className="mt-10 rounded-2xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+    <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
       <h2 className="text-2xl font-heading text-foreground">
         Create your organization
       </h2>
@@ -186,16 +186,31 @@ function ListingsOverview({
             ? 'No listings yet.'
             : `${items.length} listing${items.length === 1 ? '' : 's'}`}
         </p>
-        <Link
-          href={`/owner/listings/new?org=${encodeURIComponent(organizationId)}`}
-          className="rounded-lg border border-gold/40 bg-gold/10 px-4 py-2 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
-        >
-          + New listing
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={`/owner/listings/new?org=${encodeURIComponent(organizationId)}`}
+            className="rounded-md border border-gold/40 bg-gold/10 px-4 py-2 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+          >
+            + New listing
+          </Link>
+          {/* Sign-out lives here rather than in the navbar: the navbar is not
+              rendered on this route, so this is the only place an owner who
+              has navigated into the portal can end their session. A form POST
+              because sign-out clears the session cookies server-side — see
+              /auth/signout. */}
+          <form action="/auth/signout?next=/" method="post">
+            <button
+              type="submit"
+              className="rounded-md border border-white/10 px-4 py-2 text-sm tracking-wide text-muted transition-colors hover:border-white/30 hover:text-red-300"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-gold/10 bg-surface-2/30 p-10 text-center">
+        <div className="mt-6 rounded-lg border border-gold/10 bg-surface-2/30 p-10 text-center">
           <p className="text-sm text-muted">
             Your first draft is one form away. Listings go through moderation
             before they appear on the public site.
@@ -214,7 +229,7 @@ function ListingsOverview({
 
 function ListingRow({ item }: { item: OwnerListingSummary }) {
   return (
-    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-gold/10 bg-surface-2/30 px-5 py-4">
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-gold/10 bg-surface-2/30 px-5 py-4">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">
           {item.published.title ?? item.listingId}

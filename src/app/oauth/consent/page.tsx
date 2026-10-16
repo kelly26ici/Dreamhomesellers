@@ -35,7 +35,7 @@ function ConsentSkeleton() {
     <div
       aria-busy="true"
       aria-label="Loading authorization request"
-      className="mt-6 glass rounded-xl p-6"
+      className="mt-6 glass rounded-lg p-6"
     >
       <div className="h-6 w-40 animate-pulse rounded bg-surface-2" />
       <div className="mt-4 h-4 w-full animate-pulse rounded bg-surface-2" />
@@ -80,7 +80,7 @@ async function Consent({
       `/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`,
     )}`;
     return (
-      <div role="alert" className="mt-6 glass rounded-xl p-6">
+      <div role="alert" className="mt-6 glass rounded-lg p-6">
         <h1 className="font-display text-xl tracking-wide text-white">
           Sign in to continue
         </h1>
@@ -89,7 +89,7 @@ async function Consent({
         </p>
         <a
           href={signInHref}
-          className="mt-5 block rounded-lg bg-gold px-4 py-2.5 text-center text-sm tracking-widest text-black transition-opacity hover:opacity-90"
+          className="mt-5 block rounded-md bg-gold px-4 py-2.5 text-center text-sm tracking-widest text-black transition-opacity hover:opacity-90"
         >
           SIGN IN
         </a>
@@ -135,7 +135,7 @@ async function Consent({
   return (
     <section
       aria-label="Authorization request"
-      className="mt-6 glass rounded-xl p-6"
+      className="mt-6 glass rounded-lg p-6"
     >
       <h1 className="font-display text-2xl tracking-wide text-white">
         Authorize {clientName}
@@ -184,7 +184,7 @@ async function Consent({
           type="submit"
           name="decision"
           value="approve"
-          className="flex-1 rounded-lg bg-gold px-4 py-2.5 text-sm tracking-widest text-black transition-opacity hover:opacity-90"
+          className="flex-1 rounded-md bg-gold px-4 py-2.5 text-sm tracking-widest text-black transition-opacity hover:opacity-90"
         >
           APPROVE
         </button>
@@ -192,7 +192,7 @@ async function Consent({
           type="submit"
           name="decision"
           value="deny"
-          className="flex-1 rounded-lg border border-white/20 px-4 py-2.5 text-sm tracking-widest text-muted transition-colors hover:border-white/50 hover:text-white"
+          className="flex-1 rounded-md border border-white/20 px-4 py-2.5 text-sm tracking-widest text-muted transition-colors hover:border-white/50 hover:text-white"
         >
           DENY
         </button>
@@ -203,7 +203,7 @@ async function Consent({
 
 function ConsentError({ message }: { message: string }) {
   return (
-    <div role="alert" className="mt-6 glass rounded-xl p-6">
+    <div role="alert" className="mt-6 glass rounded-lg p-6">
       <h1 className="font-display text-xl tracking-wide text-white">
         Authorization
       </h1>

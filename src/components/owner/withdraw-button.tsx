@@ -69,7 +69,7 @@ export function WithdrawButton({ listingId }: { listingId: string }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm tracking-wide text-red-300 transition-colors hover:bg-red-500/20"
+        className="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm tracking-wide text-red-300 transition-colors hover:bg-red-500/20"
       >
         Withdraw listing
       </button>
@@ -85,7 +85,7 @@ export function WithdrawButton({ listingId }: { listingId: string }) {
         type="button"
         onClick={handleConfirm}
         disabled={withdrawn || submitting}
-        className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm tracking-wide text-red-300 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm tracking-wide text-red-300 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitting ? 'Withdrawing…' : 'Yes, withdraw'}
       </button>
@@ -93,7 +93,7 @@ export function WithdrawButton({ listingId }: { listingId: string }) {
         type="button"
         onClick={() => setConfirming(false)}
         disabled={submitting}
-        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted transition-colors hover:text-foreground"
+        className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted transition-colors hover:text-foreground"
       >
         Cancel
       </button>

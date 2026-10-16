@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Search, Menu, LogOut, LayoutDashboard, PlusCircle } from "lucide-react";
+import { Menu, LayoutDashboard, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useLenis } from "lenis/react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -18,6 +18,13 @@ export default function Navbar() {
   const lenis = useLenis();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Derive current kind from URL so nav links reflect active state (ADR-006:
+  // URL is the single source of truth). Mirrors FilterBar's kind vocabulary.
+  const currentKind = searchParams.get("kind");
+  const kinds = currentKind ? currentKind.split(",") : [];
+  const isKindActive = (kind: string) => kinds.includes(kind);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 50);
@@ -85,15 +92,6 @@ export default function Navbar() {
     }
   };
 
-  const handleSignOut = async () => {
-    const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signOut();
-    setUser(null);
-    setMenuOpen(false);
-    router.replace("/");
-    router.refresh();
-  };
-
   return (
     <header
       ref={rootRef}
@@ -115,28 +113,55 @@ export default function Navbar() {
           <span className="font-display text-2xl tracking-widest">LUXONN</span>
         </Link>
 
-        {/* Primary Buyer Nav */}
+        {/* Primary Buyer Nav — active state derived from URL kind param (ADR-006) */}
         <ul className="hidden items-center gap-8 md:flex">
           <li>
             <Link
               href="/properties?kind=sale"
-              className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold"
+              className={`inline-flex items-center gap-1.5 text-sm tracking-[0.2em] transition-colors ${
+                isKindActive("sale")
+                  ? "font-semibold text-gold"
+                  : "text-muted hover:text-gold"
+              }`}
+              aria-current={isKindActive("sale") ? "page" : undefined}
             >
+              <span
+                className={`h-1 w-1 rounded-full ${
+                  isKindActive("sale") ? "bg-gold" : "bg-white/20"
+                }`}
+                aria-hidden="true"
+              />
               BUY
             </Link>
           </li>
           <li>
             <Link
               href="/properties?kind=rent"
-              className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-gold"
+              className={`inline-flex items-center gap-1.5 text-sm tracking-[0.2em] transition-colors ${
+                isKindActive("rent")
+                  ? "font-semibold text-gold"
+                  : "text-muted hover:text-gold"
+              }`}
+              aria-current={isKindActive("rent") ? "page" : undefined}
             >
+              <span
+                className={`h-1 w-1 rounded-full ${
+                  isKindActive("rent") ? "bg-gold" : "bg-white/20"
+                }`}
+                aria-hidden="true"
+              />
               RENT
             </Link>
           </li>
           <li>
             <Link
               href="/properties"
-              className="text-sm tracking-[0.2em] text-muted transition-colors hover:text-white"
+              className={`text-sm tracking-[0.2em] transition-colors ${
+                kinds.length === 0
+                  ? "font-semibold text-gold"
+                  : "text-muted hover:text-white"
+              }`}
+              aria-current={kinds.length === 0 ? "page" : undefined}
             >
               ALL PROPERTIES
             </Link>
@@ -154,14 +179,6 @@ export default function Navbar() {
 
         {/* Right Action Cluster */}
         <div className="flex items-center gap-4">
-          <Link
-            href="/properties"
-            aria-label="Search properties"
-            className="hidden text-muted transition-colors hover:text-gold sm:block"
-          >
-            <Search className="h-5 w-5" />
-          </Link>
-
           {user ? (
             <>
               <Link
@@ -178,15 +195,6 @@ export default function Navbar() {
                 <LayoutDashboard className="h-3.5 w-3.5" />
                 <span>OWNER PORTAL</span>
               </Link>
-              <button
-                type="button"
-                onClick={handleSignOut}
-                aria-label="Sign Out"
-                className="hidden items-center gap-1.5 text-xs tracking-[0.15em] text-muted transition-colors hover:text-red-400 sm:flex"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                <span>LOGOUT</span>
-              </button>
             </>
           ) : (
             <>
@@ -225,25 +233,52 @@ export default function Navbar() {
             <li>
               <Link
                 href="/properties?kind=sale"
-                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-gold"
+                className={`flex w-full items-center gap-1.5 py-2 text-left text-sm tracking-[0.2em] transition-colors ${
+                  isKindActive("sale")
+                    ? "font-semibold text-gold"
+                    : "text-muted hover:text-gold"
+                }`}
+                aria-current={isKindActive("sale") ? "page" : undefined}
                 onClick={() => setMenuOpen(false)}
               >
+                <span
+                  className={`h-1 w-1 rounded-full ${
+                    isKindActive("sale") ? "bg-gold" : "bg-white/20"
+                  }`}
+                  aria-hidden="true"
+                />
                 BUY
               </Link>
             </li>
             <li>
               <Link
                 href="/properties?kind=rent"
-                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-gold"
+                className={`flex w-full items-center gap-1.5 py-2 text-left text-sm tracking-[0.2em] transition-colors ${
+                  isKindActive("rent")
+                    ? "font-semibold text-gold"
+                    : "text-muted hover:text-gold"
+                }`}
+                aria-current={isKindActive("rent") ? "page" : undefined}
                 onClick={() => setMenuOpen(false)}
               >
+                <span
+                  className={`h-1 w-1 rounded-full ${
+                    isKindActive("rent") ? "bg-gold" : "bg-white/20"
+                  }`}
+                  aria-hidden="true"
+                />
                 RENT
               </Link>
             </li>
             <li>
               <Link
                 href="/properties"
-                className="block w-full py-2 text-left text-sm tracking-[0.2em] text-muted hover:text-white"
+                className={`block w-full py-2 text-left text-sm tracking-[0.2em] transition-colors ${
+                  kinds.length === 0
+                    ? "font-semibold text-gold"
+                    : "text-muted hover:text-white"
+                }`}
+                aria-current={kinds.length === 0 ? "page" : undefined}
                 onClick={() => setMenuOpen(false)}
               >
                 ALL PROPERTIES
@@ -275,13 +310,13 @@ export default function Navbar() {
                   >
                     OWNER PORTAL
                   </Link>
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="block w-full py-2 text-left text-sm tracking-[0.2em] text-red-400 hover:text-red-300"
+                  <Link
+                    href="/owner"
+                    className="block w-full py-2 text-left text-xs tracking-[0.15em] text-muted hover:text-red-400"
+                    onClick={() => setMenuOpen(false)}
                   >
-                    LOGOUT
-                  </button>
+                    SIGN OUT — FROM THE OWNER PORTAL
+                  </Link>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">

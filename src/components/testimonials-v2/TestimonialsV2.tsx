@@ -139,7 +139,7 @@ function Card({ item }: { item: Testimonial }) {
           rotateY: reduceMotion ? 0 : rotateY,
           transformPerspective: 900,
         }}
-        className="group flex h-full w-[320px] flex-col justify-between rounded-3xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-gold/40 hover:shadow-[0_20px_60px_rgba(212,169,95,0.15)] sm:w-[380px] md:p-10"
+        className="group flex h-full w-[320px] flex-col justify-between rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-gold/40 hover:shadow-[0_20px_60px_rgba(212,169,95,0.15)] sm:w-[380px] md:p-10"
       >
         <div>
           <Quote

@@ -201,7 +201,7 @@ export function NativeSimonChat({
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
             >
               <div
-                className={`max-w-[88%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-lg ${
+                className={`max-w-[88%] rounded-lg px-4 py-3 text-xs leading-relaxed shadow-lg ${
                   isUser
                     ? 'rounded-tr-xs bg-gold/20 border border-gold/40 text-foreground'
                     : 'rounded-tl-xs bg-surface-1/90 border border-white/10 text-muted'
@@ -225,10 +225,10 @@ export function NativeSimonChat({
                     <Link
                       key={card.listingId}
                       href={`/property/${card.listingId}`}
-                      className="group flex items-center justify-between gap-3 rounded-xl border border-gold/30 bg-surface-2/60 p-3 transition-all hover:border-gold hover:bg-surface-2"
+                      className="group flex items-center justify-between gap-3 rounded-lg border border-gold/30 bg-surface-2/60 p-3 transition-all hover:border-gold hover:bg-surface-2"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-gold/10 text-gold">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-gold/30 bg-gold/10 text-gold">
                           <Building2 className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
@@ -290,12 +290,12 @@ export function NativeSimonChat({
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about this residence, specs, prices..."
             disabled={isLoading}
-            className="w-full rounded-xl border border-gold/30 bg-black/70 py-2.5 pl-4 pr-12 text-xs text-foreground placeholder:text-muted/60 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold disabled:opacity-50"
+            className="w-full rounded-md border border-gold/30 bg-black/70 py-2.5 pl-4 pr-12 text-xs text-foreground placeholder:text-muted/60 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-lg bg-gold text-black hover:bg-champagne transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-md bg-gold text-black hover:bg-champagne transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Send inquiry"
           >
             <Send className="h-3.5 w-3.5" />

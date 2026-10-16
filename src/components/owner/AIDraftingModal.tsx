@@ -59,7 +59,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-gold/30 bg-[#0c0c0e] text-foreground shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-lg border border-gold/30 bg-[#0c0c0e] text-foreground shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gold/15 px-6 py-4 bg-surface-2/40">
           <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. 5 bedroom standalone home in Karen near Crossroads, 0.5 acre plot with mature trees, private swimming pool, borehole and generator, asking 130 million KES..."
                   rows={5}
-                  className="w-full rounded-xl border border-white/10 bg-black/50 p-4 text-sm text-foreground placeholder:text-muted/60 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+                  className="w-full rounded-md border border-white/10 bg-black/50 p-4 text-sm text-foreground placeholder:text-muted/60 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
                 />
               </div>
 
@@ -103,7 +103,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
                       key={i}
                       type="button"
                       onClick={() => setNotes(example)}
-                      className="text-left text-xs rounded-lg border border-white/10 bg-surface-2/30 px-3 py-1.5 text-muted hover:border-gold/40 hover:text-champagne transition-all"
+                      className="text-left text-xs rounded-md border border-white/10 bg-surface-2/30 px-3 py-1.5 text-muted hover:border-gold/40 hover:text-champagne transition-all"
                     >
                       {example.slice(0, 48)}...
                     </button>
@@ -134,7 +134,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
                 </button>
               </div>
 
-              <div className="rounded-xl border border-gold/20 bg-black/40 p-4 space-y-3 text-sm">
+              <div className="rounded-lg border border-gold/20 bg-black/40 p-4 space-y-3 text-sm">
                 <div>
                   <span className="text-xs text-muted block">Proposed Editorial Title:</span>
                   <p className="font-heading text-lg text-champagne mt-0.5">{preview.title}</p>
@@ -195,7 +195,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-white/10 px-4 py-2 text-xs tracking-wider text-muted hover:text-foreground transition-colors"
+            className="rounded-md border border-white/10 px-4 py-2 text-xs tracking-wider text-muted hover:text-foreground transition-colors"
           >
             Cancel
           </button>
@@ -205,7 +205,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
               type="button"
               onClick={handleGenerate}
               disabled={isLoading || !notes.trim()}
-              className="flex items-center gap-2 rounded-lg border border-gold bg-gold/15 px-5 py-2 text-xs tracking-wider text-gold hover:bg-gold/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 rounded-md border border-gold bg-gold/15 px-5 py-2 text-xs tracking-wider text-gold hover:bg-gold/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
@@ -223,7 +223,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
             <button
               type="button"
               onClick={handleApply}
-              className="flex items-center gap-2 rounded-lg border border-gold bg-gold px-5 py-2 text-xs font-semibold tracking-wider text-black hover:bg-gold/90 transition-all shadow-lg shadow-gold/20"
+              className="flex items-center gap-2 rounded-md border border-gold bg-gold px-5 py-2 text-xs font-semibold tracking-wider text-black hover:bg-gold/90 transition-all shadow-lg shadow-gold/20"
             >
               <span>Apply to Form</span>
               <ArrowRight className="h-3.5 w-3.5" />

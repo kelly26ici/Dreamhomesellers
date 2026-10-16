@@ -28,10 +28,10 @@ export default function VideoSection() {
       }
       gsap.fromTo(
         "[data-video='image-wrap']",
-        { scale: 1, borderRadius: "0rem" },
+        { scale: 1, borderRadius: "0.5rem" },
         {
           scale: 0.92,
-          borderRadius: "2rem",
+          borderRadius: "0.5rem",
           ease: "none",
           scrollTrigger: {
             trigger: root,

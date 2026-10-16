@@ -175,7 +175,7 @@ export default function SavedPage() {
           </p>
           <Link
             href="/properties"
-            className="mt-8 rounded-lg border border-gold/60 px-5 py-2 text-sm tracking-widest text-gold transition-colors hover:bg-gold hover:text-black"
+            className="mt-8 rounded-md border border-gold/60 px-5 py-2 text-sm tracking-widest text-gold transition-colors hover:bg-gold hover:text-black"
           >
             BROWSE PROPERTIES
           </Link>
@@ -202,7 +202,7 @@ export default function SavedPage() {
               return (
                 <div
                   key={card.listingId}
-                  className="flex flex-col gap-3 rounded-xl border border-white/10 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-lg border border-white/10 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <Link
@@ -224,8 +224,8 @@ export default function SavedPage() {
                       aria-pressed={inCompare}
                       className={
                         inCompare
-                          ? 'rounded-lg border border-gold bg-gold px-3 py-1.5 text-xs tracking-widest text-black'
-                          : 'rounded-lg border border-gold/60 px-3 py-1.5 text-xs tracking-widest text-gold transition-colors hover:bg-gold hover:text-black'
+                          ? 'rounded-md border border-gold bg-gold px-3 py-1.5 text-xs tracking-widest text-black'
+                          : 'rounded-md border border-gold/60 px-3 py-1.5 text-xs tracking-widest text-gold transition-colors hover:bg-gold hover:text-black'
                       }
                       onClick={() => compareStore.toggle(card.listingId)}
                     >
@@ -233,7 +233,7 @@ export default function SavedPage() {
                     </button>
                     <button
                       type="button"
-                      className="rounded-lg border border-white/20 px-3 py-1.5 text-xs tracking-widest text-muted transition-colors hover:border-white/50 hover:text-white"
+                      className="rounded-md border border-white/20 px-3 py-1.5 text-xs tracking-widest text-muted transition-colors hover:border-white/50 hover:text-white"
                       onClick={() => savedStore.toggle(card.listingId)}
                     >
                       REMOVE
@@ -318,7 +318,7 @@ export default function SavedPage() {
           aria-label="Loading saved listings"
           className="mx-auto max-w-7xl px-4 py-16"
         >
-          <div className="h-40 animate-pulse rounded-xl border border-white/10 bg-surface" />
+          <div className="h-40 animate-pulse rounded-lg border border-white/10 bg-surface" />
         </div>
       )}
     </main>

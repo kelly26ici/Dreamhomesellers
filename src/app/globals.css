@@ -20,6 +20,18 @@
   --color-muted: var(--muted);
   --font-display: var(--font-bebas);
   --font-body: var(--font-inter);
+
+  /* Radius scale — mirrors the orbit.jfernando.dev instrument-panel system:
+     containers sit at 8px, controls are deliberately *tighter* at 6px so a
+     nested control never reads as softer than the surface holding it, and
+     the capsule tier is reserved for genuine nav shells and status pills. */
+  --radius-xs: 0.125rem; /*  2px — message-bubble tail corners  */
+  --radius-sm: 0.25rem;  /*  4px — tiny inline chips            */
+  --radius-md: 0.375rem; /*  6px — buttons, selects, controls   */
+  --radius-lg: 0.5rem;   /*  8px — cards, panels, inputs, frames */
+  --radius-xl: 0.75rem;  /* 12px — media surfaces, large tiles  */
+  --radius-2xl: 1rem;    /* 16px — modal + drawer shells only    */
+  --radius-3xl: 1.5rem;  /* 24px — unused; kept for parity      */
 }
 
 html {

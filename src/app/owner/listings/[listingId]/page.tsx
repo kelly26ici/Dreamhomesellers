@@ -84,7 +84,7 @@ async function ListingDetail({ params }: ListingDetailPageProps) {
 
   if (!user) {
     return (
-      <div className="mt-10 rounded-2xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+      <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
         <h2 className="text-2xl font-heading text-foreground">
           Owner sign in required
         </h2>
@@ -94,7 +94,7 @@ async function ListingDetail({ params }: ListingDetailPageProps) {
         <div className="mt-6">
           <Link
             href={`/login?next=%2Fowner%2Flistings%2F${encodeURIComponent(listingId)}`}
-            className="inline-block rounded-lg border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+            className="inline-block rounded-md border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
           >
             Sign in to continue
           </Link>
@@ -151,7 +151,7 @@ async function ListingDetail({ params }: ListingDetailPageProps) {
 
 function DetailError({ message }: { message: string }) {
   return (
-    <div className="mt-10 rounded-xl border border-red-500/30 bg-red-500/5 p-6">
+    <div className="mt-10 rounded-lg border border-red-500/30 bg-red-500/5 p-6">
       <p className="text-sm text-red-300">{message}</p>
       <p className="mt-2 text-xs text-muted">
         <Link href="/owner" className="text-gold underline">
@@ -191,7 +191,7 @@ function DetailView({
         </span>
       </div>
 
-      <dl className="grid grid-cols-1 gap-x-8 gap-y-4 rounded-2xl border border-gold/10 bg-surface-2/30 p-6 sm:grid-cols-2">
+      <dl className="grid grid-cols-1 gap-x-8 gap-y-4 rounded-lg border border-gold/10 bg-surface-2/30 p-6 sm:grid-cols-2">
         <Fact label="Kind" value={detail.listingKind} />
         <Fact label="Type" value={detail.propertyType} />
         <Fact
@@ -252,7 +252,7 @@ function DetailView({
         {isDraft && (
           <Link
             href={`/owner/listings/${detail.listingId}/edit`}
-            className="rounded-lg border border-gold/40 bg-gold/10 px-4 py-2 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+            className="rounded-md border border-gold/40 bg-gold/10 px-4 py-2 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
           >
             Edit draft
           </Link>

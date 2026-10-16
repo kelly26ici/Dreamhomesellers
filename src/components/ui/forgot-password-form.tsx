@@ -38,7 +38,7 @@ export function ForgotPasswordForm() {
 
   if (status === "sent") {
     return (
-      <div className="w-full max-w-sm space-y-6 rounded-3xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10">
+      <div className="w-full max-w-sm space-y-6 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10">
         <h2 className="font-display text-4xl tracking-wide text-white">
           CHECK YOUR EMAIL
         </h2>
@@ -51,7 +51,7 @@ export function ForgotPasswordForm() {
         </p>
         <Link
           href="/login"
-          className="block w-full border border-white/30 px-4 py-3 text-center text-sm tracking-[0.15em] text-white transition-colors hover:border-gold hover:text-gold"
+          className="block w-full rounded-md border border-white/30 px-4 py-3 text-center text-sm tracking-[0.15em] text-white transition-colors hover:border-gold hover:text-gold"
         >
           BACK TO SIGN IN
         </Link>
@@ -60,7 +60,7 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <div className="w-full max-w-sm space-y-8 rounded-3xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10">
+    <div className="w-full max-w-sm space-y-8 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10">
       <div className="text-center">
         <h2 className="font-display text-4xl tracking-wide text-white">
           RESET PASSWORD
@@ -102,7 +102,7 @@ export function ForgotPasswordForm() {
         <button
           type="submit"
           disabled={status === "sending"}
-          className="group w-full border border-gold bg-gold px-8 py-3.5 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505] disabled:cursor-not-allowed disabled:opacity-60"
+          className="group w-full rounded-md border border-gold bg-gold px-8 py-3.5 text-sm tracking-[0.15em] text-black transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,169,95,0.5)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {status === "sending" ? "SENDING…" : "SEND RESET LINK"}
           <ArrowRight className="ml-2 inline h-4 w-4 transition-transform group-hover:translate-x-1" />

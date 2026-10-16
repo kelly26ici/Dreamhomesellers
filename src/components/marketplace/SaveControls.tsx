@@ -22,11 +22,11 @@ import {
 } from '@/lib/marketplace/saved-listings';
 
 const BUTTON_CLASS =
-  'rounded-lg border border-gold/60 bg-black/50 px-3 py-1.5 text-xs tracking-widest ' +
+  'rounded-md border border-gold/60 bg-black/50 px-3 py-1.5 text-xs tracking-widest ' +
   'text-gold transition-colors hover:bg-gold hover:text-black';
 
 const PRESSED_CLASS =
-  'rounded-lg border border-gold bg-gold px-3 py-1.5 text-xs tracking-widest ' +
+  'rounded-md border border-gold bg-gold px-3 py-1.5 text-xs tracking-widest ' +
   'text-black transition-colors hover:opacity-90';
 
 function useIds(store: typeof savedStore): readonly string[] {
@@ -80,7 +80,7 @@ export function CompareButton({
         inCompare
           ? PRESSED_CLASS
           : disabled
-            ? 'cursor-not-allowed rounded-lg border border-white/20 bg-black/50 px-3 py-1.5 text-xs tracking-widest text-muted'
+            ? 'cursor-not-allowed rounded-md border border-white/20 bg-black/50 px-3 py-1.5 text-xs tracking-widest text-muted'
             : BUTTON_CLASS
       }
       aria-pressed={inCompare}

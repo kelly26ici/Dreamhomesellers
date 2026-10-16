@@ -46,7 +46,7 @@ function CaseSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading case" className="mt-8 space-y-4">
       <div className="h-12 w-1/2 animate-pulse rounded-lg border border-gold/10 bg-surface-2/40" />
-      <div className="h-64 w-full animate-pulse rounded-xl border border-gold/10 bg-surface-2/40" />
+      <div className="h-64 w-full animate-pulse rounded-lg border border-gold/10 bg-surface-2/40" />
     </div>
   );
 }
@@ -62,13 +62,13 @@ async function CaseReviewLoader({ params }: CaseReviewPageProps) {
 
   if (!user) {
     return (
-      <div className="mt-10 rounded-2xl border border-gold/15 bg-surface-1/80 p-8">
+      <div className="mt-10 rounded-lg border border-gold/15 bg-surface-1/80 p-8">
         <h2 className="text-2xl font-heading text-foreground">Staff sign in required</h2>
         <p className="mt-2 text-sm text-muted">Sign in to review moderation cases.</p>
         <div className="mt-6">
           <Link
             href={`/login?next=%2Fmoderator%2Fcases%2F${encodeURIComponent(caseId)}`}
-            className="inline-block rounded-lg border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold hover:bg-gold/20"
+            className="inline-block rounded-md border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold hover:bg-gold/20"
           >
             Sign in to continue
           </Link>
@@ -80,7 +80,7 @@ async function CaseReviewLoader({ params }: CaseReviewPageProps) {
   const isModerator = await checkCallerIsModerator();
   if (!isModerator) {
     return (
-      <div className="mt-10 rounded-2xl border border-red-500/20 bg-surface-1/80 p-8">
+      <div className="mt-10 rounded-lg border border-red-500/20 bg-surface-1/80 p-8">
         <h2 className="text-2xl font-heading text-foreground">Staff Authorization Required</h2>
         <p className="mt-2 text-sm text-muted">
           Your account does not hold platform moderator privileges.
@@ -92,7 +92,7 @@ async function CaseReviewLoader({ params }: CaseReviewPageProps) {
   const result = await fetchModerationCaseDetail(caseId);
   if (!result.ok) {
     return (
-      <div className="mt-10 rounded-xl border border-red-500/30 bg-red-500/5 p-6">
+      <div className="mt-10 rounded-lg border border-red-500/30 bg-red-500/5 p-6">
         <p className="text-sm text-red-300">{result.message}</p>
       </div>
     );
@@ -163,7 +163,7 @@ function CaseReviewView({
         {/* Left Column: Revision Facts */}
         <div className="space-y-6 lg:col-span-2">
           {r ? (
-            <div className="space-y-6 rounded-2xl border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
+            <div className="space-y-6 rounded-lg border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
               <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-4">
                 <div>
                   <p className="text-[10px] tracking-widest text-gold uppercase">OFFER PRICE</p>
@@ -237,13 +237,13 @@ function CaseReviewView({
               )}
             </div>
           ) : (
-            <div className="rounded-xl border border-white/10 bg-surface-2/20 p-8 text-center text-sm text-muted">
+            <div className="rounded-lg border border-white/10 bg-surface-2/20 p-8 text-center text-sm text-muted">
               No revision snapshot attached to this case.
             </div>
           )}
 
           {/* Media Assets Section */}
-          <div className="rounded-2xl border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
+          <div className="rounded-lg border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] tracking-widest text-gold uppercase">RESIDENCE VISUAL DOSSIER</p>
@@ -265,7 +265,7 @@ function CaseReviewView({
                 {media.map((item, idx) => (
                   <div
                     key={item.mediaId}
-                    className={`relative overflow-hidden rounded-xl border p-3 ${
+                    className={`relative overflow-hidden rounded-lg border p-3 ${
                       item.isFeatured
                         ? 'border-gold/60 bg-gold/10'
                         : 'border-white/10 bg-surface-1/40'
@@ -300,7 +300,7 @@ function CaseReviewView({
           />
 
           {/* Pre-Checks Card */}
-          <div className="rounded-2xl border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
+          <div className="rounded-lg border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
             <h3 className="font-heading text-lg tracking-wide text-foreground">
               Automated Pre-Checks
             </h3>
@@ -335,7 +335,7 @@ function CaseReviewView({
 
           {/* Prior Decisions */}
           {decisionHistory.length > 0 && (
-            <div className="rounded-2xl border border-white/10 bg-surface-2/20 p-6">
+            <div className="rounded-lg border border-white/10 bg-surface-2/20 p-6">
               <h3 className="font-heading text-base tracking-wide text-foreground">
                 Decision History
               </h3>

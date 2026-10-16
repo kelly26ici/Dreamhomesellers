@@ -330,14 +330,14 @@ export function ListingDraftForm({
     router.replace(`/owner/listings/${result.listingId}`);
   }
   const inputClass =
-    'mt-2 w-full rounded-lg border border-gold/20 bg-surface-2/50 px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-gold/50 focus:outline-none disabled:opacity-50';
+    'mt-2 w-full rounded-md border border-gold/20 bg-surface-2/50 px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-gold/50 focus:outline-none disabled:opacity-50';
   const labelClass = 'block text-xs tracking-[0.2em] text-gold';
 
   return (
     <>
-      <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-gold/30 bg-gradient-to-r from-gold/15 via-gold/5 to-transparent p-4 backdrop-blur-sm">
+      <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border border-gold/30 bg-gradient-to-r from-gold/15 via-gold/5 to-transparent p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/40 bg-gold/10 text-gold shadow-sm shadow-gold/20">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-gold/40 bg-gold/10 text-gold shadow-sm shadow-gold/20">
             <Sparkles className="h-5 w-5" />
           </span>
           <div>
@@ -352,7 +352,7 @@ export function ListingDraftForm({
         <button
           type="button"
           onClick={() => setIsAIDraftOpen(true)}
-          className="flex items-center gap-2 rounded-lg border border-gold bg-gold/15 px-4 py-2 text-xs font-semibold tracking-wider text-gold hover:bg-gold/25 transition-all shadow-sm shadow-gold/20 shrink-0"
+          className="flex items-center gap-2 rounded-md border border-gold bg-gold/15 px-4 py-2 text-xs font-semibold tracking-wider text-gold hover:bg-gold/25 transition-all shadow-sm shadow-gold/20 shrink-0"
         >
           <Sparkles className="h-3.5 w-3.5" />
           <span>Draft with Simon</span>
@@ -740,7 +740,7 @@ export function ListingDraftForm({
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-lg border border-gold/40 bg-gold/10 px-4 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-md border border-gold/40 bg-gold/10 px-4 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitting
           ? 'Saving…'

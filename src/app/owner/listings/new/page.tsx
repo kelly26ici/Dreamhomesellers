@@ -85,7 +85,7 @@ async function NewListingLoader({
 
   if (!user) {
     return (
-      <div className="mt-10 rounded-2xl border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+      <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
         <h2 className="text-2xl font-heading text-foreground">
           Owner sign in required
         </h2>
@@ -95,7 +95,7 @@ async function NewListingLoader({
         <div className="mt-6">
           <Link
             href="/login?next=%2Fowner%2Flistings%2Fnew"
-            className="inline-block rounded-lg border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+            className="inline-block rounded-md border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
           >
             Sign in to continue
           </Link>
