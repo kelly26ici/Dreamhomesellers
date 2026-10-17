@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getSupabasePublicKey, getSupabaseUrl } from "@/lib/auth/supabase-key";
 
 export async function GET() {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+    const supabaseUrl = getSupabaseUrl();
+    const anonKey = getSupabasePublicKey();
 
     const supabase = createClient(supabaseUrl, anonKey);
 
