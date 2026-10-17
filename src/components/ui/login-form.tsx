@@ -237,9 +237,16 @@ export function LoginForm() {
         </div>
 
         <div className="flex items-center justify-between" data-login="fade">
-          <a href="#" className="text-xs text-muted transition hover:text-white">
-            <Link href="/forgot-password">Forgot Password?</Link>
-          </a>
+          {/* Was <a href="#"> wrapping a <Link> — a dead anchor as the outer
+              click target around a real one. That is invalid HTML (nested
+              interactive controls) and can swallow the navigation entirely.
+              /forgot-password is a real route, so the Link stands alone. */}
+          <Link
+            href="/forgot-password"
+            className="text-xs text-muted transition hover:text-white"
+          >
+            Forgot Password?
+          </Link>
         </div>
 
         <button
