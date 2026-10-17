@@ -9,13 +9,14 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr';
+import { getSupabasePublicKey, getSupabaseUrl } from "./supabase-key";
 
 let client: ReturnType<typeof createBrowserClient> | undefined;
 
 export function getSupabaseBrowserClient() {
   client ??= createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    getSupabaseUrl(),
+    getSupabasePublicKey(),
   );
   return client;
 }

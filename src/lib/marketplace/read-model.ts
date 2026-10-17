@@ -26,17 +26,16 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import type { ListingKind } from '@/lib/contracts/listing';
 import type { RevisionId } from '@/lib/contracts/shared';
+import { getSupabasePublicKey, getSupabaseUrl } from '@/lib/auth/supabase-key';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Supabase calls the same public client key "anon" or "publishable" depending
+// on when the project was created, and a deploy defines only ONE of those two
+// env names. Reading a hardcoded name here is what returned HTTP 500 on every
+// page while `next build` still passed — see lib/auth/supabase-key.ts.
+const SUPABASE_URL = getSupabaseUrl();
+const SUPABASE_ANON_KEY = getSupabasePublicKey();
 
 function anonClient(): SupabaseClient {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    throw new Error(
-      'NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are not set — ' +
-        'the buyer read model cannot reach PostgREST.',
-    );
-  }
   // Memoized module-level: the anon client holds no session state
   // (persistSession off), so one instance serves every request safely.
   // A fresh client per call spawned multiple GoTrueClient instances in
