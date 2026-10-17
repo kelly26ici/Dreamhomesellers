@@ -1,20 +1,71 @@
+import Link from "next/link";
+
 async function CopyrightYear() {
   "use cache";
   return new Date().getFullYear();
 }
 
-const COLUMNS = [
+/**
+ * Footer navigation.
+ *
+ * Every link here used to be `<a href="#">` — a control that rendered a gold
+ * hover state and navigated nowhere. A third-party audit found 11 of them
+ * (Penthouses, Villas, Estates, New Developments, About, Advisors, Press,
+ * Careers, Simon AI Assistant, Nairobi, Private Viewings), all confirmed dead
+ * in the live DOM.
+ *
+ * This now only names destinations that exist. Verified individually:
+ *   /                      the homepage
+ *   /properties            catalogue; ?kind= and ?county= are real filters
+ *   /gallery               the 3D collection (HTTP 200)
+ *   /simon                 its own route (src/app/simon/page.tsx)
+ *   /owner/listings/new    the owner listing flow
+ *   /#about, /#services    real in-page anchors (About.tsx:38, Services.tsx:59)
+ *
+ * The old labels with no route behind them — /about, /services, /press,
+ * /careers — are gone rather than pointed at a placeholder. A dead link is
+ * worse than no link: it promises something and then silently does nothing,
+ * which reads as a bug. When a real page ships, add it here; the COLUMNS shape
+ * is unchanged, so that is one line per destination.
+ *
+ * `?county=Nairobi` is safe because Nairobi is a real county value (13
+ * published listings, confirmed against the database) — the county filter is
+ * free text matched against revision data, not a fixed enum.
+ */
+
+type FooterLink = {
+  label: string;
+  href: string;
+};
+
+const COLUMNS: ReadonlyArray<{
+  title: string;
+  links: ReadonlyArray<FooterLink>;
+}> = [
   {
-    title: "Properties",
-    links: ["Penthouses", "Villas", "Estates", "New Developments"],
+    title: "Explore",
+    links: [
+      { label: "All residences", href: "/properties" },
+      { label: "For sale", href: "/properties?kind=sale" },
+      { label: "For rent", href: "/properties?kind=rent" },
+      { label: "The 3D collection", href: "/gallery" },
+    ],
   },
   {
     title: "Company",
-    links: ["About", "Advisors", "Press", "Careers"],
+    links: [
+      { label: "About LUXONN", href: "/#about" },
+      { label: "What we do", href: "/#services" },
+      { label: "List your residence", href: "/owner/listings/new" },
+    ],
   },
   {
     title: "Concierge",
-    links: ["Simon AI Assistant", "Nairobi, Kenya", "Private Viewings"],
+    links: [
+      { label: "Ask Simon", href: "/simon" },
+      { label: "Nairobi residences", href: "/properties?county=Nairobi" },
+      { label: "Book a private viewing", href: "/properties" },
+    ],
   },
 ];
 
@@ -30,7 +81,7 @@ export default function Footer() {
             <span className="font-display text-2xl tracking-widest">LUXONN</span>
           </div>
           <p className="max-w-xs text-sm leading-relaxed text-muted">
-            A private collection of the world&rsquo;s most exceptional
+            A private collection of Kenya&rsquo;s most exceptional
             residences.
           </p>
         </div>
@@ -42,13 +93,13 @@ export default function Footer() {
             </p>
             <ul className="flex flex-col gap-2">
               {column.links.map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
                     className="text-sm text-white/80 transition-colors hover:text-gold"
                   >
-                    {link}
-                  </a>
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>

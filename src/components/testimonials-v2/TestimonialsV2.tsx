@@ -183,6 +183,9 @@ function Track({
   direction: "left" | "right";
   index: 1 | 2;
 }) {
+  // The marquee seam: translate -50% only loops seamlessly when the track holds
+  // exactly 2x its content, so the second half is REQUIRED for the animation
+  // and must never be deleted.
   const doubled = [...items, ...items];
   return (
     // Wrapper carries the GSAP entrance tween; the inner div carries the
@@ -200,9 +203,22 @@ function Track({
           (e.currentTarget as HTMLElement).style.animationPlayState = "running";
         }}
       >
-        {doubled.map((item, i) => (
-          <Card key={`${item.name}-${i}`} item={item} />
-        ))}
+        {doubled.map((item, i) => {
+          // The tail copy exists only to fill the loop. Marking it aria-hidden
+          // keeps a screen reader from reading every quote twice, and keeps
+          // crawlers from indexing the same eight paragraphs two times over —
+          // which is what the SSR HTML shipped until now.
+          const isSeamCopy = i >= items.length;
+          return (
+            <div
+              key={`${item.name}-${i}`}
+              aria-hidden={isSeamCopy || undefined}
+              className="contents"
+            >
+              <Card item={item} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
