@@ -21,6 +21,13 @@ export default function LoginPage() {
         BACK TO SITE
       </Link>
       <div className="relative z-10 w-full max-w-sm">
+        {/* The form itself renders no heading, so this page carried ZERO h1s
+            and jumped straight to its field labels — a broken document
+            outline, which is how screen-reader users navigate. The h1 is
+            visually hidden rather than styled into the design: the card has no
+            room for a visible title, but the document still needs a
+            top-level heading. */}
+        <h1 className="sr-only">Sign in to LUXONN</h1>
         {/* LoginForm reads ?next= to resume interrupted flows (e.g. an
             OAuth authorization) — under cacheComponents that read must
             sit inside a Suspense boundary. */}
