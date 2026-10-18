@@ -76,7 +76,14 @@ export function useProtocolChat() {
   const lastEventId = useRef(0);
   const controller = useRef<AbortController | null>(null);
 
-  const applyEvent = useCallback((event: { method: string; data: Record<string, unknown> }) => {
+  const applyEvent = useCallback((event: { method: string; data?: unknown }) => {
+    // The protocol allows a payload that is not an object (`values` carries the
+    // whole state, `custom` carries whatever the app sent). Reading `d.event`
+    // on one of those is a TypeError inside a setState updater, which React
+    // surfaces as a page error and silently kills the turn — so the shape is
+    // checked here rather than trusted from a type signature.
+    const data = (event.data ?? {}) as Record<string, unknown>;
+
     setState((s) => {
       const messages = [...s.messages];
       let last = messages[messages.length - 1];
@@ -89,33 +96,32 @@ export function useProtocolChat() {
       }
 
       if (event.method === "messages") {
-        const d = event.data;
-        if (d.event === "content-block-delta") {
-          const delta = d.delta as { type?: string; text?: string } | undefined;
+        if (data.event === "content-block-delta") {
+          const delta = data.delta as { type?: string; text?: string } | undefined;
           if (delta?.type === "text-delta") last.text += delta.text ?? "";
         }
-        if (d.event === "message-finish") {
-          last.id = String(d.id ?? last.id);
+        if (data.event === "message-finish") {
+          last.id = String(data.id ?? last.id);
         }
       }
 
       if (event.method === "tools") {
         const tools = [...(last.tools ?? [])];
-        const id = String(event.data.toolCallId ?? "");
-        if (event.data.event === "tool-started") {
-          tools.push({ id, name: String(event.data.name ?? "tool"), status: "running" });
-        } else if (event.data.event === "tool-finished") {
+        const id = String(data.toolCallId ?? "");
+        if (data.event === "tool-started") {
+          tools.push({ id, name: String(data.name ?? "tool"), status: "running" });
+        } else if (data.event === "tool-finished") {
           const found = tools.find((t) => t.id === id);
           if (found) found.status = "done";
-        } else if (event.data.event === "tool-error") {
+        } else if (data.event === "tool-error") {
           const found = tools.find((t) => t.id === id);
           if (found) found.status = "failed";
         }
         last.tools = tools;
       }
 
-      if (event.method === "lifecycle" && event.data.event === "failed") {
-        last.error = String(event.data.error ?? "The concierge could not answer.");
+      if (event.method === "lifecycle" && data.event === "failed") {
+        last.error = String(data.error ?? "The concierge could not answer.");
       }
 
       return { ...s, messages };
@@ -186,6 +192,11 @@ export function useProtocolChat() {
 
         // Parse SSE by hand: EventSource cannot POST, and this endpoint needs a
         // body (the message and the resume cursor).
+        //
+        // Frames are split on a LINE boundary, not on a blank line. Simon emits
+        // "id: N\ndata: {...}" back to back with no blank line between frames,
+        // so waiting for "\n\n" holds the whole transcript until the stream
+        // closes — which is why tokens appeared only after the turn finished.
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
@@ -195,23 +206,34 @@ export function useProtocolChat() {
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
 
-          let split = buffer.indexOf("\n\n");
-          while (split !== -1) {
-            const frame = buffer.slice(0, split);
-            buffer = buffer.slice(split + 2);
-
-            for (const line of frame.split("\n")) {
+          let cut = buffer.indexOf("\n");
+          while (cut !== -1) {
+            const line = buffer.slice(0, cut).trim();
+            buffer = buffer.slice(cut + 1);
+            if (line) {
               if (line.startsWith("id: ")) {
                 lastEventId.current = Number(line.slice(4)) || lastEventId.current;
               } else if (line.startsWith("data: ")) {
                 try {
-                  applyEvent(JSON.parse(line.slice(6)));
+                  const envelope = JSON.parse(line.slice(6)) as {
+                    method?: string;
+                    params?: { data?: unknown } | null;
+                  };
+                  // The protocol's payload is nested: the SSE frame carries
+                  // {type, seq, method, params:{namespace, timestamp, data}}.
+                  // Reading `envelope.data` yields undefined and the turn
+                  // silently renders nothing, so unwrap here and hand the
+                  // reducer the {method, data} pair it expects.
+                  applyEvent({
+                    method: String(envelope.method ?? ""),
+                    data: envelope.params?.data,
+                  });
                 } catch {
                   // A malformed frame is not worth killing a turn over.
                 }
               }
             }
-            split = buffer.indexOf("\n\n");
+            cut = buffer.indexOf("\n");
           }
         }
 
