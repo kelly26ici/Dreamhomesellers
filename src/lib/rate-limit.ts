@@ -22,8 +22,12 @@ interface TierConfig {
 
 const TIERS: Record<RateLimitTier, TierConfig> = {
   // Expensive: every chat turn can hit paid LLM APIs (ADR-016 "tightly
-  // limited"). 10 turns / 10 min / IP, 40 / day.
-  chat: { limit: 10, windowMs: 10 * 60_000 },
+  // limited"). Raised from 10 on 2026-10-18: before turns streamed, a 15s turn
+  // read as "no reply", so users resent and every resend burned another slot
+  // until the budget was gone. Tokens now arrive as they are generated (see
+  // api/simon/chat/stream), so the wait is visibly productive and the higher
+  // ceiling is not spent on retries.
+  chat: { limit: 25, windowMs: 10 * 60_000 },
   // Owner draft assist proxies to Simon too, but owners are authenticated
   // and few; generous per-user budget.
   draftAssist: { limit: 20, windowMs: 10 * 60_000 },
@@ -34,7 +38,7 @@ const TIERS: Record<RateLimitTier, TierConfig> = {
 
 /** Daily hard budget per tier per IP (soft-escalation backstop). */
 const DAILY_LIMITS: Record<RateLimitTier, number> = {
-  chat: 40,
+  chat: 120,
   draftAssist: 100,
   viewing: 12,
 };
@@ -61,6 +65,13 @@ export interface RateLimitResult {
   retryAfterSeconds: number;
   /** Which budget was hit, for logging/telemetry. */
   reason?: 'window' | 'daily';
+  /**
+   * Turns left in the current window, and the window's ceiling.
+   * Present on ALLOWED responses so the chat UI can show "8 of 25 left" and
+   * stop a user from discovering the limit by hitting it.
+   */
+  remaining?: number;
+  limit?: number;
 }
 
 function dayKey(now: Date): string {
@@ -113,7 +124,12 @@ export function checkRateLimit(
   bucket.hits.push(nowMs);
   bucket.dayHits.push(nowMs);
   evictIfNeeded();
-  return { allowed: true, retryAfterSeconds: 0 };
+  return {
+    allowed: true,
+    retryAfterSeconds: 0,
+    remaining: Math.max(0, cfg.limit - bucket.hits.length),
+    limit: cfg.limit,
+  };
 }
 
 /** Extract a client IP from proxy-forwarded headers, falling back to the
