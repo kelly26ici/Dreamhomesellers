@@ -18,17 +18,24 @@ export async function POST(req: NextRequest) {
     // soft escalation via Retry-After before hard block.
     const rl = checkRateLimit('chat', clientIpFrom(req));
     if (!rl.allowed) {
+      // The wait time is in the message, not only the header: a user told "try
+      // again in a moment" resends immediately and burns the window from both
+      // ends, which is exactly the "Simon doesn't reply" loop. Naming the
+      // seconds and the reason gives them something actionable to wait out.
+      const scope = rl.reason === 'daily' ? 'for today' : 'for the next few minutes';
+      const secs = rl.retryAfterSeconds;
       return NextResponse.json(
         {
           error:
-            'You’ve reached the concierge’s temporary request limit. Please wait a moment before asking again.',
-          // Carried on the error bodies too: without it the client cannot tell
-          // "you are rate limited, wait" from "something broke", and a limited
-          // user gets told a connection blipped instead of being given a wait.
+            `You’ve reached the concierge’s request limit ${scope}. ` +
+            `Please try again in ${secs} second${secs === 1 ? '' : 's'}.`,
           source: 'rate-limited',
-          retryAfterSeconds: rl.retryAfterSeconds,
+          retryAfterSeconds: secs,
+          reason: rl.reason,
+          remaining: 0,
+          limit: rl.limit,
         },
-        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } }
+        { status: 429, headers: { 'Retry-After': String(secs) } }
       );
     }
 
