@@ -1,11 +1,11 @@
 /**
  * /owner/listings/[listingId] — listing detail + lifecycle actions.
  *
- * Resolution chain: org ids → RLS-governed PostgREST select for the
- * listing's latest revision id → owner_listing_revision (migration 0004)
- * for the full projection. The RLS policy revision_org_read scopes the
- * select to the caller's orgs, so a listing id from another owner's org
- * yields zero rows — the URL id is never an authority signal.
+ * Resolution chain: org ids → owner_latest_revision_state RPC (migration
+ * 0014) for the latest revision id and state → owner_listing_revision
+ * (migration 0004) for the full projection. The RPC checks org membership
+ * via SECURITY DEFINER, so a listing id from another owner's org yields a
+ * typed rejection — the URL id is never an authority signal.
  *
  * Lifecycle actions render per state:
  *   draft      → Submit for review / Edit draft
@@ -20,6 +20,7 @@ import { connection } from 'next/server';
 import {
   fetchOwnerOrganizations,
   fetchOwnerRevision,
+  fetchLatestRevisionState,
   type OwnerRevisionDetail,
 } from '@/lib/owner/read-model';
 import { fetchRevisionMedia } from '@/lib/media/read-model';
@@ -113,28 +114,23 @@ async function ListingDetail({ params }: ListingDetailPageProps) {
     );
   }
 
-  // Latest revision of this listing, scoped to the caller's orgs by RLS.
-  // Zero rows = not your listing (or it genuinely has no revision).
-  const { data: revisionRows, error } = await client
-    .from('listing_revisions')
-    .select('revision_id, revision_state, created_at')
-    .eq('listing_id', listingId)
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  if (error !== null) {
-    return <DetailError message={error.message} />;
+  // Latest revision state via SECURITY DEFINER RPC — the direct PostgREST
+  // query was denied because revision_state and created_at are outside the
+  // column-level SELECT grant (migration 0001).
+  const stateResult = await fetchLatestRevisionState(listingId);
+  if (!stateResult.ok) {
+    if (stateResult.reasonCode === 'not_found' || stateResult.reasonCode === 'no_revision') {
+      return (
+        <DetailError message="This listing was not found in your organization. It may belong to another owner." />
+      );
+    }
+    return <DetailError message={stateResult.message} />;
   }
-  const latest = revisionRows?.[0];
-  if (!latest) {
-    return (
-      <DetailError message="This listing was not found in your organization. It may belong to another owner." />
-    );
-  }
+  const latest = stateResult.latest;
 
   const [detail, mediaRes] = await Promise.all([
-    fetchOwnerRevision(latest.revision_id),
-    fetchRevisionMedia(latest.revision_id),
+    fetchOwnerRevision(latest.revisionId),
+    fetchRevisionMedia(latest.revisionId),
   ]);
 
   if (!detail.ok) {

@@ -211,7 +211,8 @@ export interface OwnerRpcError {
 
 type OwnerRpcName =
   | 'owner_listings_summary'
-  | 'owner_listing_revision';
+  | 'owner_listing_revision'
+  | 'owner_latest_revision_state';
 
 /**
  * Call a jsonb-envelope owner RPC as the signed-in user and normalize its
@@ -446,4 +447,35 @@ export async function fetchOwnerRevision(
   }
 
   return { ok: true, detail: mapRevisionDetail(result.data as RawRevisionDetail) };
+}
+
+export interface LatestRevisionState {
+  readonly revisionId: string;
+  readonly revisionState: string;
+  readonly createdAt: string;
+}
+
+export async function fetchLatestRevisionState(
+  listingId: string,
+): Promise<OwnerRpcError | { ok: true; latest: LatestRevisionState }> {
+  const result = await callOwnerRpc('owner_latest_revision_state', {
+    p_listing_id: listingId,
+  });
+  if (!result.ok) {
+    return { ok: false, reasonCode: result.reasonCode, message: result.message };
+  }
+
+  const raw = result.data as {
+    revision_id: string;
+    revision_state: string;
+    created_at: string;
+  };
+  return {
+    ok: true,
+    latest: {
+      revisionId: raw.revision_id,
+      revisionState: raw.revision_state,
+      createdAt: raw.created_at,
+    },
+  };
 }
