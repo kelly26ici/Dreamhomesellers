@@ -1,12 +1,12 @@
 /**
  * /owner/listings/[listingId]/edit — edit a draft revision's content.
  *
- * The same resolution chain as the detail page: org ids → RLS-governed
- * PostgREST select for the listing's latest revision → owner_listing_revision
- * (migration 0004) for the full projection. Two gates before the form:
+ * Resolution chain: org ids → owner_latest_revision_state RPC (migration
+ * 0014) for the latest revision's state → owner_listing_revision (migration
+ * 0004) for the full projection. Two gates before the form:
  *
- *   1. Zero revision rows → "not your listing" (revision_org_read scopes
- *      the select to the caller's orgs; the URL id is never an authority).
+ *   1. RPC rejection (not_found / no_revision / not_authorized) → "not
+ *      your listing" (the URL id is never an authority signal).
  *   2. The latest revision is NOT a draft → redirect to the detail page,
  *      which renders the state-appropriate actions. Editing is only legal
  *      while revision_state = 'draft'; update_draft_revision re-checks
@@ -25,6 +25,7 @@ import { connection } from 'next/server';
 import {
   fetchOwnerOrganizations,
   fetchOwnerRevision,
+  fetchLatestRevisionState,
 } from '@/lib/owner/read-model';
 import { createAuthServerClient } from '@/lib/auth/supabase-server';
 import { ListingDraftForm } from '@/components/owner/listing-draft-form';
@@ -124,33 +125,27 @@ async function EditLoader({ params }: EditDraftPageProps) {
     );
   }
 
-  // Latest revision, scoped to the caller's orgs by RLS. Zero rows =
-  // not your listing (or it has no revision at all) — same message either
-  // way, so the URL cannot be probed to distinguish them.
-  const { data: revisionRows, error } = await client
-    .from('listing_revisions')
-    .select('revision_id, revision_state, created_at')
-    .eq('listing_id', listingId)
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  if (error !== null) {
-    return <EditError message={error.message} />;
+  // Latest revision state via SECURITY DEFINER RPC — the direct PostgREST
+  // query was denied because revision_state and created_at are outside the
+  // column-level SELECT grant (migration 0001).
+  const stateResult = await fetchLatestRevisionState(listingId);
+  if (!stateResult.ok) {
+    if (stateResult.reasonCode === 'not_found' || stateResult.reasonCode === 'no_revision') {
+      return (
+        <EditError message="This listing was not found in your organization. It may belong to another owner." />
+      );
+    }
+    return <EditError message={stateResult.message} />;
   }
-  const latest = revisionRows?.[0];
-  if (!latest) {
-    return (
-      <EditError message="This listing was not found in your organization. It may belong to another owner." />
-    );
-  }
+  const latest = stateResult.latest;
 
   // Draft-only surface: a submitted/published revision redirects to the
   // detail page, which renders the state-appropriate actions.
-  if (latest.revision_state !== 'draft') {
+  if (latest.revisionState !== 'draft') {
     redirect(`/owner/listings/${listingId}`);
   }
 
-  const detail = await fetchOwnerRevision(latest.revision_id);
+  const detail = await fetchOwnerRevision(latest.revisionId);
   if (!detail.ok) {
     return <EditError message={detail.message} />;
   }
