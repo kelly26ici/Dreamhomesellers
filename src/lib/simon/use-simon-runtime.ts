@@ -89,7 +89,8 @@ function convertMessage(entry: SimonChatEntry): ThreadMessageLike {
       role: 'user',
       createdAt: entry.createdAt,
       content: [{ type: 'text', text: entry.text }],
-      status: { type: 'complete', reason: 'unknown' },
+      // assistant-ui rejects `status` on user messages at runtime (it is an
+      // assistant-only field). Streaming state belongs on the assistant row.
     };
   }
 
