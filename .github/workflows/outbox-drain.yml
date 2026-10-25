@@ -1,14 +1,17 @@
-name: Outbox Drain
+name: Outbox Drain & Keep-Alive
 
 # ADR-005 requires the transactional outbox to be drained by a worker.
 # Render cron jobs are paid-tier, so this scheduled workflow pings the
 # internal consumer endpoint on the deployed site every 5 minutes instead.
 # The endpoint is protected by the x-outbox-secret header (value of OUTBOX_CONSUMER_SECRET); the value
 # lives in GitHub Actions secrets -- never in this file.
+#
+# The keep-alive step pings Simon's health endpoint on the same cadence so
+# that Render's free-tier idle timeout (15 min) never fires. Both services
+# are hit in the same workflow run to avoid burning extra Actions minutes.
 
 on:
   schedule:
-    # Every 5 minutes, offset from :00/:30 to be a good API citizen.
     - cron: "3-58/5 * * * *"
   workflow_dispatch: {}
 
@@ -36,4 +39,21 @@ jobs:
           if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
             echo "::error::outbox consumer returned HTTP $code"
             exit 1
+          fi
+
+      - name: Keep Simon alive
+        env:
+          SIMON_URL: ${{ secrets.SIMON_API_URL }}
+        run: |
+          if [ -z "$SIMON_URL" ]; then
+            echo "::warning::SIMON_API_URL secret not set — skipping keep-alive"
+            exit 0
+          fi
+          code=$(curl -s -o /tmp/simon-health.txt -w "%{http_code}" \
+            --max-time 90 \
+            "$SIMON_URL/api/health")
+          echo "Simon health: HTTP $code"
+          cat /tmp/simon-health.txt
+          if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
+            echo "::warning::Simon health returned HTTP $code (may be cold-starting)"
           fi
