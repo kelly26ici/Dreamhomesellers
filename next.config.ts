@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  // Records the 16.4.0 → 16.4.3 security upgrade (next upgrade --agent=security):
+  // future security patches surface through this agent path instead of
+  // interrupting builds with the advisory nudge.
+  experimental: {
+    agentUpgrade: "security",
+  },
   turbopack: {
     rules: {
       "*.css": {
