@@ -72,6 +72,14 @@ export interface SimonChatEntry {
   readonly suggestedFollowUps?: readonly string[];
   readonly source?: SimonSource;
   readonly streaming?: boolean;
+  /**
+   * Fixed creation time for rows that exist during prerender (the welcome
+   * row). assistant-ui fills a missing `createdAt` with a no-arg
+   * `new Date()`, which cacheComponents rejects in the static shell
+   * (ADR-021); runtime rows omit it and are stamped in the browser,
+   * where reading the clock is allowed.
+   */
+  readonly createdAt?: Date;
 }
 
 function convertMessage(entry: SimonChatEntry): ThreadMessageLike {
@@ -79,6 +87,7 @@ function convertMessage(entry: SimonChatEntry): ThreadMessageLike {
     return {
       id: entry.id,
       role: 'user',
+      createdAt: entry.createdAt,
       content: [{ type: 'text', text: entry.text }],
       status: { type: 'complete', reason: 'unknown' },
     };
@@ -110,6 +119,7 @@ function convertMessage(entry: SimonChatEntry): ThreadMessageLike {
   return {
     id: entry.id,
     role: 'assistant',
+    createdAt: entry.createdAt,
     content: content.length > 0 ? content : [{ type: 'text', text: '' }],
     status: entry.streaming
       ? { type: 'running' }
@@ -123,12 +133,22 @@ function convertMessage(entry: SimonChatEntry): ThreadMessageLike {
   };
 }
 
+/**
+ * The welcome row is seeded in the `useState` initializer, which also runs
+ * during prerender, where cacheComponents forbids reading the clock (Next's
+ * Date extension flags only no-arg `new Date()`). A fixed timestamp keeps
+ * prerender and hydration byte-identical; nothing renders it — assistant-ui
+ * consumes it only for its internal message cache.
+ */
+const WELCOME_CREATED_AT = new Date('2026-01-01T00:00:00.000Z');
+
 function welcomeEntries(context?: Partial<PageContext>): readonly SimonChatEntry[] {
   const isListingPage = Boolean(context?.active_listing_id);
   return [
     {
       id: 'welcome',
       role: 'assistant',
+      createdAt: WELCOME_CREATED_AT,
       text: isListingPage
         ? 'Greetings. I am Simon, your LUXONN personal property concierge. I am actively reviewing the verified architectural facts for this residence.\n\nYou can ask "what is this?", explore dimensions, request verified pricing, or arrange a confidential viewing.'
         : "Greetings. I am Simon, your LUXONN personal property concierge. I can guide you through Kenya's premier architectural estates, clarify specifications, or arrange confidential viewings.\n\nHow may I serve your search today?",
