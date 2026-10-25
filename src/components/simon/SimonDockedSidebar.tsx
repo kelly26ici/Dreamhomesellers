@@ -19,7 +19,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { useSimon } from '@/context/SimonContext';
-import { NativeSimonChat } from '@/components/simon/NativeSimonChat';
+import { SimonChat } from '@/components/simon/SimonChat';
 
 export function SimonDockedSidebar() {
   const { viewMode, isOpen, closeSimon, toggleFullscreen, openSimon } = useSimon();
@@ -146,7 +146,7 @@ export function SimonDockedSidebar() {
 
         {/* 100% Native Chat Interface */}
         <div className="min-h-0 flex-1 relative bg-black/60">
-          {isOpen && <NativeSimonChat />}
+          {isOpen && <SimonChat />}
         </div>
       </aside>
     </>

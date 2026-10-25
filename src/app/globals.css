@@ -56,6 +56,27 @@ body {
   border: 1px solid #ffffff4d;
 }
 
+/* Simon streaming caret (ADR-021): the old inline gold caret, rebuilt as a
+   pseudo-element on the last markdown block of a running concierge message.
+   .simon-streaming is set on the text wrapper while the entry is running,
+   where raw text would have ended the paragraph early. */
+.simon-streaming > :last-child::after {
+  content: "▍";
+  margin-left: 2px;
+  color: var(--gold);
+  animation: simon-caret 1.2s ease-in-out infinite;
+}
+
+@keyframes simon-caret {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
 .font-display {
   font-family: var(--font-display);
   line-height: 0.95;

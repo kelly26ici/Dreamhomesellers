@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { NativeSimonChat } from '@/components/simon/NativeSimonChat';
+import { SimonChat } from '@/components/simon/SimonChat';
 
 export const metadata: Metadata = {
   title: 'Simon Concierge — LUXONN',
@@ -23,7 +23,7 @@ export default function SimonChatPage() {
       </div>
 
       <div className="min-h-0 flex-1">
-        <NativeSimonChat />
+        <SimonChat />
       </div>
     </main>
   );

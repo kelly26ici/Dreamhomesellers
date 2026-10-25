@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { connection } from 'next/server';
-import { NativeSimonChat } from '@/components/simon/NativeSimonChat';
+import { SimonChat } from '@/components/simon/SimonChat';
 import type { PageContext } from '@/lib/contracts/page-context';
 import type { ListingId } from '@/lib/contracts/shared';
 
@@ -53,7 +53,7 @@ export default async function SimonPage({ searchParams }: SimonPageProps) {
       </header>
 
       <div className="relative min-h-0 flex-1 max-w-5xl mx-auto w-full border-x border-white/5 shadow-2xl">
-        <NativeSimonChat
+        <SimonChat
           pageContext={pageContext}
           activeListingTitle={title}
         />

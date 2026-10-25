@@ -17,6 +17,8 @@
     "test:all": "npm run test:auth && npm run test:media && npm run test:retrieval && npm run test:conversation && npm run test:outbox && npm run test:draft-assist && npm run test:privacy"
   },
   "dependencies": {
+    "@assistant-ui/react": "^0.15.31",
+    "@assistant-ui/react-markdown": "^0.14.24",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
     "@supabase/ssr": "^0.12.7",
