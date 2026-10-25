@@ -12,7 +12,7 @@ import Link from 'next/link';
 import {
   Sparkles,
   Send,
-  Loader2,
+  Search,
   Building2,
   ArrowUpRight,
   ShieldCheck,
@@ -20,18 +20,7 @@ import {
 import type { SimonMessage, SimonSource } from '@/lib/simon/types';
 import type { PageContext } from '@/lib/contracts/page-context';
 import { useSimon } from '@/context/SimonContext';
-
-/**
- * ADR-016: thrown when the concierge's rate limiter answers 429, carrying the
- * wait. Distinct from a network failure so the catch can tell the visitor to
- * wait rather than blaming a connection that never broke.
- */
-class RateLimited extends Error {
-  constructor(readonly retryAfterSeconds: number) {
-    super('rate limited');
-    this.name = 'RateLimited';
-  }
-}
+import { useSimonStream } from '@/lib/simon/use-simon-stream';
 
 interface NativeSimonChatProps {
   pageContext?: Partial<PageContext>;
@@ -53,7 +42,7 @@ export function NativeSimonChat({
   const effectiveContext = propPageContext || ctxPageContext;
   const effectiveTitle = propTitle || ctxTitle;
 
-  const [degradedNotice, setDegradedNotice] = useState<string | null>(null);
+  const { turn, send: streamSend, notice: streamNotice } = useSimonStream();
 
   const [messages, setMessages] = useState<SimonMessage[]>(() => {
 
@@ -61,10 +50,14 @@ export function NativeSimonChat({
     return [
       {
         id: 'welcome',
-        role: 'assistant',
+        role: 'assistant' as const,
         content: isListingPage
-          ? `Greetings. I am Simon, your LUXONN personal property concierge. I am actively reviewing the verified architectural facts for this residence.\n\nYou can ask "what is this?", explore dimensions, request verified pricing, or arrange a confidential viewing.`
-          : 'Greetings. I am Simon, your LUXONN personal property concierge. I can guide you through Kenya’s premier architectural estates, clarify specifications, or arrange confidential viewings.\n\nHow may I serve your search today?',
+          ? `Greetings. I am Simon, your LUXONN personal property concierge. I am actively reviewing the verified architectural facts for this residence.
+
+You can ask "what is this?", explore dimensions, request verified pricing, or arrange a confidential viewing.`
+          : `Greetings. I am Simon, your LUXONN personal property concierge. I can guide you through Kenya's premier architectural estates, clarify specifications, or arrange confidential viewings.
+
+How may I serve your search today?`,
         timestamp: '',
         suggestedFollowUps: isListingPage
           ? [
@@ -83,18 +76,17 @@ export function NativeSimonChat({
     ];
   });
 
-  // Which path answered most recently. Undefined until the first reply, so the
-  // badge stays neutral rather than claiming LIVE before anything has happened.
   const lastSource: SimonSource | undefined = messages
     .slice()
     .reverse()
     .find((m) => m.role === 'assistant' && m.source)?.source;
 
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const conversationIdRef = useRef<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const initialPromptSentRef = useRef<string | null>(null);
+
+  const isLoading = turn.streaming;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -102,7 +94,7 @@ export function NativeSimonChat({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, turn.partialText]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -116,69 +108,18 @@ export function NativeSimonChat({
 
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
-    setIsLoading(true);
 
     if (!conversationIdRef.current) {
       conversationIdRef.current = crypto.randomUUID();
     }
 
-    try {
-      const res = await fetch('/api/simon/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          conversationId: conversationIdRef.current,
-          pageContext: effectiveContext,
-        }),
-      });
+    const result = await streamSend(text, {
+      conversationId: conversationIdRef.current,
+      pageContext: effectiveContext,
+    });
 
-      if (!res.ok) {
-        // ADR-016: a 429 is not a connection failure. Read the wait here, while
-        // res is still in scope, so the catch below can tell the visitor how
-        // long to wait instead of blaming the network.
-        const wait = Number(res.headers.get('Retry-After'));
-        throw new RateLimited(
-          Number.isFinite(wait) && wait > 0 ? wait : 0
-        );
-      }
-
-      const data = await res.json();
-      if (data.message) {
-        setMessages((prev) => [...prev, data.message]);
-        // ADR-016 soft escalation: when the agent service is unreachable and
-        // the keyword fallback answered instead, say so honestly rather than
-        // pretending the full concierge is online.
-        if (data.source === 'offline-fallback') {
-          setDegradedNotice(
-            'Simon’s AI concierge service is temporarily offline — you’re getting basic verified-fact answers only. Full intelligence returns when the service reconnects.'
-          );
-        } else {
-          setDegradedNotice(null);
-        }
-        return;
-      }
-
-      // A 2xx body carrying an error but no message: surface the reason rather
-      // than letting the spinner clear with nothing rendered.
-      if (data.error) {
-        setDegradedNotice(data.error);
-        return;
-      }
-    } catch (err) {
-      // ADR-016: a rate limit is a wait, not a failure. Say so, with the wait.
-      const wait = err instanceof RateLimited ? err.retryAfterSeconds : 0;
-      const errorMsg: SimonMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: wait
-          ? `You’ve reached the concierge’s temporary request limit. Please try again in ${wait} second${wait === 1 ? '' : 's'}.`
-          : 'I apologize, but I encountered a momentary connection interruption. Please retry, or explore our verified properties grid directly.',
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setIsLoading(false);
+    if (result) {
+      setMessages((prev) => [...prev, result]);
     }
   };
 
@@ -252,12 +193,17 @@ export function NativeSimonChat({
 
       {/* Message Thread */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-color:var(--gold)_transparent] [scrollbar-width:thin]">
-        {degradedNotice && (
+        {streamNotice && (
           <div
             role="status"
             className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200"
           >
-            {degradedNotice}
+            {streamNotice.text}
+            {streamNotice.retryAfterSeconds ? (
+              <span className="ml-1 text-amber-200/70">
+                ({streamNotice.retryAfterSeconds}s)
+              </span>
+            ) : null}
           </div>
         )}
         {messages.map((msg) => {
@@ -335,11 +281,48 @@ export function NativeSimonChat({
         })}
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-xs text-gold/80 p-2">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-gold" />
-            <span className="text-[10px] tracking-widest uppercase">
-              Simon is analyzing verified inventory...
-            </span>
+          <div className="flex flex-col items-start gap-2">
+            {/* Tool activity cards */}
+            {turn.tools.length > 0 && (
+              <ul className="flex flex-col gap-1.5">
+                {turn.tools.map((t) => (
+                  <li
+                    key={t.id}
+                    className="flex items-center gap-2 text-[10px] tracking-wide"
+                  >
+                    <Search
+                      className={`h-3.5 w-3.5 ${t.status === 'running' ? 'animate-pulse text-gold' : 'text-gold/70'}`}
+                      aria-hidden
+                    />
+                    <span className="text-white/70">
+                      {t.status === 'running' ? 'searching…' : 'searched'}
+                    </span>
+                    <span className="text-muted">{t.name.replace(/_/g, ' ')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Streaming partial text */}
+            {turn.partialText ? (
+              <div className="max-w-[88%] rounded-lg rounded-tl-xs bg-surface-1/90 border border-white/10 px-4 py-3 text-xs leading-relaxed shadow-lg">
+                <div className="mb-1 flex items-center gap-1 text-[10px] tracking-widest text-gold uppercase font-medium">
+                  <Sparkles className="h-3 w-3" />
+                  <span>SIMON CONCIERGE</span>
+                </div>
+                <div className="whitespace-pre-line text-foreground/95">
+                  {turn.partialText}
+                  <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-gold" />
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-gold/80 p-2">
+                <Sparkles className="h-3.5 w-3.5 animate-pulse text-gold" />
+                <span className="text-[10px] tracking-widest uppercase">
+                  Simon is analyzing verified inventory...
+                </span>
+              </div>
+            )}
           </div>
         )}
 
