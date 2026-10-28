@@ -40,7 +40,7 @@ export function SimonDockedSidebar() {
   const isDocked = viewMode === 'docked';
 
   return (
-    <>
+    <div className="simon-docked-sidebar-root">
       {/* 1. Desktop Edge Tab Trigger (Visible when Simon is closed on lg+ screens) */}
       {!isOpen && (
         <button
@@ -149,6 +149,6 @@ export function SimonDockedSidebar() {
           {isOpen && <SimonChat />}
         </div>
       </aside>
-    </>
+    </div>
   );
 }

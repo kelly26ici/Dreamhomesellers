@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "tw-shimmer";
 
 :root {
   --background: #050505;
@@ -8,6 +10,26 @@
   --champagne: #e7c98b;
   --foreground: #ffffff;
   --muted: #a0a0a0;
+
+  /* Semantic tokens consumed by the assistant-ui component layer. They are
+     LUXONN's palette, not shadcn's defaults, so the shell keeps the house
+     dark/champagne language while using the components verbatim. */
+  --card: #111111;
+  --card-foreground: #ffffff;
+  --popover: #111111;
+  --popover-foreground: #ffffff;
+  --primary: #d4a95f;
+  --primary-foreground: #050505;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #e7c98b;
+  --muted-foreground: #a0a0a0;
+  --accent: #1f1b14;
+  --accent-foreground: #e7c98b;
+  --destructive: #f87171;
+  --border: #262626;
+  --input: #2a2a2a;
+  --ring: #d4a95f;
+  --radius: 0.5rem;
 }
 
 @theme inline {
@@ -18,6 +40,21 @@
   --color-champagne: var(--champagne);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --font-display: var(--font-bebas);
   --font-body: var(--font-inter);
 
@@ -36,6 +73,39 @@
 
 html {
   scroll-behavior: auto;
+}
+
+/* The assistant-ui shell reads `--muted` as a *surface* (`bg-muted`), while
+   LUXONN's global `--muted` is a text grey. Scoping the surface meaning to the
+   shell keeps the marketplace's `text-muted` untouched. */
+.aui-scope {
+  --muted: #1a1a1a;
+  color-scheme: dark;
+}
+
+/* Simon has no attachment pipeline. Hide the registry's add-attachment
+   control rather than opening a picker whose upload cannot be delivered.
+   The registry's action row is `justify-between`, so with the left control
+   gone the remaining actions would sit flush left; pin them right instead. */
+.aui-scope .aui-composer-add-attachment {
+  display: none;
+}
+
+.aui-scope .aui-composer-action-wrapper {
+  justify-content: flex-end;
+}
+
+/* `/simon-chat` is already a full-viewport concierge surface. Its page marks
+   itself with `data-simon-full-page`, which hides the marketplace dock (edge
+   tab, drawer, fullscreen overlay) and releases the docked width it reserves.
+   Route gating lives in CSS because reading `usePathname` in the root layout
+   suspends every dynamic route under Cache Components. */
+body:has([data-simon-full-page]) .simon-docked-sidebar-root {
+  display: none;
+}
+
+body:has([data-simon-full-page]) .simon-layout-wrapper {
+  margin-right: 0;
 }
 
 body {

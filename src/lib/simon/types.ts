@@ -42,6 +42,19 @@ export interface SimonChatRequest {
   readonly message: string;
   readonly conversationId?: string;
   readonly pageContext?: Partial<PageContext>;
+  /**
+   * Persistence contract. The browser generates both ids up front so a retry,
+   * a fallback, or an aborted stream writes the same row instead of a
+   * duplicate. `persist` is false for the docked concierge, which stays
+   * ephemeral by design.
+   */
+  readonly clientMessageId?: string;
+  readonly assistantMessageId?: string;
+  /** Truncate the persisted thread from this client id downward. */
+  readonly replaceFrom?: string | null;
+  readonly persist?: boolean;
+  /** First turn after loading a stored thread: inject its summary + memory. */
+  readonly resumed?: boolean;
 }
 
 export interface SimonChatResponse {

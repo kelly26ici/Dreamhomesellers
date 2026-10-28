@@ -338,7 +338,7 @@ export function SimonChat({
                   ? 'GROUNDED: NAIROBI LUXURY CATALOG'
                   : effectiveContext?.route?.startsWith('/gallery')
                     ? 'GROUNDED: 3D SIGNATURE COLLECTION'
-                    : 'GROUNDED: POSTGRES MARKETPLACE KNOWLEDGE'}
+                    : 'GROUNDED: VERIFIED LUXONN KNOWLEDGE'}
             </span>
           </div>
           {/* Derived from the last assistant entry, not from a hope: a thread

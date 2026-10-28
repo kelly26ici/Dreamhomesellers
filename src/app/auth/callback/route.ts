@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { createAuthServerClient } from '@/lib/auth/supabase-server';
+import { simonDeviceIdFromRequest } from '@/lib/simon/identity';
+import { claimSimonDeviceData } from '@/lib/simon/persistence';
 
 /**
  * OAuth + email-link callback.
@@ -60,6 +62,18 @@ export async function GET(req: NextRequest) {
   } else {
     // No exchangeable credential: bare callback visit.
     return NextResponse.redirect(`${origin}/login`);
+  }
+
+  // Signing in should not orphan the threads and preferences collected while
+  // browsing as a guest. The claim RPC also runs lazily on the next Simon
+  // read, so a failure here only defers the move.
+  const simonDeviceId = simonDeviceIdFromRequest(req);
+  if (simonDeviceId) {
+    try {
+      await claimSimonDeviceData(simonDeviceId);
+    } catch {
+      // Never block a completed sign-in on history bookkeeping.
+    }
   }
 
   // ADR-012 org bootstrap for first-time sign-ins (Google users land here

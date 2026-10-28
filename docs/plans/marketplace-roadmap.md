@@ -77,9 +77,17 @@ Search and Simon can use grounded image-derived knowledge without reprocessing m
 - Python FastAPI streaming/service boundary.
 - Typed page context for active listing, search, compare, and navigation state.
 - Persistent conversation checkpoints.
+- Persisted two-week thread history with a ChatGPT-style rail, anonymous device identity, and claim-on-sign-in.
+- Cross-thread preferences and inferred facts with a buyer-facing memory editor and a fourteen-day sliding TTL.
+- Auxiliary Simon model calls for thread titles, summaries, and durable facts, with deterministic fallbacks.
 - Constrained live-concierge tools for search, comparison, navigation, viewings, and handoffs.
 - Explicit consent capture and durable lead/handoff records.
 - Strong grounding, insufficient-evidence behavior, and tool authorization tests.
+
+### Delivered
+
+- ADR-022: full-page assistant-ui ChatGPT shell at `/simon-chat`, themed only through scoped LUXONN tokens.
+- ADR-023: Postgres-backed threads and messages, signed anonymous device cookie, claim-on-sign-in, hourly expiry purge, LLM titles/summaries via `POST /api/aux`, and an editable preference/fact memory surface. Streamed listing cards and completed tool results still wait on `../simon` publishing `data` frames and real `tool-finished` results.
 
 ### Exit criteria
 
@@ -91,7 +99,7 @@ A visitor can ask “what about this one?” while browsing and Simon accurately
 
 - Deep Agent or LangGraph workflow for owner draft assistance.
 - Deep research/report workflow for internal staff and selected buyer relocation use cases.
-- Controlled preference memory and conversation summarization.
+- Controlled preference memory and conversation summarization. — *partially delivered in Phase 4 via ADR-023; remaining work is summarization quality, retention/export controls, and owner-side memory.*
 - Observability, agent/retrieval evaluations, abuse controls, and operational dashboards.
 - CRM/calendar/notification integrations through the outbox.
 - Privacy retention/export/deletion controls and incident/recovery procedures.
