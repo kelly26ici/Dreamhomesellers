@@ -8,11 +8,11 @@
  *
  * This surface opts into persisted history (`history: true`): the rail lists
  * the buyer's threads for fourteen days, and the memory dialog edits the
- * preferences Simon carries between them. The docked concierge stays
- * ephemeral, so a passing question never leaves a record.
+ * preferences Simon carries between them. The docked variant uses the same
+ * shell and persistence with the rail hidden.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -43,6 +43,10 @@ import { SimonMemoryDialog } from './SimonMemoryDialog';
 interface SimonAssistantChatProps {
   pageContext?: Partial<PageContext>;
   activeListingTitle?: string | null;
+  /** `page` owns the full viewport; `docked` fills the marketplace sidebar. */
+  variant?: 'page' | 'docked';
+  /** Extra controls rendered at the end of the chat header (dock expand/close). */
+  headerActions?: ReactNode;
 }
 
 /**
@@ -136,7 +140,10 @@ function NoticeBanner({ notice }: { notice: SimonNotice }) {
 export function SimonAssistantChat({
   pageContext: propPageContext,
   activeListingTitle: propTitle,
+  variant = 'page',
+  headerActions,
 }: SimonAssistantChatProps) {
+  const docked = variant === 'docked';
   const {
     pageContext: ctxPageContext,
     activeListingTitle: ctxTitle,
@@ -147,7 +154,7 @@ export function SimonAssistantChat({
   const effectiveContext = propPageContext || ctxPageContext;
   const effectiveTitle = propTitle || ctxTitle || undefined;
 
-  const { runtime, entries, notice, send } = useSimonRuntime({
+  const { runtime, entries, notice, send, historyLoading } = useSimonRuntime({
     context: effectiveContext,
     startEmpty: true,
     history: true,
@@ -156,12 +163,15 @@ export function SimonAssistantChat({
 
   const initialPromptSentRef = useRef<string | null>(null);
   useEffect(() => {
+    // `send` is a no-op while history is loading, so wait for the rail before
+    // dispatching a prompt handed over from a listing page.
+    if (historyLoading) return;
     if (initialPrompt && initialPromptSentRef.current !== initialPrompt) {
       initialPromptSentRef.current = initialPrompt;
       clearInitialPrompt();
       send(initialPrompt);
     }
-  }, [initialPrompt, clearInitialPrompt, send]);
+  }, [initialPrompt, historyLoading, clearInitialPrompt, send]);
 
   const lastSource = useMemo<SimonSource | undefined>(() => {
     for (let i = entries.length - 1; i >= 0; i--) {
@@ -181,46 +191,52 @@ export function SimonAssistantChat({
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className="aui-scope flex h-dvh w-full overflow-hidden bg-background text-foreground">
-        <aside className="hidden w-[260px] shrink-0 flex-col border-r border-white/10 bg-[#080808] md:flex">
-          <div className="flex h-14 items-center justify-between px-3">
-            <Link
-              href="/"
-              className="font-heading text-sm tracking-[0.35em] text-champagne transition-colors hover:text-gold"
-            >
-              LUXONN
-            </Link>
-            <span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">
-              Simon
-            </span>
-          </div>
+      <div
+        className={`aui-scope flex w-full overflow-hidden bg-background text-foreground ${
+          docked ? 'h-full' : 'h-dvh'
+        }`}
+      >
+        {!docked ? (
+          <aside className="hidden w-[260px] shrink-0 flex-col border-r border-white/10 bg-[#080808] md:flex">
+            <div className="flex h-14 items-center justify-between px-3">
+              <Link
+                href="/"
+                className="font-heading text-sm tracking-[0.35em] text-champagne transition-colors hover:text-gold"
+              >
+                LUXONN
+              </Link>
+              <span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">
+                Simon
+              </span>
+            </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2 [scrollbar-width:thin]">
-            <ThreadList />
-          </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2 [scrollbar-width:thin]">
+              <ThreadList />
+            </div>
 
-          <div className="border-t border-white/10 p-3">
-            <button
-              type="button"
-              onClick={() => setMemoryOpen(true)}
-              className="flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-[11px] tracking-wider text-champagne/80 transition-colors hover:text-gold"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-gold" aria-hidden />
-              What Simon remembers
-            </button>
-            <Link
-              href="/"
-              className="mt-1 flex items-center gap-2 rounded-md px-1 py-1.5 text-[11px] tracking-wider text-muted-foreground transition-colors hover:text-gold"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-              Back to marketplace
-            </Link>
-            <p className="mt-2 px-1 text-[10px] leading-relaxed text-white/35">
-              Conversations and what Simon remembers are kept for fourteen days
-              after your last message.
-            </p>
-          </div>
-        </aside>
+            <div className="border-t border-white/10 p-3">
+              <button
+                type="button"
+                onClick={() => setMemoryOpen(true)}
+                className="flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-[11px] tracking-wider text-champagne/80 transition-colors hover:text-gold"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-gold" aria-hidden />
+                What Simon remembers
+              </button>
+              <Link
+                href="/"
+                className="mt-1 flex items-center gap-2 rounded-md px-1 py-1.5 text-[11px] tracking-wider text-muted-foreground transition-colors hover:text-gold"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+                Back to marketplace
+              </Link>
+              <p className="mt-2 px-1 text-[10px] leading-relaxed text-white/35">
+                Conversations and what Simon remembers are kept for fourteen days
+                after your last message.
+              </p>
+            </div>
+          </aside>
+        ) : null}
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-black/40 px-4">
@@ -228,7 +244,9 @@ export function SimonAssistantChat({
               <Link
                 href="/"
                 aria-label="Back to LUXONN"
-                className="text-muted-foreground transition-colors hover:text-gold md:hidden"
+                className={`text-muted-foreground transition-colors hover:text-gold ${
+                  docked ? 'hidden' : 'md:hidden'
+                }`}
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden />
               </Link>
@@ -248,7 +266,9 @@ export function SimonAssistantChat({
                 type="button"
                 onClick={() => setMemoryOpen(true)}
                 aria-label="What Simon remembers"
-                className="text-white/40 transition-colors hover:text-gold md:hidden"
+                className={`text-white/40 transition-colors hover:text-gold ${
+                  docked ? '' : 'md:hidden'
+                }`}
               >
                 <Sparkles className="h-4 w-4" aria-hidden />
               </button>
@@ -283,6 +303,7 @@ export function SimonAssistantChat({
                       : 'READY'}
                 </span>
               </span>
+              {headerActions}
             </div>
           </header>
 

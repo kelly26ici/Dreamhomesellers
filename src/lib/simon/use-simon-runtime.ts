@@ -3,16 +3,14 @@
 /**
  * The Simon chat runtime: transport, persistence, and assistant-ui adapter.
  *
- * Two modes share this hook:
- *
- * - Ephemeral (`history: false`, the docked concierge). The conversation lives
- *   in React state, Simon's checkpoint key is random per mount, and nothing is
- *   written to Postgres. `reset()` re-seeds the welcome row.
- * - Persisted (`history: true`, `/simon-chat`). The marketplace thread id is
- *   also Simon's checkpoint id, so a reloaded thread keeps the agent's own
- *   memory as well as the stored transcript. Every completed turn is written
- *   by the API routes; the runtime owns the rail, switching, rename, delete,
- *   and archive.
+ * The shipped surfaces (`/simon`, `/simon-chat`, and the marketplace dock) all
+ * run with `history: true`: the conversation lives in Postgres for fourteen
+ * days, and the marketplace thread id is also Simon's checkpoint id, so a
+ * reloaded thread keeps the agent's own memory as well as the stored
+ * transcript. Every completed turn is written by the API routes; the runtime
+ * owns the rail, switching, rename, delete, and archive. `history: false`
+ * remains available for tests and renders an ephemeral thread that writes
+ * nothing.
  *
  * Transport rules that matter:
  *
@@ -28,10 +26,6 @@
  * - A thread switch increments a turn token and aborts the stream. Every async
  *   mutation checks the token, so a late frame cannot land in the thread the
  *   buyer just opened.
- *
- * Rendering decisions from the assistant-ui migration are recorded in
- * `docs/architecture/decisions.md` (ADR-021, ADR-022). Persistence decisions
- * are ADR-022.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';

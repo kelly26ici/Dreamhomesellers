@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ArrowLeft, Sparkles } from 'lucide-react';
 import { connection } from 'next/server';
-import { SimonChat } from '@/components/simon/SimonChat';
+import { SimonAssistantChat } from '@/components/simon/SimonAssistantChat';
 import type { PageContext } from '@/lib/contracts/page-context';
 import type { ListingId } from '@/lib/contracts/shared';
 
@@ -35,29 +33,11 @@ export default async function SimonPage({ searchParams }: SimonPageProps) {
   };
 
   return (
-    <main className="flex h-screen flex-col bg-background text-foreground overflow-hidden">
-      <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-white/10 px-6 lg:px-12 bg-black/60 backdrop-blur-xl">
-        <Link
-          href={listingId ? `/property/${listingId}` : '/'}
-          className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-muted transition-colors hover:text-gold"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          <span>{listingId ? 'BACK TO RESIDENCE' : 'BACK TO SITE'}</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-gold" />
-          <span className="font-display text-2xl tracking-[0.16em] text-gold">
-            SIMON CONCIERGE
-          </span>
-        </div>
-      </header>
-
-      <div className="relative min-h-0 flex-1 max-w-5xl mx-auto w-full border-x border-white/5 shadow-2xl">
-        <SimonChat
-          pageContext={pageContext}
-          activeListingTitle={title}
-        />
-      </div>
+    <main data-simon-full-page className="h-dvh overflow-hidden bg-[#050505]">
+      <SimonAssistantChat
+        pageContext={pageContext}
+        activeListingTitle={title}
+      />
     </main>
   );
 }

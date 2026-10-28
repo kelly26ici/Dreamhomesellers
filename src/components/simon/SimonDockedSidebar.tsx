@@ -19,7 +19,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { useSimon } from '@/context/SimonContext';
-import { SimonChat } from '@/components/simon/SimonChat';
+import { SimonAssistantChat } from '@/components/simon/SimonAssistantChat';
 
 export function SimonDockedSidebar() {
   const { viewMode, isOpen, closeSimon, toggleFullscreen, openSimon } = useSimon();
@@ -100,53 +100,39 @@ export function SimonDockedSidebar() {
             : 'w-full md:w-[420px] lg:w-[440px] h-[100dvh] z-40 border-l border-gold/30 bg-[#090909]/95 backdrop-blur-2xl shadow-[-20px_0_60px_rgba(0,0,0,0.85)]'
         }`}
       >
-        {/* Header Bar with Maximize and Close Controls */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5 bg-black/40">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/50 bg-gold/15 text-gold">
-              <Sparkles className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="text-[10px] font-medium tracking-[0.22em] text-champagne uppercase">
-                LUXURY CONCIERGE
-              </p>
-              <h2 className="font-display text-xl tracking-[0.14em] text-white">
-                SIMON
-              </h2>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Maximize / Restore Toggle (Visible on md+ screens) */}
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-muted transition-colors hover:border-gold/50 hover:text-gold"
-              aria-label={isFullscreen ? 'Restore to sidebar dock' : 'Expand to full screen'}
-              title={isFullscreen ? 'Restore to sidebar' : 'Expand to full screen'}
-            >
-              {isFullscreen ? (
-                <Minimize2 className="h-4 w-4" />
-              ) : (
-                <Maximize2 className="h-4 w-4" />
-              )}
-            </button>
-
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={closeSimon}
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-muted transition-colors hover:border-gold/50 hover:text-gold active:scale-95"
-              aria-label="Close Simon concierge"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </header>
-
-        {/* 100% Native Chat Interface */}
+        {/* Same assistant-ui shell as /simon-chat, without the history rail. */}
         <div className="min-h-0 flex-1 relative bg-black/60">
-          {isOpen && <SimonChat />}
+          {isOpen && (
+            <SimonAssistantChat
+              variant="docked"
+              headerActions={
+                <>
+                  <button
+                    type="button"
+                    onClick={toggleFullscreen}
+                    className="hidden md:flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-muted transition-colors hover:border-gold/50 hover:text-gold"
+                    aria-label={isFullscreen ? 'Restore to sidebar dock' : 'Expand to full screen'}
+                    title={isFullscreen ? 'Restore to sidebar' : 'Expand to full screen'}
+                  >
+                    {isFullscreen ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize2 className="h-4 w-4" />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={closeSimon}
+                    className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-muted transition-colors hover:border-gold/50 hover:text-gold active:scale-95"
+                    aria-label="Close Simon concierge"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </>
+              }
+            />
+          )}
         </div>
       </aside>
     </div>

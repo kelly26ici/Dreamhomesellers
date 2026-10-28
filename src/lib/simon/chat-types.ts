@@ -44,9 +44,9 @@ export interface SimonChatEntry {
   /**
    * Fixed creation time for rows that exist during prerender (the welcome
    * row). assistant-ui fills a missing `createdAt` with a no-arg
-   * `new Date()`, which cacheComponents rejects in the static shell
-   * (ADR-021); runtime rows omit it and are stamped in the browser,
-   * where reading the clock is allowed.
+   * `new Date()`, which cacheComponents rejects in the static shell;
+   * runtime rows omit it and are stamped in the browser, where reading the
+   * clock is allowed.
    */
   readonly createdAt?: Date;
 }
