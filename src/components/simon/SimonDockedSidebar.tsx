@@ -79,7 +79,7 @@ export function SimonDockedSidebar() {
       {isDocked && (
         <div
           onClick={closeSimon}
-          className="hidden md:block lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
+          className="hidden md:block lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
           aria-hidden="true"
         />
       )}
@@ -96,8 +96,8 @@ export function SimonDockedSidebar() {
             : 'translate-x-0'
         } ${
           isFullscreen
-            ? 'inset-0 w-full h-[100dvh] z-50 bg-[#090909]/98 backdrop-blur-3xl'
-            : 'w-full md:w-[420px] lg:w-[440px] h-[100dvh] z-40 border-l border-gold/30 bg-[#090909]/95 backdrop-blur-2xl shadow-[-20px_0_60px_rgba(0,0,0,0.85)]'
+            ? 'inset-0 w-full h-[100dvh] z-[70] bg-[#090909]/98 backdrop-blur-3xl'
+            : 'w-full md:w-[420px] lg:w-[440px] h-[100dvh] z-[60] border-l border-gold/30 bg-[#090909]/95 backdrop-blur-2xl shadow-[-20px_0_60px_rgba(0,0,0,0.85)]'
         }`}
       >
         {/* Same assistant-ui shell as /simon-chat, without the history rail. */}
