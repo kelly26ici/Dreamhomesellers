@@ -31,6 +31,7 @@ import {
 import { Thread } from '@/components/assistant-ui/elements/thread.aui';
 import { ThreadList } from '@/components/assistant-ui/elements/thread-list.aui';
 import type { PageContext } from '@/lib/contracts/page-context';
+import { formatListingPrice } from '@/lib/marketplace/format-money';
 import type { SimonListingCardRef, SimonSource } from '@/lib/simon/types';
 import { useSimon } from '@/context/SimonContext';
 import {
@@ -80,35 +81,58 @@ function ToolActivityPart(props: DataMessagePartProps) {
   );
 }
 
-/** Verified listing cards carried by fallback answers. */
+/**
+ * Display money for a card. Simon sends a neutral decimal string plus currency
+ * and period (ADR-001); the host owns the locale and the "/mo" suffix. A card
+ * persisted under the old `priceFormatted` shape still renders.
+ */
+function cardPrice(card: SimonListingCardRef): string {
+  if (card.price && card.currency) {
+    try {
+      return formatListingPrice(
+        card.price,
+        card.currency,
+        card.pricePeriod ?? '',
+      );
+    } catch {
+      // A malformed persisted currency must not blank the whole card.
+    }
+  }
+  return card.priceFormatted ?? '';
+}
+
+/** Verified listing cards carried by Simon answers. */
 function ListingCardsPart(props: DataMessagePartProps) {
   const data = props.data as readonly SimonListingCardRef[];
   if (!data.length) return null;
 
   return (
     <div className="mt-3 w-full space-y-2">
-      {data.map((card) => (
-        <Link
-          key={card.listingId}
-          href={`/property/${card.listingId}`}
-          className="group flex items-center justify-between gap-3 rounded-lg border border-gold/30 bg-surface-2/60 p-3 transition-all hover:border-gold hover:bg-surface-2"
-        >
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-gold/30 bg-gold/10 text-gold">
-              <Building2 className="h-5 w-5" />
+      {data.map((card) => {
+        const price = cardPrice(card);
+        return (
+          <Link
+            key={card.listingId}
+            href={`/property/${card.listingId}`}
+            className="group flex items-center justify-between gap-3 rounded-lg border border-gold/30 bg-surface-2/60 p-3 transition-all hover:border-gold hover:bg-surface-2"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-gold/30 bg-gold/10 text-gold">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-heading text-sm text-foreground transition-colors group-hover:text-gold">
+                  {card.title}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {[card.location, price].filter(Boolean).join(' · ')}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="truncate font-heading text-sm text-foreground transition-colors group-hover:text-gold">
-                {card.title}
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                {card.location} · {card.priceFormatted}
-              </p>
-            </div>
-          </div>
-          <ArrowUpRight className="h-4 w-4 shrink-0 text-gold transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-        </Link>
-      ))}
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-gold transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+        );
+      })}
     </div>
   );
 }

@@ -34,9 +34,11 @@ import {
   type SimonIdentity,
 } from '@/lib/simon/identity';
 import {
+  parseSimonListingCards,
   simonAssistantMetadata,
   simonRequestMessage,
 } from '@/lib/simon/chat-types';
+import type { SimonListingCardRef } from '@/lib/simon/types';
 
 // No `export const runtime` here: Next 16 with cacheComponents rejects route
 // segment configs, and this relay does not need one.
@@ -72,29 +74,38 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+interface CapturedAnswer {
+  readonly text: string;
+  readonly cards: readonly SimonListingCardRef[];
+}
+
 /**
- * Collect the assistant's text out of Simon's SSE frames while they are being
- * relayed.
+ * Collect the assistant's text and listing cards out of Simon's SSE frames
+ * while they are being relayed.
  *
- * Only `messages` / `content-block-delta` / `text-delta` frames contribute.
- * That is the same rule the browser applies, so the stored answer and the
- * rendered answer cannot disagree about what was said.
+ * Text comes from `messages` / `content-block-delta` / `text-delta`, the same
+ * rule the browser applies, so the stored answer and the rendered answer cannot
+ * disagree about what was said. Cards come from the protocol's `custom` channel
+ * and are deduped by listing id exactly like the client does, so a replay or a
+ * second tool call cannot store the same card twice.
  */
 function createAnswerCapture() {
   let accumulated = '';
   let buffer = '';
   let settled = false;
   const decoder = new TextDecoder();
+  const cards: SimonListingCardRef[] = [];
+  const seenListingIds = new Set<string>();
 
-  let resolveDone: (text: string) => void = () => {};
-  const done = new Promise<string>((resolve) => {
+  let resolveDone: (answer: CapturedAnswer) => void = () => {};
+  const done = new Promise<CapturedAnswer>((resolve) => {
     resolveDone = resolve;
   });
 
   const finish = () => {
     if (settled) return;
     settled = true;
-    resolveDone(accumulated.trim());
+    resolveDone({ text: accumulated.trim(), cards });
   };
 
   const consumeLine = (line: string) => {
@@ -107,11 +118,21 @@ function createAnswerCapture() {
         method?: string;
         params?: { data?: unknown } | null;
       };
-      if (envelope.method !== 'messages') return;
-
       const data = isRecord(envelope.params?.data)
         ? envelope.params.data
         : {};
+
+      if (envelope.method === 'custom') {
+        if (data.name !== 'listingCards') return;
+        for (const card of parseSimonListingCards(data.cards) ?? []) {
+          if (seenListingIds.has(card.listingId)) continue;
+          seenListingIds.add(card.listingId);
+          cards.push(card);
+        }
+        return;
+      }
+
+      if (envelope.method !== 'messages') return;
       if (data.event !== 'content-block-delta') return;
 
       const delta = isRecord(data.delta) ? data.delta : null;
@@ -296,26 +317,30 @@ export async function POST(req: NextRequest) {
       // The response is finished by now, so this normally resolves at once.
       // The race is a guard against a platform that ends the response before
       // the upstream reader has observed completion.
-      const assistantText = await Promise.race([
+      const captured = await Promise.race([
         capture.done,
-        new Promise<string>((resolve) => setTimeout(() => resolve(''), 5_000)),
+        new Promise<CapturedAnswer>((resolve) =>
+          setTimeout(() => resolve({ text: '', cards: [] }), 5_000),
+        ),
       ]);
 
-      if (!assistantText) return;
+      if (!captured.text) return;
 
       try {
         const saved = await saveSimonTurn(identity, {
           threadId,
           userContent: message,
           userClientId: clientMessageId,
-          assistantContent: assistantText,
+          assistantContent: captured.text,
           assistantClientId: assistantMessageId,
           pageContext: isRecord(body.pageContext) ? body.pageContext : undefined,
           assistantMetadata: simonAssistantMetadata({
             id: assistantMessageId,
             role: 'assistant',
-            text: assistantText,
+            text: captured.text,
             source: 'simon-agent',
+            listingCards:
+              captured.cards.length > 0 ? captured.cards : undefined,
           }),
           title: simonFirstTurnTitle(message),
           replaceFromClientId: replaceFrom,

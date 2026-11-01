@@ -87,7 +87,8 @@ Search and Simon can use grounded image-derived knowledge without reprocessing m
 ### Delivered
 
 - Full-page assistant-ui ChatGPT shell at `/simon` and `/simon-chat`, plus the same shell docked on every marketplace page; themed only through scoped LUXONN tokens.
-- Postgres-backed threads and messages, signed anonymous device cookie, claim-on-sign-in, hourly expiry purge, LLM titles/summaries via `POST /api/aux`, and an editable preference/fact memory surface. Streamed listing cards and completed tool results still wait on `../simon` publishing `data` frames and real `tool-finished` results.
+- Postgres-backed threads and messages, signed anonymous device cookie, claim-on-sign-in, hourly expiry purge, LLM titles/summaries via `POST /api/aux`, and an editable preference/fact memory surface.
+- Streamed listing cards and truthful tool completion: `../simon` publishes protocol-shaped `tools` frames (`tool_call_id` / `tool_name` / `input` / `output` / `message`), sends `tool-finished` only after the tool's output is drained, and emits buyer-safe cards on the `custom` channel. The Next relay persists cards with the assistant row and `/api/chat` returns the same cards on fallback (ADR-021).
 
 ### Exit criteria
 

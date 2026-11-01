@@ -37,8 +37,9 @@ import {
   type ThreadSuggestion,
 } from '@assistant-ui/react';
 import type { PageContext } from '@/lib/contracts/page-context';
-import type { SimonMessage } from './types';
+import type { SimonListingCardRef, SimonMessage } from './types';
 import {
+  parseSimonListingCards,
   simonEntriesFromStoredMessages,
   simonSnippetTitle,
   type SimonChatEntry,
@@ -913,6 +914,13 @@ export function useSimonRuntime(options: UseSimonRuntimeOptions = {}) {
         },
       ]);
 
+      // Every turn starts a NEW run, and Simon numbers each run's events from
+      // 1. Carrying the previous turn's high-water mark into this request would
+      // make the server skip the opening frames (including the first tokens)
+      // of the new run. Resume is only meaningful inside one run, and the
+      // browser does not reconnect to a live run.
+      lastEventId.current = 0;
+
       const requestBody = {
         message,
         conversationId,
@@ -1023,7 +1031,7 @@ export function useSimonRuntime(options: UseSimonRuntimeOptions = {}) {
         finalizeEntry(assistantEntryId, {
           text: answer,
           tools: [],
-          listingCards: assistant?.listingCards,
+          listingCards: parseSimonListingCards(assistant?.listingCards),
           suggestedFollowUps: assistant?.suggestedFollowUps,
           source: assistant?.source ?? 'offline-fallback',
         });
@@ -1079,6 +1087,8 @@ export function useSimonRuntime(options: UseSimonRuntimeOptions = {}) {
         let buffer = '';
         let accumulated = '';
         const tools: SimonToolActivity[] = [];
+        const cards: SimonListingCardRef[] = [];
+        const seenListingIds = new Set<string>();
 
         for (;;) {
           const { done, value } = await reader.read();
@@ -1124,36 +1134,69 @@ export function useSimonRuntime(options: UseSimonRuntimeOptions = {}) {
                 }
 
                 if (method === 'tools') {
-                  const toolId = String(data.toolCallId ?? '');
+                  // langgraph_sdk spells these snake_case. The camelCase
+                  // fallbacks keep a mixed-version deploy readable during a
+                  // rolling release; new frames always use the protocol names.
+                  const toolId = String(
+                    data.tool_call_id ?? data.toolCallId ?? '',
+                  );
+                  const toolName = String(
+                    data.tool_name ?? data.toolName ?? data.name ?? 'tool',
+                  );
+                  const index = tools.findIndex((tool) => tool.id === toolId);
+
                   if (data.event === 'tool-started') {
-                    tools?.push({
-                      id: toolId,
-                      name: String(data.name ?? 'tool'),
-                      status: 'running',
-                    });
-                    patchEntry(assistantEntryId, (entry) => ({
-                      ...entry,
-                      tools: [...(tools ?? [])],
-                    }));
-                  } else if (data.event === 'tool-finished') {
-                    const index = tools?.findIndex((tool) => tool.id === toolId) ?? -1;
-                    if (index >= 0 && tools) {
-                      const found = tools[index];
-                      if (found) tools[index] = { ...found, status: 'done' };
+                    if (index >= 0) {
+                      tools[index] = { ...tools[index]!, status: 'running' };
+                    } else {
+                      tools.push({
+                        id: toolId,
+                        name: toolName,
+                        status: 'running',
+                      });
                     }
-                    patchEntry(assistantEntryId, (entry) => ({
-                      ...entry,
-                      tools: [...(tools ?? [])],
-                    }));
-                  } else if (data.event === 'tool-error') {
-                    const index = tools?.findIndex((tool) => tool.id === toolId) ?? -1;
-                    if (index >= 0 && tools) {
-                      const found = tools[index];
-                      if (found) tools[index] = { ...found, status: 'failed' };
+                  } else if (
+                    data.event === 'tool-finished' ||
+                    data.event === 'tool-error'
+                  ) {
+                    const status = data.event === 'tool-finished'
+                      ? 'done'
+                      : 'failed';
+                    // A replayed stream can deliver a terminal frame without
+                    // its start frame. Upserting keeps the activity visible
+                    // instead of silently dropping the tool.
+                    if (index >= 0) {
+                      tools[index] = { ...tools[index]!, status };
+                    } else {
+                      tools.push({ id: toolId, name: toolName, status });
                     }
+                  }
+
+                  if (
+                    data.event === 'tool-started' ||
+                    data.event === 'tool-finished' ||
+                    data.event === 'tool-error'
+                  ) {
                     patchEntry(assistantEntryId, (entry) => ({
                       ...entry,
-                      tools: [...(tools ?? [])],
+                      tools: [...tools],
+                    }));
+                  }
+                }
+
+                if (method === 'custom' && data.name === 'listingCards') {
+                  const fresh = parseSimonListingCards(data.cards) ?? [];
+                  let changed = false;
+                  for (const card of fresh) {
+                    if (seenListingIds.has(card.listingId)) continue;
+                    seenListingIds.add(card.listingId);
+                    cards.push(card);
+                    changed = true;
+                  }
+                  if (changed) {
+                    patchEntry(assistantEntryId, (entry) => ({
+                      ...entry,
+                      listingCards: [...cards],
                     }));
                   }
                 }

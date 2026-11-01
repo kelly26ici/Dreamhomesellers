@@ -282,3 +282,22 @@ The navbar drops BUY and RENT. Primary navigation returns to the marketing secti
 - The hero's "Book a Private Viewing" — a label promising what the link did not deliver — becomes "List Your Residence" pointing at the listing-creation route. "Explore the Collection" keeps `/properties`, so something gold still reaches the full search surface.
 - Supersedes ADR-019's drawer pointer: sign-out still lives at POST /auth/signout on the owner portal, and the portal keeps its nav entry for signed-in users so that route stays reachable.
 
+## ADR-021 — Simon's protocol stream is the single source of live tool state and listing cards
+
+**Date:** 2026-11-01  
+**Status:** accepted
+
+The Agent Streaming Protocol stream (`/threads/{id}/stream`) now carries the complete live turn: protocol-shaped tool lifecycle frames on `tools`, and buyer-safe listing cards on the `custom` channel as `{"name":"listingCards","cards":[...]}`. The Next.js relay and client parse that protocol rather than a Simon-private spelling, persist the cards with the assistant message, and return the same cards from the non-streaming `/api/chat` fallback.
+
+**Why:** the previous stream published a tool-start frame as if it were finished, so the UI said "searched" while the search was still running. The terminal frame also carried no result, which meant cards could only be reconstructed by the browser from a model-facing tool payload. Both made a live answer look complete before it was, and left persisted answers without the listings they referenced.
+
+**Consequences**
+
+- Tool frames use `langgraph_sdk` field names (`tool_call_id`, `tool_name`, `input`, `output`, `message`). The client keeps camelCase fallbacks only for a mixed-version deploy.
+- `run.start` metadata's `pageContext` is digested into the prompt by the same `context_digest` used by `/api/chat`, so the streamed path can resolve "what about this one?" on a listing page. Malformed context degrades to no context; it is never authority.
+- `tool-finished` lands only after `converse()` has drained `call.output_deltas`, so the terminal frame carries the real result. `on_tool_call` is start; `on_tool_result` is terminal.
+- Cards are extracted service-side by shape from terminal tool output, deduped by listing id, capped at 12 per turn, and limited to fields a buyer card needs. Tool payloads never reach the browser or persisted chat metadata.
+- Money stays neutral (`price`, `currency`, `pricePeriod`) and is formatted by the host with `formatListingPrice` (ADR-001). `priceFormatted` remains readable for rows persisted under the old shape but is no longer written.
+- The relay captures cards while forwarding frames and stores them in `assistantMetadata.listingCards`, so reloading a thread restores the cards without replaying the model turn.
+- `/api/chat` returns the same `listingCards` so a stream failure that falls back to the JSON route does not silently drop the listings.
+

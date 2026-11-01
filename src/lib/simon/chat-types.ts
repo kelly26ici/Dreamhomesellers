@@ -124,14 +124,56 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function asCards(value: unknown): SimonListingCardRef[] | undefined {
+/**
+ * Narrow arbitrary JSON to buyer-safe listing cards.
+ *
+ * The stream carries cards on the protocol's `custom` channel and the
+ * non-streaming route carries them on the message. Both go through this one
+ * parser so a malformed frame can never reach the renderer or the persisted
+ * metadata. Only identity is required; optional display fields are kept when
+ * they are the right primitive and dropped otherwise.
+ */
+export function parseSimonListingCards(
+  value: unknown,
+): SimonListingCardRef[] | undefined {
   if (!Array.isArray(value)) return undefined;
-  const cards = value.filter(
-    (card): card is SimonListingCardRef =>
-      isRecord(card) &&
-      typeof card.listingId === 'string' &&
-      typeof card.title === 'string',
-  );
+
+  const cards = value.flatMap((card): SimonListingCardRef[] => {
+    if (!isRecord(card)) return [];
+    if (typeof card.listingId !== 'string' || typeof card.title !== 'string') {
+      return [];
+    }
+
+    return [
+      {
+        listingId: card.listingId,
+        title: card.title,
+        propertyType:
+          typeof card.propertyType === 'string' ? card.propertyType : '',
+        location: typeof card.location === 'string' ? card.location : '',
+        ...(typeof card.price === 'string' ? { price: card.price } : {}),
+        ...(typeof card.currency === 'string'
+          ? { currency: card.currency }
+          : {}),
+        ...(typeof card.pricePeriod === 'string'
+          ? { pricePeriod: card.pricePeriod }
+          : {}),
+        ...(typeof card.priceFormatted === 'string'
+          ? { priceFormatted: card.priceFormatted }
+          : {}),
+        ...(typeof card.bedrooms === 'number'
+          ? { bedrooms: card.bedrooms }
+          : {}),
+        ...(typeof card.bathrooms === 'number'
+          ? { bathrooms: card.bathrooms }
+          : {}),
+        ...(typeof card.imageUrl === 'string'
+          ? { imageUrl: card.imageUrl }
+          : {}),
+      },
+    ];
+  });
+
   return cards.length > 0 ? cards : undefined;
 }
 
@@ -163,7 +205,7 @@ export function simonEntriesFromStoredMessages(
         text: message.content,
         listingCards:
           message.role === 'assistant'
-            ? asCards(metadata.listingCards)
+            ? parseSimonListingCards(metadata.listingCards)
             : undefined,
         suggestedFollowUps:
           message.suggested_follow_ups && message.suggested_follow_ups.length > 0

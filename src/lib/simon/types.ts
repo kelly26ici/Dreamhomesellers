@@ -12,7 +12,16 @@ export interface SimonListingCardRef {
   readonly title: string;
   readonly propertyType: string;
   readonly location: string;
-  readonly priceFormatted: string;
+  /**
+   * Money is neutral on the wire (ADR-001): a decimal string plus an explicit
+   * currency and period. The host formats it with `formatListingPrice`, so
+   * Simon never has to know the marketplace's locale or suffix rules.
+   */
+  readonly price?: string;
+  readonly currency?: string;
+  readonly pricePeriod?: string;
+  /** Legacy shape persisted before the neutral card contract. Read-only. */
+  readonly priceFormatted?: string;
   readonly bedrooms?: number | null;
   readonly bathrooms?: number | null;
   readonly imageUrl?: string | null;
