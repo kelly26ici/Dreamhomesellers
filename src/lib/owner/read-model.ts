@@ -105,7 +105,7 @@ interface RawRevisionDetail {
   county: string | null;
   country: string;
   amenities: string[];
-  furnished: boolean;
+  furnished: boolean | null;
   created_by: string | null;
   created_via: string;
   created_at: string;
@@ -190,7 +190,7 @@ export interface OwnerRevisionDetail {
   readonly county: string | null;
   readonly country: string;
   readonly amenities: readonly string[];
-  readonly furnished: boolean;
+  readonly furnished: boolean | null;
   readonly createdBy: string | null;
   readonly createdVia: CreationVia;
   readonly createdAt: Timestamp;

@@ -22,7 +22,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
+import { ChevronDown, Sparkles } from 'lucide-react';
 
 import {
   createListingDraft,
@@ -85,21 +85,68 @@ const LISTING_KINDS = [
   { value: 'shortlet', label: 'Shortlet' },
 ] as const;
 
-const PRICE_PERIODS = [
-  { value: 'one_time', label: 'One-time' },
-  { value: 'per_month', label: 'Per month' },
-  { value: 'per_night', label: 'Per night' },
+/**
+ * A short, buyer-facing vocabulary. Values stay lowercase to match the
+ * existing published rows and Simon's output; the label carries the casing
+ * the owner reads. The schema still accepts free text (the vocabulary is
+ * not frozen), so "Other" keeps an escape hatch for the rare residence that
+ * does not fit — and for legacy rows saved before this list.
+ */
+const PROPERTY_TYPES = [
+  { value: 'apartment', label: 'Apartment' },
+  { value: 'house', label: 'House' },
+  { value: 'villa', label: 'Villa' },
+  { value: 'townhouse', label: 'Townhouse' },
+  { value: 'penthouse', label: 'Penthouse' },
+  { value: 'bungalow', label: 'Bungalow' },
+  { value: 'land', label: 'Land' },
+  { value: 'commercial', label: 'Commercial' },
 ] as const;
+
+type PricePeriod = 'one_time' | 'per_month' | 'per_night';
+
+/** The period is a consequence of the offer, not a separate question. */
+const PERIOD_FOR_KIND: Record<FormState['listingKind'], PricePeriod> = {
+  sale: 'one_time',
+  rent: 'per_month',
+  shortlet: 'per_night',
+};
+
+/** Only stacked residences have a meaningful floor position. */
+function isMultiUnitType(propertyType: string): boolean {
+  return /apartment|penthouse/i.test(propertyType);
+}
+
+/**
+ * Map a free-text type onto the short buyer-facing vocabulary when it
+ * matches case-insensitively (Simon and legacy rows use lowercase), and
+ * fall back to the raw text as a custom value otherwise.
+ */
+function canonicalPropertyType(raw: string): {
+  value: string;
+  custom: boolean;
+} {
+  const trimmed = raw.trim();
+  const known = PROPERTY_TYPES.find(
+    (type) => type.value === trimmed.toLowerCase(),
+  );
+  return known !== undefined
+    ? { value: known.value, custom: false }
+    : { value: trimmed, custom: trimmed !== '' };
+}
 
 interface FormState {
   listingKind: 'sale' | 'rent' | 'shortlet';
   title: string;
   description: string;
   propertyType: string;
+  /** True when the owner is typing a type outside PROPERTY_TYPES. */
+  propertyTypeCustom: boolean;
+  /** Legacy-only (no input): preserved so an edit does not null it. */
   propertySubtype: string;
   priceAmount: string;
+  /** Kept for legacy rows; new listings default to KES (ADR-001). */
   priceCurrency: string;
-  pricePeriod: 'one_time' | 'per_month' | 'per_night';
   bedrooms: string;
   bathrooms: string;
   squareMeters: string;
@@ -107,11 +154,14 @@ interface FormState {
   yearBuilt: string;
   floorNumber: string;
   totalFloors: string;
+  /** Legacy-only (no input): preserved so an edit does not null it. */
   plotDimensions: string;
   landSizeRaw: string;
-  furnished: boolean;
+  /** null = not specified; the buyer page shows an em dash. */
+  furnished: boolean | null;
   area: string;
   city: string;
+  /** Legacy-only (no input): preserved so an edit does not null it. */
   town: string;
   county: string;
   amenities: string;
@@ -122,10 +172,10 @@ const INITIAL_STATE: FormState = {
   title: '',
   description: '',
   propertyType: '',
+  propertyTypeCustom: false,
   propertySubtype: '',
   priceAmount: '',
   priceCurrency: 'KES',
-  pricePeriod: 'one_time',
   bedrooms: '',
   bathrooms: '',
   squareMeters: '',
@@ -135,7 +185,7 @@ const INITIAL_STATE: FormState = {
   totalFloors: '',
   plotDimensions: '',
   landSizeRaw: '',
-  furnished: false,
+  furnished: null,
   area: '',
   city: '',
   town: '',
@@ -175,7 +225,7 @@ function toContent(s: FormState): RevisionContentInput {
     availability: 'available',
     price_amount: s.priceAmount.trim(),
     price_currency: s.priceCurrency.trim().toUpperCase(),
-    price_period: s.pricePeriod,
+    price_period: PERIOD_FOR_KIND[s.listingKind],
     bedrooms: optionalInt(s.bedrooms),
     bathrooms: optionalInt(s.bathrooms),
     square_meters: optionalNum(s.squareMeters),
@@ -183,14 +233,17 @@ function toContent(s: FormState): RevisionContentInput {
     year_built: optionalInt(s.yearBuilt),
     floor_number: optionalInt(s.floorNumber),
     total_floors: optionalInt(s.totalFloors),
-    plot_dimensions: s.plotDimensions.trim() === '' ? null : s.plotDimensions.trim(),
-    land_size_raw: s.landSizeRaw.trim() === '' ? null : s.landSizeRaw.trim(),
+    plot_dimensions:
+      s.plotDimensions.trim() === '' ? null : s.plotDimensions.trim(),
+    land_size_raw:
+      s.landSizeRaw.trim() === '' ? null : s.landSizeRaw.trim(),
     area: s.area.trim(),
     city: s.city.trim(),
     town: s.town.trim() === '' ? null : s.town.trim(),
     county: s.county.trim() === '' ? null : s.county.trim(),
     country: 'Kenya',
     amenities: amenities.length > 0 ? amenities : undefined,
+    furnished: s.furnished,
   };
 }
 
@@ -221,18 +274,16 @@ export function revisionDetailToFormState(
   const knownKind = (['sale', 'rent', 'shortlet'] as const).find(
     (k) => k === detail.listingKind,
   );
-  const knownPeriod = (
-    ['one_time', 'per_month', 'per_night'] as const
-  ).find((p) => p === detail.pricePeriod);
+  const propertyType = canonicalPropertyType(detail.propertyType);
   return {
     listingKind: knownKind ?? 'sale',
     title: detail.title,
     description: detail.description,
-    propertyType: detail.propertyType,
+    propertyType: propertyType.value,
+    propertyTypeCustom: propertyType.custom,
     propertySubtype: detail.propertySubtype ?? '',
     priceAmount: detail.price.amount,
     priceCurrency: detail.price.currency,
-    pricePeriod: knownPeriod ?? 'one_time',
     bedrooms: numToStr(detail.bedrooms),
     bathrooms: numToStr(detail.bathrooms),
     squareMeters: numToStr(detail.squareMeters),
@@ -268,6 +319,24 @@ export function ListingDraftForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAIDraftOpen, setIsAIDraftOpen] = useState(false);
+  // Optional facts are collapsed so the first screen stays about the
+  // residence, not the database. An edit with optional facts already filled
+  // opens the section so nothing looks lost.
+  const [showAdvanced, setShowAdvanced] = useState(() => {
+    if (initial === undefined) return false;
+    return Boolean(
+      initial.county ||
+        initial.bedrooms !== null ||
+        initial.bathrooms !== null ||
+        initial.squareMeters !== null ||
+        initial.lotSizeSqm !== null ||
+        initial.yearBuilt !== null ||
+        initial.floorNumber !== null ||
+        initial.totalFloors !== null ||
+        initial.furnished !== null ||
+        initial.amenities.length > 0,
+    );
+  });
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setState((prev) => ({ ...prev, [key]: value }));
@@ -332,6 +401,31 @@ export function ListingDraftForm({
   const inputClass =
     'mt-2 w-full rounded-md border border-gold/20 bg-surface-2/50 px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-gold/50 focus:outline-none disabled:opacity-50';
   const labelClass = 'block text-xs tracking-[0.2em] text-gold';
+  const isMultiUnit = isMultiUnitType(state.propertyType);
+  const periodLabel =
+    state.listingKind === 'sale'
+      ? 'One-time price'
+      : state.listingKind === 'rent'
+        ? 'Price per month'
+        : 'Price per night';
+
+  /** The select carries a sentinel for the free-text escape hatch; the wire
+   *  value never sees it. */
+  function handlePropertyTypeChange(value: string) {
+    if (value === '__other__') {
+      setState((prev) => ({
+        ...prev,
+        propertyTypeCustom: true,
+        propertyType: '',
+      }));
+      return;
+    }
+    setState((prev) => ({
+      ...prev,
+      propertyTypeCustom: false,
+      propertyType: value,
+    }));
+  }
 
   return (
     <>
@@ -363,15 +457,27 @@ export function ListingDraftForm({
         isOpen={isAIDraftOpen}
         onClose={() => setIsAIDraftOpen(false)}
         onApply={(draft) => {
+          const propertyType = canonicalPropertyType(draft.propertyType);
+          // The draft often carries optional facts; reveal them once so the
+          // owner can review what Simon filled instead of saving blind.
+          if (
+            draft.bedrooms ||
+            draft.bathrooms ||
+            draft.squareMeters ||
+            draft.lotSizeSqm ||
+            draft.amenities.length > 0
+          ) {
+            setShowAdvanced(true);
+          }
           setState((prev) => ({
             ...prev,
             title: draft.title,
             description: draft.description,
-            propertyType: draft.propertyType,
+            propertyType: propertyType.value,
+            propertyTypeCustom: propertyType.custom,
             propertySubtype: draft.propertySubtype || prev.propertySubtype,
             priceAmount: draft.priceAmount,
             priceCurrency: draft.priceCurrency,
-            pricePeriod: draft.pricePeriod,
             bedrooms: draft.bedrooms || prev.bedrooms,
             bathrooms: draft.bathrooms || prev.bathrooms,
             squareMeters: draft.squareMeters || prev.squareMeters,
@@ -384,349 +490,348 @@ export function ListingDraftForm({
       />
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-        <fieldset disabled={submitting} className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="listing-kind" className={labelClass}>
-              LISTING KIND
-            </label>
-            <select
-              id="listing-kind"
-              value={state.listingKind}
-              onChange={(e) =>
-                set('listingKind', e.target.value as FormState['listingKind'])
-              }
-              className={inputClass}
-            >
-              {LISTING_KINDS.map((k) => (
-                <option key={k.value} value={k.value}>
-                  {k.label}
+        <fieldset disabled={submitting} className="space-y-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="listing-kind" className={labelClass}>
+                LISTING KIND
+              </label>
+              <select
+                id="listing-kind"
+                value={state.listingKind}
+                onChange={(e) =>
+                  set('listingKind', e.target.value as FormState['listingKind'])
+                }
+                className={inputClass}
+              >
+                {LISTING_KINDS.map((k) => (
+                  <option key={k.value} value={k.value}>
+                    {k.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="property-type" className={labelClass}>
+                PROPERTY TYPE
+              </label>
+              <select
+                id="property-type"
+                required
+                value={state.propertyTypeCustom ? '__other__' : state.propertyType}
+                onChange={(e) => handlePropertyTypeChange(e.target.value)}
+                className={inputClass}
+              >
+                <option value="" disabled>
+                  Select a type
                 </option>
-              ))}
-            </select>
+                {PROPERTY_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+                <option value="__other__">Other…</option>
+              </select>
+              {state.propertyTypeCustom && (
+                <input
+                  type="text"
+                  required
+                  maxLength={50}
+                  value={state.propertyType}
+                  onChange={(e) => set('propertyType', e.target.value)}
+                  placeholder="Describe the property type"
+                  aria-label="Custom property type"
+                  className={inputClass}
+                />
+              )}
+            </div>
           </div>
-          <div>
-            <label htmlFor="property-type" className={labelClass}>
-              PROPERTY TYPE
-            </label>
-            <input
-              id="property-type"
-              type="text"
-              required
-              maxLength={50}
-              value={state.propertyType}
-              onChange={(e) => set('propertyType', e.target.value)}
-              placeholder="e.g. apartment, house, land"
-              className={inputClass}
-            />
-          </div>
-        </div>
 
-        <div>
-          <label htmlFor="title" className={labelClass}>
-            TITLE
-          </label>
-          <input
-            id="title"
-            type="text"
-            required
-            maxLength={200}
-            value={state.title}
-            onChange={(e) => set('title', e.target.value)}
-            placeholder="e.g. 4-Bedroom Villa with Pool in Karen"
-            className={inputClass}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="description" className={labelClass}>
-            DESCRIPTION
-          </label>
-          <textarea
-            id="description"
-            rows={6}
-            required
-            maxLength={20000}
-            value={state.description}
-            onChange={(e) => set('description', e.target.value)}
-            placeholder="Describe the residence, its finishes, and the neighborhood."
-            className={`${inputClass} resize-y`}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
-            <label htmlFor="price-amount" className={labelClass}>
-              PRICE (AMOUNT)
+            <label htmlFor="title" className={labelClass}>
+              TITLE
             </label>
             <input
-              id="price-amount"
-              type="text"
-              inputMode="decimal"
-              required
-              value={state.priceAmount}
-              onChange={(e) => set('priceAmount', e.target.value)}
-              placeholder="12500000"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="price-currency" className={labelClass}>
-              CURRENCY
-            </label>
-            <input
-              id="price-currency"
-              type="text"
-              required
-              maxLength={3}
-              minLength={3}
-              value={state.priceCurrency}
-              onChange={(e) => set('priceCurrency', e.target.value.toUpperCase())}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="price-period" className={labelClass}>
-              PRICE PERIOD
-            </label>
-            <select
-              id="price-period"
-              value={state.pricePeriod}
-              onChange={(e) =>
-                set('pricePeriod', e.target.value as FormState['pricePeriod'])
-              }
-              className={inputClass}
-            >
-              {PRICE_PERIODS.map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div>
-            <label htmlFor="bedrooms" className={labelClass}>
-              BEDROOMS
-            </label>
-            <input
-              id="bedrooms"
-              type="number"
-              min={0}
-              max={50}
-              value={state.bedrooms}
-              onChange={(e) => set('bedrooms', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="bathrooms" className={labelClass}>
-              BATHROOMS
-            </label>
-            <input
-              id="bathrooms"
-              type="number"
-              min={0}
-              max={50}
-              value={state.bathrooms}
-              onChange={(e) => set('bathrooms', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="square-meters" className={labelClass}>
-              FLOOR AREA (m²)
-            </label>
-            <input
-              id="square-meters"
-              type="number"
-              min={0}
-              step="any"
-              value={state.squareMeters}
-              onChange={(e) => set('squareMeters', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="lot-size" className={labelClass}>
-              LOT SIZE (m²)
-            </label>
-            <input
-              id="lot-size"
-              type="number"
-              min={0}
-              step="any"
-              value={state.lotSizeSqm}
-              onChange={(e) => set('lotSizeSqm', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="plot-dimensions" className={labelClass}>
-              PLOT DIMENSIONS <span className="text-muted">(optional)</span>
-            </label>
-            <input
-              id="plot-dimensions"
-              type="text"
-              maxLength={100}
-              value={state.plotDimensions}
-              onChange={(e) => set('plotDimensions', e.target.value)}
-              placeholder="e.g. 50 x 100"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="land-size-raw" className={labelClass}>
-              LAND SIZE (RAW) <span className="text-muted">(optional)</span>
-            </label>
-            <input
-              id="land-size-raw"
-              type="text"
-              maxLength={100}
-              value={state.landSizeRaw}
-              onChange={(e) => set('landSizeRaw', e.target.value)}
-              placeholder="e.g. 1/4 acre"
-              className={inputClass}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div>
-            <label htmlFor="year-built" className={labelClass}>
-              YEAR BUILT
-            </label>
-            <input
-              id="year-built"
-              type="number"
-              min={1800}
-              max={2100}
-              value={state.yearBuilt}
-              onChange={(e) => set('yearBuilt', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="floor-number" className={labelClass}>
-              FLOOR
-            </label>
-            <input
-              id="floor-number"
-              type="number"
-              min={-5}
-              max={300}
-              value={state.floorNumber}
-              onChange={(e) => set('floorNumber', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="total-floors" className={labelClass}>
-              TOTAL FLOORS
-            </label>
-            <input
-              id="total-floors"
-              type="number"
-              min={1}
-              max={300}
-              value={state.totalFloors}
-              onChange={(e) => set('totalFloors', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div className="flex items-end pb-3">
-            <label className="flex items-center gap-2 text-sm text-muted">
-              <input
-                type="checkbox"
-                checked={state.furnished}
-                onChange={(e) => set('furnished', e.target.checked)}
-                className="h-4 w-4 accent-[var(--color-gold)]"
-              />
-              Furnished
-            </label>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="area" className={labelClass}>
-              AREA
-            </label>
-            <input
-              id="area"
+              id="title"
               type="text"
               required
               maxLength={200}
-              value={state.area}
-              onChange={(e) => set('area', e.target.value)}
-              placeholder="e.g. Karen"
+              value={state.title}
+              onChange={(e) => set('title', e.target.value)}
+              placeholder="e.g. 4-Bedroom Villa with Pool in Karen"
               className={inputClass}
             />
           </div>
-          <div>
-            <label htmlFor="city" className={labelClass}>
-              CITY
-            </label>
-            <input
-              id="city"
-              type="text"
-              required
-              maxLength={100}
-              value={state.city}
-              onChange={(e) => set('city', e.target.value)}
-              placeholder="e.g. Nairobi"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="town" className={labelClass}>
-              TOWN <span className="text-muted">(optional)</span>
-            </label>
-            <input
-              id="town"
-              type="text"
-              maxLength={100}
-              value={state.town}
-              onChange={(e) => set('town', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="county" className={labelClass}>
-              COUNTY <span className="text-muted">(optional)</span>
-            </label>
-            <input
-              id="county"
-              type="text"
-              maxLength={100}
-              value={state.county}
-              onChange={(e) => set('county', e.target.value)}
-              placeholder="e.g. Nairobi"
-              className={inputClass}
-            />
-          </div>
-        </div>
 
-        <div>
-          <label htmlFor="amenities" className={labelClass}>
-            AMENITIES{' '}
-            <span className="text-muted">(comma-separated, optional)</span>
-          </label>
-          <input
-            id="amenities"
-            type="text"
-            value={state.amenities}
-            onChange={(e) => set('amenities', e.target.value)}
-            placeholder="pool, garden, borehole, 24h security"
-            className={inputClass}
-          />
-        </div>
-      </fieldset>
+          <div>
+            <label htmlFor="description" className={labelClass}>
+              DESCRIPTION
+            </label>
+            <textarea
+              id="description"
+              rows={5}
+              required
+              maxLength={20000}
+              value={state.description}
+              onChange={(e) => set('description', e.target.value)}
+              placeholder="Describe the residence, its finishes, and the neighborhood."
+              className={`${inputClass} resize-y`}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <div className="sm:col-span-2">
+              <label htmlFor="price-amount" className={labelClass}>
+                PRICE
+              </label>
+              <div className="mt-2 flex rounded-md border border-gold/20 bg-surface-2/50 focus-within:border-gold/50">
+                <span className="flex items-center border-r border-gold/20 px-3 text-xs tracking-widest text-muted">
+                  {state.priceCurrency}
+                </span>
+                <input
+                  id="price-amount"
+                  type="text"
+                  inputMode="decimal"
+                  required
+                  value={state.priceAmount}
+                  onChange={(e) => set('priceAmount', e.target.value)}
+                  placeholder="12500000"
+                  className="w-full bg-transparent px-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:outline-none disabled:opacity-50"
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-muted">{periodLabel}</p>
+            </div>
+            <div>
+              <label htmlFor="area" className={labelClass}>
+                AREA
+              </label>
+              <input
+                id="area"
+                type="text"
+                required
+                maxLength={200}
+                value={state.area}
+                onChange={(e) => set('area', e.target.value)}
+                placeholder="e.g. Karen"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor="city" className={labelClass}>
+                CITY
+              </label>
+              <input
+                id="city"
+                type="text"
+                required
+                maxLength={100}
+                value={state.city}
+                onChange={(e) => set('city', e.target.value)}
+                placeholder="e.g. Nairobi"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((open) => !open)}
+              aria-expanded={showAdvanced}
+              className="group flex w-full items-center justify-between gap-4 text-left"
+            >
+              <span>
+                <span className="block text-xs tracking-[0.2em] text-muted transition-colors group-hover:text-gold">
+                  OPTIONAL DETAILS
+                </span>
+                <span className="mt-1 block text-[11px] text-muted/60">
+                  Bedrooms, size, amenities, and other facts buyers see.
+                </span>
+              </span>
+              <span className="flex shrink-0 items-center gap-2 text-[11px] tracking-widest text-muted transition-colors group-hover:text-gold">
+                {showAdvanced ? 'HIDE' : 'ADD'}
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${
+                    showAdvanced ? 'rotate-180' : ''
+                  }`}
+                />
+              </span>
+            </button>
+
+            {showAdvanced && (
+              <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-surface-2/20 p-4 sm:p-5">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="county" className={labelClass}>
+                      COUNTY
+                    </label>
+                    <input
+                      id="county"
+                      type="text"
+                      maxLength={100}
+                      value={state.county}
+                      onChange={(e) => set('county', e.target.value)}
+                      placeholder="e.g. Nairobi"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="year-built" className={labelClass}>
+                      YEAR BUILT
+                    </label>
+                    <input
+                      id="year-built"
+                      type="number"
+                      min={1800}
+                      max={2100}
+                      value={state.yearBuilt}
+                      onChange={(e) => set('yearBuilt', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div>
+                    <label htmlFor="bedrooms" className={labelClass}>
+                      BEDROOMS
+                    </label>
+                    <input
+                      id="bedrooms"
+                      type="number"
+                      min={0}
+                      max={50}
+                      value={state.bedrooms}
+                      onChange={(e) => set('bedrooms', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="bathrooms" className={labelClass}>
+                      BATHROOMS
+                    </label>
+                    <input
+                      id="bathrooms"
+                      type="number"
+                      min={0}
+                      max={50}
+                      value={state.bathrooms}
+                      onChange={(e) => set('bathrooms', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="square-meters" className={labelClass}>
+                      INTERIOR (m²)
+                    </label>
+                    <input
+                      id="square-meters"
+                      type="number"
+                      min={0}
+                      step="any"
+                      value={state.squareMeters}
+                      onChange={(e) => set('squareMeters', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lot-size" className={labelClass}>
+                      PLOT (m²)
+                    </label>
+                    <input
+                      id="lot-size"
+                      type="number"
+                      min={0}
+                      step="any"
+                      value={state.lotSizeSqm}
+                      onChange={(e) => set('lotSizeSqm', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:max-w-xs">
+                  <label htmlFor="furnished" className={labelClass}>
+                    FURNISHED
+                  </label>
+                  <select
+                    id="furnished"
+                    value={
+                      state.furnished === null
+                        ? ''
+                        : state.furnished
+                          ? 'yes'
+                          : 'no'
+                    }
+                    onChange={(e) =>
+                      set(
+                        'furnished',
+                        e.target.value === ''
+                          ? null
+                          : e.target.value === 'yes',
+                      )
+                    }
+                    className={inputClass}
+                  >
+                    <option value="">Not specified</option>
+                    <option value="yes">Furnished</option>
+                    <option value="no">Unfurnished</option>
+                  </select>
+                </div>
+
+                {isMultiUnit && (
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    <div>
+                      <label htmlFor="floor-number" className={labelClass}>
+                        FLOOR
+                      </label>
+                      <input
+                        id="floor-number"
+                        type="number"
+                        min={-5}
+                        max={300}
+                        value={state.floorNumber}
+                        onChange={(e) => set('floorNumber', e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="total-floors" className={labelClass}>
+                        TOTAL FLOORS
+                      </label>
+                      <input
+                        id="total-floors"
+                        type="number"
+                        min={1}
+                        max={300}
+                        value={state.totalFloors}
+                        onChange={(e) => set('totalFloors', e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="amenities" className={labelClass}>
+                    AMENITIES
+                  </label>
+                  <input
+                    id="amenities"
+                    type="text"
+                    value={state.amenities}
+                    onChange={(e) => set('amenities', e.target.value)}
+                    placeholder="pool, garden, borehole, 24h security"
+                    className={inputClass}
+                  />
+                  <p className="mt-1 text-[11px] text-muted/60">
+                    Separate each amenity with a comma.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </fieldset>
 
       {error !== null && (
         <p

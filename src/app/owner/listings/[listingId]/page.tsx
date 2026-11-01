@@ -213,7 +213,16 @@ function DetailView({
           value={detail.lotSizeSqm !== null ? `${detail.lotSizeSqm} m²` : null}
         />
         <Fact label="Year built" value={detail.yearBuilt} />
-        <Fact label="Furnished" value={detail.furnished ? 'Yes' : 'No'} />
+        <Fact
+          label="Furnished"
+          value={
+            detail.furnished == null
+              ? '—'
+              : detail.furnished
+                ? 'Yes'
+                : 'No'
+          }
+        />
         {detail.amenities.length > 0 && (
           <Fact label="Amenities" value={detail.amenities.join(', ')} />
         )}

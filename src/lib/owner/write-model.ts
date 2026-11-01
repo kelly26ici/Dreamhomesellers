@@ -51,6 +51,7 @@ export interface RevisionContentInput {
   readonly county?: string | null;
   readonly country: string;
   readonly amenities?: string[];
+  readonly furnished?: boolean | null;
 }
 
 /** Flattened typed rejection (same union as the read model). */

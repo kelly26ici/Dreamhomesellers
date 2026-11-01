@@ -288,7 +288,11 @@ export function LoginForm() {
       <p className="text-center text-xs text-muted" data-login="fade">
         Don&apos;t have an account?{" "}
         <Link
-          href="/signup"
+          href={
+            searchParams.get("next")
+              ? `/signup?next=${encodeURIComponent(nextPath)}`
+              : "/signup"
+          }
           className="font-semibold text-gold transition hover:text-champagne"
         >
           Sign Up

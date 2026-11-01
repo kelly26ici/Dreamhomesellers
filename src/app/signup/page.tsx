@@ -7,7 +7,7 @@ import { SignupForm } from "@/components/ui/signup-form";
 export const metadata = {
   title: "Create Account — LUXONN",
   description:
-    "Create a LUXONN seller account to publish and manage premium Kenyan residences.",
+    "Create a LUXONN account to save residences, request viewings, and list your own.",
 };
 
 export default function SignupPage() {
@@ -30,7 +30,6 @@ export default function SignupPage() {
               className="w-full max-w-sm space-y-8 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10"
             >
               <div className="h-8 w-48 animate-pulse rounded bg-surface-2" />
-              <div className="h-10 w-full animate-pulse rounded bg-surface-2" />
               <div className="h-10 w-full animate-pulse rounded bg-surface-2" />
               <div className="h-12 w-full animate-pulse rounded bg-surface-2" />
             </div>

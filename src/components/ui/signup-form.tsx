@@ -3,15 +3,17 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Mail, Lock, ArrowRight } from "lucide-react";
 
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
 
 /**
- * LUXONN registration — email/password sign-up that also bootstraps the
- * ADR-012 solo organization (create_solo_organization RPC exists since
- * migration 0003; a signed-in user without a membership is a dead end in
- * the owner portal, so the RPC runs immediately after sign-up succeeds).
+ * LUXONN registration — email and password only.
+ *
+ * Buyers and sellers share one account. The seller organization is created
+ * later on /owner by OwnerOnboardingForm, so signing up never forces a
+ * business name on someone who only wants to save a residence or request a
+ * viewing.
  */
 export function SignupForm() {
   const router = useRouter();
@@ -19,15 +21,17 @@ export function SignupForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [agencyName, setAgencyName] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Same open-redirect guard as the login form: only same-site targets.
+  // A buyer lands back in the collection; seller links carry ?next=/owner….
   const nextPath = (() => {
     const raw = searchParams.get("next");
-    return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/owner";
+    return raw && raw.startsWith("/") && !raw.startsWith("//")
+      ? raw
+      : "/properties";
   })();
 
   async function handleSignUp(event: FormEvent<HTMLFormElement>) {
@@ -37,10 +41,6 @@ export function SignupForm() {
 
     if (password.length < 8) {
       setFormError("Password must be at least 8 characters.");
-      return;
-    }
-    if (agencyName.trim().length < 2) {
-      setFormError("Please enter a name for your listings business.");
       return;
     }
 
@@ -56,7 +56,6 @@ export function SignupForm() {
           // Confirmation links land on the callback route, which forwards
           // to nextPath after the session is established.
           emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
-          data: { display_name: agencyName.trim() },
         },
       });
 
@@ -68,33 +67,19 @@ export function SignupForm() {
       // When email confirmation is required, Supabase returns a user with
       // no session — surface the explicit instruction instead of bouncing.
       if (data.session) {
-        await bootstrapOrganization(agencyName.trim());
         router.replace(nextPath);
         router.refresh();
       } else {
         setNotice(
           "Confirm your email to finish — we've sent a confirmation link to " +
             email +
-            ". After confirming, your solo listing organization is created automatically.",
+            ". After confirming, sign in to continue.",
         );
       }
     } catch {
       setFormError("Sign-up failed. Please try again.");
     } finally {
       setSubmitting(false);
-    }
-  }
-
-  async function bootstrapOrganization(displayName: string) {
-    try {
-      await getSupabaseBrowserClient().rpc("create_solo_organization", {
-        p_display_name: displayName,
-        p_idempotency_key: crypto.randomUUID(),
-      });
-    } catch {
-      // Non-fatal: the owner portal surfaces an organization-creation
-      // prompt when a membership is missing, so a relay failure here
-      // doesn't strand the account.
     }
   }
 
@@ -105,7 +90,7 @@ export function SignupForm() {
           JOIN LUXONN
         </h2>
         <p className="mt-3 text-sm text-muted">
-          Create a seller account to list and manage residences.
+          Save residences, request viewings, and list your own.
         </p>
       </div>
 
@@ -127,26 +112,6 @@ export function SignupForm() {
       )}
 
       <form onSubmit={handleSignUp} className="space-y-5">
-        <div className="relative">
-          <input
-            id="agency-name"
-            type="text"
-            required
-            minLength={2}
-            value={agencyName}
-            onChange={(e) => setAgencyName(e.target.value)}
-            placeholder=" "
-            className="peer w-full border-b border-white/20 bg-transparent px-1 pb-2 pt-6 text-white outline-none transition-colors focus:border-gold"
-          />
-          <label
-            htmlFor="agency-name"
-            className="pointer-events-none absolute left-1 top-2 text-[10px] tracking-[0.2em] text-muted transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-sm peer-focus:top-2 peer-focus:text-[10px]"
-          >
-            BUSINESS / AGENCY NAME
-          </label>
-          <User className="absolute right-1 top-6 h-4 w-4 text-muted" aria-hidden />
-        </div>
-
         <div className="relative">
           <input
             id="email"
@@ -200,7 +165,7 @@ export function SignupForm() {
       <p className="text-center text-xs text-muted">
         Already have an account?{" "}
         <Link
-          href="/login"
+          href={`/login?next=${encodeURIComponent(nextPath)}`}
           className="font-semibold text-gold transition hover:text-champagne"
         >
           Sign In

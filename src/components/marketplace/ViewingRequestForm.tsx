@@ -45,10 +45,7 @@ export default function ViewingRequestForm({
   const [channel, setChannel] = useState<'email' | 'phone'>('email');
   const [contactValue, setContactValue] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [statedPurpose, setStatedPurpose] = useState('');
   const [viewingDate, setViewingDate] = useState('');
-  const [durationMinutes, setDurationMinutes] = useState('60');
-  const [mode, setMode] = useState<'in_person' | 'virtual'>('in_person');
   const [notes, setNotes] = useState('');
   const [consentChecked, setConsentChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -74,12 +71,6 @@ export default function ViewingRequestForm({
       return;
     }
 
-    const duration = Number(durationMinutes);
-    if (!Number.isInteger(duration) || duration < 15 || duration > 480) {
-      setFormError('Duration must be between 15 minutes and 8 hours.');
-      return;
-    }
-
     setSubmitting(true);
     try {
       const { data, error } = await getSupabaseBrowserClient().rpc(
@@ -95,12 +86,12 @@ export default function ViewingRequestForm({
             provenance: 'native',
             purpose: 'Contact the requester about this viewing request.',
           },
-          p_stated_purpose: statedPurpose.trim(),
+          p_stated_purpose: `Viewing request for ${title}`.slice(0, 500),
           p_preferred_slot: {
             viewing_date: new Date(viewingDateMs).toISOString(),
-            duration_minutes: duration,
+            duration_minutes: 60,
             alternate_viewing_date: null,
-            mode,
+            mode: 'in_person',
           },
           p_notes: notes.trim() || null,
           // Stable per form-fill; replays return the original result
@@ -243,72 +234,21 @@ export default function ViewingRequestForm({
 
         <label className="block">
           <span className="text-[10px] tracking-[0.2em] text-muted uppercase">
-            Why do you want to view?
+            Preferred date & time
           </span>
-          <textarea
-            value={statedPurpose}
-            onChange={(event) => setStatedPurpose(event.target.value)}
+          <input
+            type="datetime-local"
+            value={viewingDate}
+            onChange={(event) => setViewingDate(event.target.value)}
             required
-            maxLength={500}
-            rows={3}
             disabled={submitting}
             className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
           />
         </label>
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block">
-            <span className="text-[10px] tracking-[0.2em] text-muted uppercase">
-              Date & time
-            </span>
-            <input
-              type="datetime-local"
-              value={viewingDate}
-              onChange={(event) => setViewingDate(event.target.value)}
-              required
-              disabled={submitting}
-              className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
-            />
-          </label>
-          <label className="block">
-            <span className="text-[10px] tracking-[0.2em] text-muted uppercase">
-              Duration (minutes)
-            </span>
-            <input
-              type="number"
-              min={15}
-              max={480}
-              step={15}
-              value={durationMinutes}
-              onChange={(event) => setDurationMinutes(event.target.value)}
-              required
-              disabled={submitting}
-              className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
-            />
-          </label>
-        </div>
-
-        <div className="flex gap-2">
-          {(['in_person', 'virtual'] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              aria-pressed={mode === m}
-              className={`flex-1 rounded-md border px-3 py-2 text-xs tracking-widest transition-colors ${
-                mode === m
-                  ? 'border-gold text-gold'
-                  : 'border-white/20 text-muted hover:border-white/40 hover:text-white'
-              }`}
-            >
-              {m === 'in_person' ? 'IN PERSON' : 'VIRTUAL'}
-            </button>
-          ))}
-        </div>
-
         <label className="block">
           <span className="text-[10px] tracking-[0.2em] text-muted uppercase">
-            Notes (optional, max 1000)
+            Anything we should know? (optional)
           </span>
           <textarea
             value={notes}
@@ -316,7 +256,8 @@ export default function ViewingRequestForm({
             maxLength={1000}
             rows={2}
             disabled={submitting}
-            className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white focus:border-gold focus:outline-none"
+            placeholder="Access notes, a preferred time, or a question for the owner."
+            className="mt-1 w-full rounded-md border border-white/20 bg-transparent px-3 py-2 text-sm text-white placeholder:text-muted/60 focus:border-gold focus:outline-none"
           />
         </label>
 
