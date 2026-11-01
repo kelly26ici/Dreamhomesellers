@@ -16,6 +16,7 @@ This directory is the portable, repository-owned record for LUXONN. It is intend
 10. [Phase 1 migration runbook](plans/phase1-migration-runbook.md) — how the owner applies the Phase 1 schema migration through the dashboard SQL editor, verifies it, and rolls back.
 11. [Open questions](plans/open-questions.md) — decisions still awaiting the owner.
 12. [Handoff protocol](HANDOFF.md) — how future agents keep this record current.
+13. [Property254 input inventory](research/property254-inputs.md) — competitive crawl of a Kenya portal's search and listing inputs (research note, not a contract).
 
 ## Scope and safety
 
