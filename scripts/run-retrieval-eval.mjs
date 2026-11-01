@@ -221,7 +221,8 @@ async function main() {
     // Fallback if transpilation needed
     const tsFile = readFileSync(resolve(process.cwd(), 'src/lib/retrieval/eval-dataset.ts'), 'utf8');
     // Extract JSON array
-    const jsonMatch = tsFile.match(/export const KENYA_RETRIEVAL_BENCHMARK: LabeledQuery\[\] = (\[[\s\S]*?\]);\n/);
+    // \r? because a git checkout on Windows can leave the file in CRLF.
+    const jsonMatch = tsFile.match(/export const KENYA_RETRIEVAL_BENCHMARK: LabeledQuery\[\] = (\[[\s\S]*?\]);\r?\n/);
     if (!jsonMatch) throw new Error('Could not parse eval dataset');
     // Simple eval of clean array
     return { KENYA_RETRIEVAL_BENCHMARK: eval(`(${jsonMatch[1]})`) };
