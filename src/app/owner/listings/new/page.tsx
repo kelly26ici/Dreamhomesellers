@@ -1,15 +1,15 @@
 /**
  * /owner/listings/new — create a listing draft.
  *
- * The org id comes from the URL (`?org=<uuid>`) as a UX hint only. It is
- * never an authority signal: create_listing_draft re-checks the caller's
- * membership server-side, so a forged or stale org id in the URL yields a
- * typed not_authorized rejection, not a data leak.
+ * The org id is resolved server-side from `current_user_org_ids()` via
+ * fetchOwnerOrganizations(), the same source /owner uses. It is never read
+ * from the URL or any user input: create_listing_draft re-checks membership
+ * server-side anyway, but the read model's discipline is that the portal
+ * only ever passes an org the session actually belongs to.
  *
- * cacheComponents: searchParams is a dynamic read (Next 16 Promise API),
- * so the parameter extraction sits inside the Suspense boundary after
- * `await connection()` — the same discipline the /owner shell uses for
- * the auth cookie.
+ * cacheComponents: auth reads the request cookie, so the loader sits inside
+ * the Suspense boundary after `await connection()` — the same discipline the
+ * /owner shell uses.
  */
 
 import { Suspense } from 'react';
@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { connection } from 'next/server';
 
 import { createAuthServerClient } from '@/lib/auth/supabase-server';
+import { fetchOwnerOrganizations } from '@/lib/owner/read-model';
 import { ListingDraftForm } from '@/components/owner/listing-draft-form';
 
 export const metadata = {
@@ -24,12 +25,7 @@ export const metadata = {
   description: 'Create a listing draft for moderation review.',
 };
 
-interface NewListingPageProps {
-  /** Next 16: searchParams arrives as a Promise. */
-  readonly searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default function NewListingPage({ searchParams }: NewListingPageProps) {
+export default function NewListingPage() {
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background px-4 py-16 lg:px-12">
       <Link
@@ -50,7 +46,7 @@ export default function NewListingPage({ searchParams }: NewListingPageProps) {
         </p>
 
         <Suspense fallback={<FormSkeleton />}>
-          <NewListingLoader searchParams={searchParams} />
+          <NewListingLoader />
         </Suspense>
       </div>
     </main>
@@ -70,12 +66,8 @@ function FormSkeleton() {
   );
 }
 
-async function NewListingLoader({
-  searchParams,
-}: {
-  searchParams: NewListingPageProps['searchParams'];
-}) {
-  // cacheComponents: mark this boundary dynamic before reading searchParams.
+async function NewListingLoader() {
+  // cacheComponents: mark this boundary dynamic before any auth call.
   await connection();
 
   const client = await createAuthServerClient();
@@ -104,10 +96,42 @@ async function NewListingLoader({
     );
   }
 
-  const params = await searchParams;
+  const orgs = await fetchOwnerOrganizations();
+  if ('ok' in orgs) {
+    return (
+      <div className="mt-10 rounded-lg border border-red-500/30 bg-red-500/5 p-6">
+        <p className="text-sm text-red-300">
+          Something went wrong loading your organizations. {orgs.message}
+        </p>
+      </div>
+    );
+  }
 
-  // UX hint only — the RPC re-checks org membership server-side.
-  const orgHint = typeof params.org === 'string' ? params.org : undefined;
+  if (orgs.length === 0) {
+    return (
+      <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+        <h2 className="text-2xl font-heading text-foreground">
+          Create your organization first
+        </h2>
+        <p className="mt-2 max-w-md text-sm text-muted">
+          LUXONN listings belong to organizations. Create your solo
+          organization in the owner portal, then come back to draft a listing.
+        </p>
+        <div className="mt-6">
+          <Link
+            href="/owner"
+            className="inline-block rounded-md border border-gold/40 bg-gold/10 px-6 py-2.5 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
+          >
+            Go to the owner portal
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-  return <ListingDraftForm mode={{ kind: 'create', organizationIdHint: orgHint }} />;
+  // Phase 2 scope: resolve to the first org, matching /owner. Multi-org
+  // pickers arrive with brokerage support.
+  const organizationId = orgs[0];
+
+  return <ListingDraftForm mode={{ kind: 'create', organizationId }} />;
 }

@@ -111,9 +111,7 @@ async function Portal() {
     return <PortalError message={listings.message} />;
   }
 
-  return (
-    <ListingsOverview organizationId={organizationId} items={listings.items} />
-  );
+  return <ListingsOverview items={listings.items} />;
 }
 
 function SignInPrompt() {
@@ -172,10 +170,8 @@ function Onboarding() {
 }
 
 function ListingsOverview({
-  organizationId,
   items,
 }: {
-  organizationId: string;
   items: readonly OwnerListingSummary[];
 }) {
   return (
@@ -188,7 +184,7 @@ function ListingsOverview({
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href={`/owner/listings/new?org=${encodeURIComponent(organizationId)}`}
+            href="/owner/listings/new"
             className="rounded-md border border-gold/40 bg-gold/10 px-4 py-2 text-sm tracking-wide text-gold transition-colors hover:bg-gold/20"
           >
             + New listing

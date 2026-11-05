@@ -254,7 +254,7 @@ function toContent(s: FormState): RevisionContentInput {
  * present for each kind, rather than a pile of optional props.
  */
 export type ListingFormMode =
-  | { readonly kind: 'create'; readonly organizationIdHint: string | undefined }
+  | { readonly kind: 'create'; readonly organizationId: string }
   | { readonly kind: 'edit'; readonly revisionId: string; readonly listingId: string };
 
 /**
@@ -377,7 +377,7 @@ export function ListingDraftForm({
       return;
     }
 
-    const result = await createListingDraft(mode.organizationIdHint ?? '', content);
+    const result = await createListingDraft(mode.organizationId, content);
     if (!result.ok) {
       setSubmitting(false);
       setError(
