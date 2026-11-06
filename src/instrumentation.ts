@@ -47,10 +47,16 @@ async function ping(url: string): Promise<void> {
 
 export async function register(): Promise<void> {
   const url = target();
-  if (!url) return;
+  if (!url) {
+    // Logged, not silent: whether the loop is disabled is the single most
+    // useful line in the deploy log when someone asks why a service was cold.
+    console.info("keep-alive disabled: SIMON_API_URL is not set");
+    return;
+  }
 
   // Ping immediately so a freshly deployed pair warms up at once rather than
   // waiting a full interval, then on the interval.
+  console.info(`keep-alive: pinging ${url} every ${INTERVAL_MS / 1000}s`);
   await ping(url);
   setInterval(() => void ping(url), INTERVAL_MS).unref();
   // .unref() lets the process exit cleanly when Render stops it, instead of
