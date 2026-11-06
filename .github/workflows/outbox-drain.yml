@@ -1,14 +1,20 @@
-name: Outbox Drain & Keep-Alive
+name: Outbox Drain
 
-# ADR-005 requires the transactional outbox to be drained by a worker.
-# Render cron jobs are paid-tier, so this scheduled workflow pings the
-# internal consumer endpoint on the deployed site every 5 minutes instead.
-# The endpoint is protected by the x-outbox-secret header (value of OUTBOX_CONSUMER_SECRET); the value
-# lives in GitHub Actions secrets -- never in this file.
+# The transactional outbox is drained by a worker. Render cron jobs are
+# paid-tier, so this scheduled workflow pings the internal consumer endpoint on
+# the deployed site every 5 minutes instead. The endpoint is protected by the
+# x-outbox-secret header (value of OUTBOX_CONSUMER_SECRET); the value lives in
+# GitHub Actions secrets -- never in this file.
 #
-# The keep-alive step pings Simon's health endpoint on the same cadence so
-# that Render's free-tier idle timeout (15 min) never fires. Both services
-# are hit in the same workflow run to avoid burning extra Actions minutes.
+# Keep-alive is NOT here any more. It used to ping Simon's /api/health on the
+# same cadence, which is why this workflow existed at all. Scheduled runs are
+# queued and delayable under load and auto-disable after 60 days of repo
+# inactivity, so a cron is the wrong tool for a 5-minute cadence. Both services
+# now ping each other from inside the deployment:
+#   website  src/instrumentation.ts        -> Simon   /api/health
+#   Simon    src/simon/keepalive.py        -> website /api/health
+# which is inbound traffic for each, the only thing that keeps a free Render
+# service from spinning down.
 
 on:
   schedule:
@@ -39,21 +45,4 @@ jobs:
           if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
             echo "::error::outbox consumer returned HTTP $code"
             exit 1
-          fi
-
-      - name: Keep Simon alive
-        env:
-          SIMON_URL: ${{ secrets.SIMON_API_URL }}
-        run: |
-          if [ -z "$SIMON_URL" ]; then
-            echo "::warning::SIMON_API_URL secret not set — skipping keep-alive"
-            exit 0
-          fi
-          code=$(curl -s -o /tmp/simon-health.txt -w "%{http_code}" \
-            --max-time 90 \
-            "$SIMON_URL/api/health")
-          echo "Simon health: HTTP $code"
-          cat /tmp/simon-health.txt
-          if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
-            echo "::warning::Simon health returned HTTP $code (may be cold-starting)"
           fi

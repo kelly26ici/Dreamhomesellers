@@ -1,0 +1,42 @@
+# dreamhomesellers — Render deploy manifest
+#
+# WHY THIS FILE EXISTS: the website service was created by hand on the Render
+# dashboard, so the repo carried no deploy manifest. This records the
+# deployment in-repo (reviewable, reproducible) and lets a fresh instance be
+# provisioned from the repo instead of from memory.
+#
+# WHAT IT DOES NOT DO: Render applies a blueprint to an EXISTING service only
+# when a blueprint sync is run from the dashboard. Adding this file does not
+# change the live service, does not redeploy it, and cannot break it. Values
+# here are transcribed from the live service; anything unverified is left out
+# rather than guessed.
+#
+# FACTS:
+#   - No code imports this file; nothing in src/ references it.
+#   - Every secret uses `sync: false`, so values live on the Render dashboard
+#     and never in git.
+#   - Health path is /api/health, verified live (HTTP 200).
+
+services:
+  - type: web
+    name: dreamhomesellers
+    runtime: node
+    plan: free # confirmed free tier; Render's free web service, zero spend
+    buildCommand: "npm ci && npm run build"
+    startCommand: "npm run start"
+    healthCheckPath: /api/health
+    envVars:
+      # Public by design — the anon key is meant for the browser and is
+      # protected by row-level security, not by secrecy.
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      # Server-only. The concierge base URL — the Render URL, never localhost —
+      # used by src/instrumentation.ts for the cross-ping keep-alive.
+      - key: SIMON_API_URL
+        sync: false
+      # Server-only. Shared secret the relay sends to Simon; Simon rejects any
+      # request without it, so its endpoints are not an open LLM proxy.
+      - key: SIMON_SHARED_SECRET
+        sync: false
