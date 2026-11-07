@@ -22,6 +22,7 @@
 
 import { NextRequest, after } from 'next/server';
 import { checkRateLimit, clientIpFrom } from '@/lib/rate-limit';
+import { simonRequestHeaders, simonSecretHeader } from '@/lib/simon/auth-headers';
 import {
   applyHeuristicMemories,
   buildSimonPreamble,
@@ -231,7 +232,7 @@ export async function POST(req: NextRequest) {
   //    this ordering drops the opening events, which reads as an empty reply.
   const started = await fetch(`${simonApiUrl}/threads/${encodeURIComponent(threadId)}/commands`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: simonRequestHeaders(),
     body: JSON.stringify({
       id: 1,
       method: 'run.start',
@@ -270,6 +271,7 @@ export async function POST(req: NextRequest) {
     method: 'POST',
     headers: {
       Accept: 'text/event-stream',
+      ...simonSecretHeader(),
       ...(resumeFrom > 0 ? { 'Last-Event-ID': String(resumeFrom) } : {}),
     },
     signal: req.signal,

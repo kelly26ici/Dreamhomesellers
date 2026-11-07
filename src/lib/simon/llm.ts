@@ -12,6 +12,8 @@
  * title and the heuristic memory it already wrote.
  */
 
+import { simonRequestHeaders } from './auth-headers';
+
 const DEFAULT_AUX_TIMEOUT_MS = 25_000;
 const AUX_MODEL_TIMEOUT_SECONDS = 8;
 
@@ -144,7 +146,7 @@ export async function generateSimonThreadMeta(input: {
   try {
     const response = await fetch(`${baseUrl.replace(/\/+$/, '')}/api/aux`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: simonRequestHeaders(),
       body: JSON.stringify({
         prompt: buildPrompt(input),
         timeout_seconds: AUX_MODEL_TIMEOUT_SECONDS,
