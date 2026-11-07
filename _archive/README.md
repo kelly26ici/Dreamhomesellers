@@ -28,7 +28,7 @@ reproduced.**
 
 | Path | Origin | Contents |
 |---|---|---|
-| `docs/` | `docs/**` | 14 files: architecture, contracts, plans, research |
+| `docs/` | `docs/**` | 13 files: architecture, contracts, plans, research. **The ADR log (`docs/architecture/decisions.md`) was deleted on the owner's instruction, 2026-11-07** — ADRs are reference to a system that no longer exists, and one of them had already been used as authority for a decision the owner never made |
 | `audit-findings/` | `audit-findings/**` | 5 files: prior audits and an incident log |
 | `root/` | repo root | `README.md`, `AGENTS.md`, `CLAUDE.md`, `refactor.md` |
 | `skills/vendored/` | `.agents/skills/**` | 40 files of vendored skill copies |

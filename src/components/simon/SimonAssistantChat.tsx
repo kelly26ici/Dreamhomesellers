@@ -29,7 +29,7 @@ import {
   type DataMessagePartProps,
 } from '@assistant-ui/react';
 import { Thread } from '@/components/assistant-ui/elements/thread.aui';
-import { ThreadList } from '@/components/assistant-ui/elements/thread-list.aui';
+import { ThreadList, ThreadListNew } from '@/components/assistant-ui/elements/thread-list.aui';
 import type { PageContext } from '@/lib/contracts/page-context';
 import { formatListingPrice } from '@/lib/marketplace/format-money';
 import type { SimonListingCardRef, SimonSource } from '@/lib/simon/types';
@@ -286,6 +286,19 @@ export function SimonAssistantChat({
             {/* Derived from the last assistant entry: a thread can mix live
                 and fallback answers when the agent drops mid-conversation. */}
             <div className="flex shrink-0 items-center gap-3">
+              {/* New chat lives in the header, not only in the rail. A visitor
+                  who opened the docked panel should be able to start a fresh
+                  conversation without first having to find the history rail —
+                  which the docked layout does not render, and which used to
+                  leave "start a new thread" reachable only on /simon. */}
+              {docked && (
+                <ThreadListNew
+                  aria-label="Start a new conversation"
+                  title="New chat"
+                  className="h-9 w-9 justify-center px-0"
+                  labelClassName="sr-only"
+                />
+              )}
               <button
                 type="button"
                 onClick={() => setMemoryOpen(true)}

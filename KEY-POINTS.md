@@ -127,7 +127,7 @@ behaves correctly:
 |---|---|
 | 1 | No pre-publication review. A listing goes live when its owner publishes it. |
 | 2 | Moderation survives as a takedown/report surface, never a gate. |
-| 3 | Visual identity: **dark/gold LUXONN** (ADR-002, accepted 2026-10-11, still standing). Maximal visual language — rich imagery, motion, 3D, **glassmorphism, gradients**, editorial composition. Not minimalism. One accent hue (gold), one token set, **light and dark from that one set with a toggle**. WCAG 2.1 AA is the bar for every surface, verified by a gate rather than asserted. |
+| 3 | **No palette instruction was ever given, and this row does not invent one.** The site shipped dark/gold; those values are unchanged here, and the token work rebuilt the *architecture* around them (one source file, light + dark from one set, a contrast gate) rather than changing the look. **This is the decision that most needs your call** — say the word and the values in `src/shared/design-system/tokens.css` move, and nothing downstream notices, because that is the whole point of a token set |
 | 4 | Simon is a **full-page route only**. No dock, so the chat runtime never enters a marketing bundle. |
 | 5 | Design tokens are a first-class module, not CSS globals. |
 | 6 | One palette everywhere; density and motion vary per surface. |

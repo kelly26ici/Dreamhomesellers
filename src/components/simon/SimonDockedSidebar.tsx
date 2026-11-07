@@ -100,11 +100,20 @@ export function SimonDockedSidebar() {
             : 'w-full md:w-[420px] lg:w-[440px] h-[100dvh] z-[60] border-l border-gold/30 bg-[#090909]/95 backdrop-blur-2xl shadow-[-20px_0_60px_rgba(0,0,0,0.85)]'
         }`}
       >
-        {/* Same assistant-ui shell as /simon-chat, without the history rail. */}
+        {/* Same shell as /simon. The rail is part of that shell: it holds the
+            thread list — where you pick up an earlier conversation and where
+            "New Thread" lives — Simon's memory, and the way back to the
+            marketplace.
+
+            The docked layout hides the rail because 440px cannot hold a
+            260px rail plus a chat. That is a space decision, which is why the
+            header carries its own new-conversation button. Fullscreen has the
+            room, so fullscreen gets the whole shell rather than a stretched
+            copy of the reduced one. */}
         <div className="min-h-0 flex-1 relative bg-black/60">
           {isOpen && (
             <SimonAssistantChat
-              variant="docked"
+              variant={isFullscreen ? 'page' : 'docked'}
               headerActions={
                 <>
                   <button
