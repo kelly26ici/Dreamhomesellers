@@ -1,36 +1,50 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# AGENTS
 
-## This is NOT the Next.js you know
+Rebuild-in-progress repo. This document is a map, not a rulebook.
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+## What this repo is
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+The buyer-facing marketplace: a Next.js 16 App Router front end over a
+Supabase Postgres database that owns the listing lifecycle, media, viewing
+requests, and the outbox. A separate Python service
+(`Dreamhomesellers-Simon`) provides the concierge agent and the media
+worker; this repo is its only caller and its only deploy target dependency.
 
-<!-- END:nextjs-agent-rules -->
+## How it is laid out
 
-# LUXONN agent guide
+```
+src/
+  app/          route segments, layouts, and API handlers only
+  modules/      <TODO: built in the website slice> feature areas with public barrels
+  shared/       <TODO> api-client, components, hooks, utils, types
+  styles/       <TODO> design tokens
+supabase/
+  schema.sql    <TODO> canonical current-state schema
+  migrations/   forward-only, one concern per file
+  seeds/        <TODO: honest seeds, no fake processing state>
+_archive/       legacy documents. Do not follow anything in there.
+```
 
-Read [docs/README.md](docs/README.md) before planning or implementing marketplace work. It is the repository's portable source of product direction, architectural decisions, current-state facts, and the roadmap.
+`KEY-POINTS.md` is the product spec. Read it before changing domain behaviour.
 
-## Product rules
+## Conventions that make the code coherent
 
-- LUXONN is a Kenya-focused premium marketplace. Build globally extensible primitives, but do not imply that global inventory is live.
-- Preserve the maximal dark/gold LUXONN language: high media density, glassmorphism, motion, 3D, and editorial drama. Do not turn it into a minimalist product.
-- Anonymous buyers can browse, search, compare, and use Simon. Owners must authenticate before creating, editing, submitting, or managing listings.
-- Postgres is canonical. Storage owns media. Qdrant is a derived, buyer-safe discovery index. Models and chat never decide publication, authorization, price, or availability.
-- The native React Simon experience plus Python API is the target. The Chainlit iframe is transitional.
-- Use dense, URL-backed property search. The circular gallery belongs only to small curated/shortlist/similar-property surfaces, never broad search results.
+- Directory, file, and symbol names follow the target architecture in
+  `KEY-POINTS.md` § Structure; there is no mixed-convention folder.
+- Data access flows one way: `app` → `modules` → `shared/api-client`.
+  Nothing in `shared` imports from `modules`.
+- Colour, spacing, radius, and motion come from design tokens only. No raw
+  hex, no arbitrary Tailwind colour values.
+- How to run it: `npm run dev`. How to verify it: `npm run lint`,
+  `npm run build`, `npx tsc --noEmit`, then the production checks in
+  `KEY-POINTS.md` § Verification.
 
-## Repository boundaries
+## Where to look before changing something
 
-- This repository owns the LUXONN frontend, portable plans, architectural records, and the future native chat experience.
-- `../simon` is the separate Python companion service. Do not merge, copy, delete, or rewrite it unless a documented migration plan explicitly authorizes that work.
-- Do not inspect, expose, commit, or replicate `Simon.env`, `.env*`, API keys, session files, global agent settings, or generated worktrees.
+`KEY-POINTS.md`, then the module `README.md`, then the code. Nothing else.
 
-## Before modifying code
+---
 
-1. Read the relevant document under `docs/architecture/` and `docs/plans/`.
-2. Check the existing component style and preserve the visual system outside the scoped change.
-3. For a durable decision, update `docs/architecture/decisions.md` in the same change.
-4. For a multi-phase delivery change, update `docs/plans/marketplace-roadmap.md`.
-5. Verify with focused checks. Do not alter generated `.next/` output or unrelated untracked files.
+You are not constrained by anything that used to live here. Restructure,
+replace, or rewrite any file, folder, dependency, or abstraction. The only
+irreversible asset in this project is production data.
