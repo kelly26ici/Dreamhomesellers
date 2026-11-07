@@ -24,7 +24,7 @@
 -- COLUMN-GRANT CONSTRAINT (why this policy is written the way it is)
 -- ---------------------------------------------------------------------
 -- 0001:1164-1190 revokes table-level SELECT from anon/authenticated and
--- carves back only buyer-safe columns:
+-- carves back buyer-safe columns:
 --
 --   listings           -> listing_id, listing_kind, lifecycle_state,
 --                         published_revision_id
@@ -33,17 +33,28 @@
 --   listing_media      -> media_id, revision_id, position, kind,
 --                         is_featured, derivative_paths
 --
--- So organization_id, processing_status and moderation_status are NOT
--- readable by anon. This policy therefore references ONLY granted columns.
--- Two consequences worth stating, because an earlier draft got them wrong:
+-- So organization_id, revision_state, processing_status and
+-- moderation_status are NOT readable by anon. This policy therefore
+-- references ONLY granted columns.
 --
---   1. No `listing_revisions.lifecycle_state` -- that column does not exist.
---      Lifecycle is a property of the LISTING, not the revision; 0006 scopes
---      public access through listings.published_revision_id.
---   2. No `l.organization_id = r.organization_id` join condition -- the
---      composite FK on (listing_id, organization_id) already guarantees a
---      revision and its listing share an organization, so the condition is
---      redundant as a filter and only adds an ungranted column reference.
+-- Revision publication, stated precisely, because two earlier drafts got
+-- it wrong:
+--   * listing_revisions HAS its own lifecycle: the public.revision_state
+--     enum (draft, submitted, approved, publishing, published,
+--     changes_requested, rejected) at 0001:263-272. It is simply not named
+--     lifecycle_state, and it is not granted to anon -- so the column
+--     exists, yet anon cannot select or filter on it (401, not 400).
+--   * 0001:328-349 generates listing_revisions.published_ref_revision_id
+--     as CASE WHEN revision_state = 'published' THEN revision_id END, and
+--     listings.published_revision_id is an FK that can only point at a
+--     non-NULL value of it. That is the anti-pointer-poisoning guarantee:
+--     a listing's published pointer is unforgeable BY CONSTRUCTION.
+--   * Therefore the anon-safe revision-publication test is the listing's
+--     pointer, which is exactly what revision_public_read (0001:931) uses:
+--         l.published_revision_id = <revision_id>
+--         AND l.lifecycle_state  = 'published'
+--     The buyer path below uses the same pair, so storage and the table
+--     cannot disagree about what "published" means.
 -- =====================================================================
 
 BEGIN;
@@ -83,12 +94,12 @@ $$;
 -- 2. Scoped public read
 -- ---------------------------------------------------------------------
 -- Three ways a caller may read a derivative, in priority order:
---   (a) it belongs to a published listing, AND the media row for that
---       revision lists this exact object in its derivative_paths array --
---       the buyer path. Array membership is the strongest available signal
---       that a specific derivative is published: it is written by the
---       processing worker only after processing succeeds, and it uses a
---       column anon IS granted, unlike processing_status.
+--   (a) it belongs to a published revision of a published listing, AND the
+--       media row lists this exact object in its derivative_paths array --
+--       the buyer path. The pointer pair is the same one revision_public_read
+--       uses; the array is written by the processing worker only after
+--       processing succeeds, and both columns are granted to anon, unlike
+--       revision_state / processing_status / moderation_status.
 --   (b) the caller is a member of the owning organization -- owners must be
 --       able to read their own unpublished derivatives (the media manager
 --       depends on this, and the old blanket policy allowed it);
@@ -108,6 +119,7 @@ CREATE POLICY listing_derivatives_public_select ON storage.objects
         JOIN public.listing_media m
           ON m.revision_id = r.revision_id
         WHERE r.revision_id = public.storage_path_segment(name, 2)
+          AND l.published_revision_id = r.revision_id
           AND l.lifecycle_state = 'published'
           AND m.derivative_paths @> ARRAY[name]::text[]
       )
