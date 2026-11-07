@@ -127,7 +127,6 @@ export interface PublishedListingCard {
   readonly squareMeters: number | null;
   readonly lotSizeSqm: number | null;
   readonly area: string;
-  readonly city: string;
   readonly county: string | null;
   readonly country: string;
   readonly amenities: string[];
@@ -173,7 +172,6 @@ const REVISION_COLUMNS = [
   'square_meters',
   'lot_size_sqm',
   'area',
-  'city',
   'county',
   'country',
   'amenities',
@@ -205,7 +203,6 @@ interface PublishedRow {
     square_meters: number | null;
     lot_size_sqm: number | null;
     area: string;
-    city: string;
     county: string | null;
     country: string;
     amenities: string[] | null;
@@ -236,7 +233,6 @@ function toCard(row: PublishedRow): PublishedListingCard {
     squareMeters: r.square_meters,
     lotSizeSqm: r.lot_size_sqm,
     area: r.area,
-    city: r.city,
     county: r.county,
     country: r.country,
     amenities: r.amenities ?? [],
@@ -318,7 +314,6 @@ export async function fetchPublishedGrid(
         square_meters: number | null;
         lot_size_sqm: number | null;
         area: string;
-        city: string;
         county: string | null;
         country: string;
         amenities: string[] | null;

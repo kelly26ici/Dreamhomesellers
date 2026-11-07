@@ -100,7 +100,7 @@ export default function ListingCard({
             {card.title}
           </h3>
           <p className="text-sm text-muted">
-            {[card.area, card.city, card.county].filter(Boolean).join(', ')}
+            {[card.area, card.county].filter(Boolean).join(', ')}
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-muted">
             {card.bedrooms != null && <span>{card.bedrooms} bd</span>}
