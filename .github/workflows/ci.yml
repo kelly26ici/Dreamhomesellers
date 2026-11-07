@@ -37,6 +37,17 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      # The palette gate. Every foreground/background pair that can actually
+      # occur, in both themes, against WCAG 2.1 AA. A palette nobody measures
+      # is a palette nobody can trust, and the old one was never measured once.
+      - name: Contrast (design tokens)
+        run: npm run verify:contrast
+
+      # The token mirror. tokens.ts must keep pointing at real custom
+      # properties in both themes, and must not carry a hex of its own.
+      - name: Design tokens (mirror)
+        run: npm run test:tokens
+
   # The npm test:* suites hit live Supabase via SUPABASE_ACCESS_TOKEN and
   # intentionally do NOT run here. They require a dev-branch project; see
   # audit-findings/plans-compliance.md finding 4.

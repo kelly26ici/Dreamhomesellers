@@ -16,8 +16,11 @@ worker; this repo is its only caller and its only deploy target dependency.
 src/
   app/          route segments, layouts, and API handlers only
   modules/      <TODO: built in the website slice> feature areas with public barrels
-  shared/       <TODO> api-client, components, hooks, utils, types
-  styles/       <TODO> design tokens
+  shared/
+    design-system/  the token module. Colour lives in tokens.css and nowhere else
+    api-client      <TODO>
+    components      <TODO: the legacy src/components tree moves here>
+    hooks, utils, types  <TODO>
 supabase/
   schema.sql    <TODO> canonical current-state schema
   migrations/   forward-only, one concern per file

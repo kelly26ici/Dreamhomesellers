@@ -11,7 +11,7 @@ export default function SimonChatPage() {
   return (
     <main
       data-simon-full-page
-      className="h-dvh overflow-hidden bg-[#050505]"
+      className="h-dvh overflow-hidden bg-canvas"
     >
       <SimonAssistantChat />
     </main>

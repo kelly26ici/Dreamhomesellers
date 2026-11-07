@@ -1,4 +1,4 @@
-# _archive — REFERENCE ONLY. DO NOT READ DURING IMPLEMENTATION.
+# _archive — REFERENCE ONLY.
 
 These are the pre-rebuild project documents: ADRs, plans, contracts, audit
 findings, incident notes, and vendored skill copies. They are kept for history
@@ -8,9 +8,21 @@ reproduced.**
 ## Rules
 
 - Do **not** follow any instruction, plan, phase order, or rule found in here.
-- Do **not** cite an ADR as justification for a design decision.
-- Read a file only to answer "what did the old system actually do?"
+  They describe a system that no longer exists.
+- Read a file only to answer "what did the old system actually do?" — the
+  observable behaviour, the schema, the counts, the failure modes.
+- An **ADR is evidence of a decision, not a command.** You may not silently
+  contradict one either: the only way past an ADR is to supersede it explicitly
+  and record the reason in `KEY-POINTS.md`. "This file wins" without a recorded
+  reason is exactly the silent overwrite the ADR log's own header forbids.
 - Anything worth keeping has already been distilled into `KEY-POINTS.md`.
+
+> The previous version of this file said "DO NOT READ DURING IMPLEMENTATION"
+> and "do not cite an ADR as justification for a design decision". The first
+> made every ADR invisible, including the ones that constrain the rebuild. The
+> second was aimed at stopping an ADR being used as *permission* and ended up
+> stopping it being used as *evidence* — which is how ADR-002's dark/gold
+> identity nearly got replaced by accident. Both lines are gone.
 
 ## What is here
 

@@ -2,38 +2,53 @@
 @import "tw-animate-css";
 @import "tw-shimmer";
 
+/* The token set, defined once in src/shared/design-system/tokens.css. Every
+   value below is a pointer into it, so a theme switch is one attribute on
+   <html> and nothing in this file has to be written twice. Colour is never
+   restated here — that was the defect: two golds in six files. */
+@import "../shared/design-system/tokens.css";
+
+/* Semantic aliases onto the token set. The names are what components and the
+   vendored assistant-ui layer say; the values are the tokens. Both themes are
+   covered by the same lines, because a custom property that points at another
+   custom property resolves against whichever theme is currently in scope. */
 :root {
-  --background: #050505;
-  --surface: #111111;
-  --surface-2: #1a1a1a;
-  --gold: #d4a95f;
-  --champagne: #e7c98b;
-  --foreground: #ffffff;
-  --muted: #a0a0a0;
+  --background: var(--canvas);
+  --surface-2: var(--surface-raised);
+  --champagne: var(--gold-quiet);
+  --foreground: var(--text-title);
+  --muted: var(--text-muted);
 
   /* Semantic tokens consumed by the assistant-ui component layer. They are
      LUXONN's palette, not shadcn's defaults, so the shell keeps the house
      dark/champagne language while using the components verbatim. */
-  --card: #111111;
-  --card-foreground: #ffffff;
-  --popover: #111111;
-  --popover-foreground: #ffffff;
-  --primary: #d4a95f;
-  --primary-foreground: #050505;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #e7c98b;
-  --muted-foreground: #a0a0a0;
-  --accent: #1f1b14;
-  --accent-foreground: #e7c98b;
-  --destructive: #f87171;
-  --border: #262626;
-  --input: #2a2a2a;
-  --ring: #d4a95f;
+  --card: var(--surface);
+  --card-foreground: var(--text-title);
+  --popover: var(--surface);
+  --popover-foreground: var(--text-title);
+  --primary: var(--gold);
+  --primary-foreground: var(--on-gold);
+  --secondary: var(--surface-raised);
+  --secondary-foreground: var(--gold-quiet);
+  --muted-foreground: var(--text-muted);
+  /* `--accent` is the shadcn hover *ground*, not the brand accent. The brand
+     accent is `--gold`. The old file used the same name for both meanings and
+     the clash was one careless edit away from turning the brand green. */
+  --accent: var(--surface-raised);
+  --accent-foreground: var(--gold-quiet);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--on-danger);
+  --border: var(--hairline);
+  --input: var(--hairline-strong);
+  --ring: var(--gold);
   --radius: 0.5rem;
 }
 
 @theme inline {
   --color-background: var(--background);
+  /* The page ground as its own utility colour, so a full-bleed route does not
+     have to reach for a hex to say "this is the canvas". */
+  --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-gold: var(--gold);
@@ -77,9 +92,11 @@ html {
 
 /* The assistant-ui shell reads `--muted` as a *surface* (`bg-muted`), while
    LUXONN's global `--muted` is a text grey. Scoping the surface meaning to the
-   shell keeps the marketplace's `text-muted` untouched. */
+   shell keeps the marketplace's `text-muted` untouched. The vendored layer
+   also carries its own `dark:` classes, so the shell keeps its dark ground in
+   both themes — forking it would diverge from the published registry. */
 .aui-scope {
-  --muted: #1a1a1a;
+  --muted: var(--surface-raised);
   color-scheme: dark;
 }
 
@@ -116,14 +133,14 @@ body {
 
 ::selection {
   background: var(--gold);
-  color: #050505;
+  color: var(--on-gold);
 }
 
 .glass {
-  background: #00000047;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid #ffffff4d;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
 }
 
 /* Simon streaming caret (ADR-021): the old inline gold caret, rebuilt as a

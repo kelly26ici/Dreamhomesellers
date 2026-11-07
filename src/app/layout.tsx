@@ -27,8 +27,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      /* The script below writes `data-theme` before React hydrates, so the
+         browser's attribute legitimately differs from the server's. This
+         suppresses that one warning instead of declaring the whole subtree
+         uncheckable. */
+      suppressHydrationWarning
       className={`${bebas.variable} ${inter.variable} h-full antialiased`}
     >
+      <head>
+        {/* Reconcile the stored theme before first paint. Dark is the default
+            the server renders; this runs before the CSS is painted so a
+            light-preference visitor never sees a dark flash. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("luxonn:theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <SmoothScroll>
           <SimonProvider>

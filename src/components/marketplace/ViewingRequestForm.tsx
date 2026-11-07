@@ -268,7 +268,7 @@ export default function ViewingRequestForm({
             onChange={(event) => setConsentChecked(event.target.checked)}
             required
             disabled={submitting}
-            className="mt-0.5 accent-[#d4a95f]"
+            className="mt-0.5 accent-gold"
           />
           <span>
             I consent to LUXONN storing my contact details and passing them

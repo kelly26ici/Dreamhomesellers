@@ -23,7 +23,7 @@ export default function GalleryPage() {
   return (
     <main className="relative h-screen w-full overflow-hidden bg-background">
       {/* Background ambient lighting */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.06)_0%,transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,color-mix(in_srgb,var(--gold)_6%,transparent)_0%,transparent_70%)]" />
 
       {/* Top Header */}
       <header className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-6 py-6 lg:px-12">

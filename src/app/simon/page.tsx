@@ -33,7 +33,7 @@ export default async function SimonPage({ searchParams }: SimonPageProps) {
   };
 
   return (
-    <main data-simon-full-page className="h-dvh overflow-hidden bg-[#050505]">
+    <main data-simon-full-page className="h-dvh overflow-hidden bg-canvas">
       <SimonAssistantChat
         pageContext={pageContext}
         activeListingTitle={title}

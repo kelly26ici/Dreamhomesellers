@@ -59,7 +59,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-lg border border-gold/30 bg-[#0c0c0e] text-foreground shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-lg border border-gold/30 bg-surface text-foreground shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gold/15 px-6 py-4 bg-surface-2/40">
           <div className="flex items-center gap-2">

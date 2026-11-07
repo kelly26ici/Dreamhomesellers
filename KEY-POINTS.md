@@ -1,8 +1,15 @@
 # KEY-POINTS
 
 The product spec. Everything here is true regardless of what the archived
-documents said. Where an archived ADR disagrees with this file, this file
-wins; where this file is silent, decide and record the decision here.
+documents said. **Where an archived ADR disagrees with this file, this file
+wins — but only if the disagreement is recorded here, in a numbered decision,
+with the reason.** Silently contradicting an ADR is forbidden by the ADR log's
+own header ("do not silently overwrite prior rationale") and it is how a
+recorded product decision gets erased by accident. Decision 3 above is the
+worked example: it originally restated ADR-002 wrongly and was corrected to
+cite the ADR instead of replacing it.
+
+Where this file is silent, decide and record the decision here.
 
 ## The product
 
@@ -54,6 +61,32 @@ its owner publishes it.
 7. **EXIF is stripped before any public derivative exists.** This is the
    location-disclosure rule again, at the file layer.
 
+## Structure
+
+The target, which the website slice migrates toward. Data access flows one
+way: `app` → `modules` → `shared/api-client`. Nothing in `shared` imports
+from `modules`.
+
+```
+src/
+  app/       route segments, layouts, and API handlers only
+  modules/   feature areas with public barrels — the website slice builds these
+  shared/    api-client, design-system, components, hooks, utils, types
+supabase/
+  schema.sql     canonical current-state schema
+  migrations/    forward-only, one concern per file
+  seeds/         honest seeds, no fake processing state
+_archive/        legacy documents. Do not follow anything in there.
+```
+
+`src/shared/design-system/` is the token module: `tokens.css` is the only file
+colour is written in, `tokens.ts` is its typed mirror for the places CSS
+custom properties cannot reach, and `globals.css` holds nothing but aliases and
+component-level rules. Radius, spacing, motion, and the type scale are pinned
+in `globals.css` next to their rationale (ADR-018) and are deliberately not
+duplicated into the token module — a token is a module because there is one
+source for it, not because it moved.
+
 ## Deployment topology
 
 - `dreamhomesellers.onrender.com` — this repo, Render free tier, auto-deploys
@@ -94,7 +127,7 @@ behaves correctly:
 |---|---|
 | 1 | No pre-publication review. A listing goes live when its owner publishes it. |
 | 2 | Moderation survives as a takedown/report surface, never a gate. |
-| 3 | Palette: **Ink + Verdigris**, both light and dark, one token set, with a toggle. Type: **Oswald** display + **Source Sans 3** body. One accent. No glow. WCAG 2.1 AA is the bar for every surface. |
+| 3 | Visual identity: **dark/gold LUXONN** (ADR-002, accepted 2026-10-11, still standing). Maximal visual language — rich imagery, motion, 3D, **glassmorphism, gradients**, editorial composition. Not minimalism. One accent hue (gold), one token set, **light and dark from that one set with a toggle**. WCAG 2.1 AA is the bar for every surface, verified by a gate rather than asserted. |
 | 4 | Simon is a **full-page route only**. No dock, so the chat runtime never enters a marketing bundle. |
 | 5 | Design tokens are a first-class module, not CSS globals. |
 | 6 | One palette everywhere; density and motion vary per surface. |

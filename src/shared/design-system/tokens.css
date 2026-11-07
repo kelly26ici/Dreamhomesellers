@@ -1,0 +1,107 @@
+/* =====================================================================
+ * Design tokens — LUXONN dark/gold (ADR-002), one token set, two themes.
+ *
+ * THIS FILE IS THE ONLY PLACE COLOUR LIVES. It exists to fix a specific,
+ * measured defect: the old system declared its golds in six files, never
+ * measured any of them, and had no second theme. One accent hue, two tiers
+ * of it, both themes, and a gate that fails CI below AA.
+ *
+ * What is deliberately preserved (ADR-002, ADR-018):
+ *   - the dark/gold identity. Gold is the accent; nothing else is.
+ *   - the maximal visual language: glassmorphism and gradients are tokens
+ *     here, not a memory in someone's head.
+ *   - the instrument-panel radius scale stays in globals.css, where its
+ *     rationale lives. This file owns colour; that is the part nobody owned.
+ *
+ * What is deliberately NOT here: font families. `src/app/layout.tsx` loads
+ * them through next/font and no ADR records a change, so duplicating the
+ * decision here would create a second source of truth for the same fact.
+ *
+ * Theme is chosen by `data-theme` on <html>. With no attribute, dark is the
+ * default — page shell renders dark on the server and the toggle reconciles
+ * before first paint, so there is no light flash on a light-preference visit.
+ *
+ * Verified, not asserted: scripts/verify-contrast.mjs measures every
+ * foreground/background pair that can actually occur, in both themes, against
+ * WCAG 2.1 AA. Re-run it after any change here. A palette nobody measures is
+ * a palette nobody can trust, and the old one was never measured once.
+ * ===================================================================== */
+
+/* ---- DARK: the identity. This is what LUXONN looks like. ---- */
+:root {
+  /* Grounds. `#050505` is the page, `#111111` the card, `#1a1a1a` raised. */
+  --canvas: #050505;
+  --surface: #111111;
+  --surface-raised: #1a1a1a;
+
+  /* Text hierarchy. White title, warm-grey body, muted caption. */
+  --text-title: #ffffff;
+  --text-body: #d9d9d9;
+  --text-muted: #a0a0a0;
+
+  /* THE accent. One hue, two tiers — a deep gold and its champagne lift.
+     This replaces the two unmanaged golds that used to be declared in six
+     files. Everything gold on the site points at one of these two. */
+  --gold: #d4a95f;
+  --gold-quiet: #e7c98b;
+  --on-gold: #050505;
+
+  /* Separation: 1px hairlines, never a coloured border. */
+  --hairline: #262626;
+  --hairline-strong: #2a2a2a;
+
+  /* Feedback. Semantic only, and only what the product actually used. */
+  --danger: #f87171;
+  --on-danger: #050505;
+
+  /* Glass (ADR-002's glassmorphism, as tokens so it themes with the rest).
+     The blur is fixed; the tint and the edge come from the theme. */
+  --glass-bg: rgb(255 255 255 / 6%);
+  --glass-border: rgb(255 255 255 / 12%);
+  --glass-blur: 16px;
+
+  /* Gradients (ADR-002 keeps them). Two named ones, both built from the
+     accent, so a gradient can never introduce a colour the palette lacks. */
+  --gradient-gold: linear-gradient(135deg, var(--gold), var(--gold-quiet));
+  --gradient-veil: linear-gradient(to bottom, transparent, var(--canvas));
+
+  color-scheme: dark;
+}
+
+/* ---- LIGHT: the same names, the same hue, light grounds.
+ * Only the values that must change are repeated. Alias blocks in globals.css
+ * point at these names once, so a component never learns which theme is on.
+ * ---- */
+[data-theme="light"] {
+  --canvas: #f7f4ee;
+  --surface: #ffffff;
+  --surface-raised: #efece4;
+
+  --text-title: #191510;
+  --text-body: #3b382f;
+  --text-muted: #5a554a;
+
+  /* The accent has to darken to stay AA as text on paper, and the quiet tier
+     has to go deeper still — "quiet" means less prominent, not lighter. The
+     first values I tried here failed the gate at 3.33:1; these are what the
+     gate accepted, which is the only reason they are these values. */
+  --gold: #856515;
+  --gold-quiet: #6e5410;
+  --on-gold: #ffffff;
+
+  --hairline: #ded7c8;
+  --hairline-strong: #c6bca6;
+
+  --danger: #a0271c;
+  --on-danger: #ffffff;
+
+  --glass-bg: rgb(255 255 255 / 70%);
+  --glass-border: rgb(25 21 16 / 10%);
+  --glass-blur: 16px;
+
+  color-scheme: light;
+}
+
+/* No reduced-motion block here: globals.css already collapses every
+ * animation and transition under `prefers-reduced-motion`, so a second copy
+ * of that guard in this file would be a duplicate that drifts. */
