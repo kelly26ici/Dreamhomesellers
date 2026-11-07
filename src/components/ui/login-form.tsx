@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useReducedMotion } from "framer-motion";
+import { usePrefersReducedMotion } from "@/shared/design-system";
 import gsap from "gsap";
 import { User, Lock, ArrowRight } from "lucide-react";
 
@@ -34,7 +34,7 @@ export function LoginAmbient({
 }: {
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   // Mount gate: SSR and the first client render must agree (no canvas on
   // either), or React 19 flags a hydration mismatch for reduced-motion users.
   // useSyncExternalStore does this without the setState-in-effect cascade
@@ -71,7 +71,7 @@ export function LoginAmbient({
  */
 export function LoginForm() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const router = useRouter();
   const searchParams = useSearchParams();
 

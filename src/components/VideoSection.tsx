@@ -5,16 +5,23 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { Play } from "lucide-react";
+import { usePrefersReducedMotion } from "@/shared/design-system";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function VideoSection() {
   const rootRef = useRef<HTMLElement>(null);
   const playRef = useRef<HTMLButtonElement>(null);
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    // Two motions here: an infinite yoyo pulse on the play button and a
+    // scroll-scrubbed scale on the frame. The pulse is `repeat: -1`, so it
+    // never ends — there is no version of it that respects a preference for
+    // less motion except not running it.
+    if (reduced) return;
     const ctx = gsap.context(() => {
       const play = playRef.current;
       if (play) {
@@ -43,7 +50,7 @@ export default function VideoSection() {
       );
     }, root);
     return () => ctx.revert();
-  }, []);
+  }, [reduced]);
 
   return (
     <section ref={rootRef} className="px-6 py-24 lg:px-12">

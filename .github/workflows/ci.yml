@@ -48,6 +48,11 @@ jobs:
       - name: Design tokens (mirror)
         run: npm run test:tokens
 
+      # JS-driven motion cannot be reached by the CSS reduced-motion block, so
+      # every file that imports a motion library must ask the question.
+      - name: Reduced motion (JS-driven animation)
+        run: npm run verify:motion
+
   # The npm test:* suites hit live Supabase via SUPABASE_ACCESS_TOKEN and
   # intentionally do NOT run here. They require a dev-branch project; see
   # audit-findings/plans-compliance.md finding 4.

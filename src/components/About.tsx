@@ -4,15 +4,20 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import { usePrefersReducedMotion } from "@/shared/design-system";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function About() {
   const rootRef = useRef<HTMLElement>(null);
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    // Scroll-scrubbed parallax. A visitor who asked for less motion gets the
+    // image at rest rather than a slower version of the same movement.
+    if (reduced) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(
         "[data-about='image']",
@@ -30,7 +35,7 @@ export default function About() {
       );
     }, root);
     return () => ctx.revert();
-  }, []);
+  }, [reduced]);
 
   return (
     <section

@@ -11,3 +11,4 @@
 
 export { TOKENS, tokens, type TokenName } from "./tokens";
 export { ThemeToggle, useTheme, type Theme } from "./theme-toggle";
+export { usePrefersReducedMotion } from "./use-prefers-reduced-motion";

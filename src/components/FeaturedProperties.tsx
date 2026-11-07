@@ -17,6 +17,7 @@ import { MapPin } from "lucide-react";
 import Link from "next/link";
 import { formatListingPrice } from "@/lib/marketplace/format-money";
 import type { PublishedListingCard } from "@/lib/marketplace/read-model";
+import { usePrefersReducedMotion } from "@/shared/design-system";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -26,10 +27,12 @@ export default function FeaturedProperties({
   readonly properties: readonly PublishedListingCard[];
 }) {
   const rootRef = useRef<HTMLElement>(null);
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    if (reduced) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(
         "[data-featured='card']",
@@ -48,7 +51,7 @@ export default function FeaturedProperties({
       );
     }, root);
     return () => ctx.revert();
-  }, []);
+  }, [reduced]);
 
   return (
     <section

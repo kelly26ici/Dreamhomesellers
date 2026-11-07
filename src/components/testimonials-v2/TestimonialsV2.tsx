@@ -9,10 +9,10 @@ import {
   useMotionValue,
   useSpring,
   useTransform,
-  useReducedMotion,
 } from "framer-motion";
 import { Quote } from "lucide-react";
 import dynamic from "next/dynamic";
+import { usePrefersReducedMotion } from "@/shared/design-system";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -103,7 +103,7 @@ const TESTIMONIALS_ROW_2 = [
 type Testimonial = (typeof TESTIMONIALS_ROW_1)[number];
 
 function Card({ item }: { item: Testimonial }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
   const px = useMotionValue(0);
   const py = useMotionValue(0);
@@ -226,7 +226,7 @@ function Track({
 
 export default function TestimonialsV2() {
   const rootRef = useRef<HTMLElement>(null);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   // Mount gate: SSR and the first client render must agree (no canvas on
   // either), or React 19 flags a hydration mismatch for reduced-motion users.
   // useSyncExternalStore does this without the setState-in-effect cascade

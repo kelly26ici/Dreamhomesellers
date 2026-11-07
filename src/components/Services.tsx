@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Building2, KeyRound, Sparkles, CalendarCheck } from "lucide-react";
+import { usePrefersReducedMotion } from "@/shared/design-system";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -32,10 +33,16 @@ const DISCIPLINES = [
 
 export default function Services() {
   const rootRef = useRef<HTMLElement>(null);
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    // A reveal that starts at opacity 0 is only safe to skip when the element's
+    // resting state is visible, which it is: `fromTo` animates *to* the CSS
+    // natural state. So the reduced-motion outcome is "no animation", never
+    // "invisible content".
+    if (reduced) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(
         "[data-services='card']",
@@ -51,7 +58,7 @@ export default function Services() {
       );
     }, root);
     return () => ctx.revert();
-  }, []);
+  }, [reduced]);
 
   return (
     <section

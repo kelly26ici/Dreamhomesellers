@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useLenis } from "lenis/react";
 import { useRouter, usePathname } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/auth/supabase-browser";
+import { usePrefersReducedMotion } from "@/shared/design-system";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 /** Marketing sections the nav scrolls to. Mirrors the first commits. */
@@ -14,19 +15,25 @@ const SECTIONS = ["home", "properties", "about", "services"] as const;
 
 const NAV_OFFSET = -72;
 
-/** Lenis is JS-driven, so the global reduced-motion CSS block does not cover it. */
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/**
+ * Lenis is JS-driven, so the global reduced-motion CSS block does not cover it.
+ * `usePrefersReducedMotion` is the one place the product asks the question, and
+ * it subscribes — the old private copy of this check read the media query once
+ * at module scope, so a preference changed mid-session was missed.
+ */
 
 /**
  * Lenis owns the scroll position when it is mounted (html.lenis), so native
  * scrollIntoView/window.scrollBy are ignored. Route through lenis when present
  * and fall back to native scrolling otherwise. Lenis is JS-driven, so the
- * global prefers-reduced-motion CSS block does not cover it — check explicitly.
+ * global prefers-reduced-motion CSS block does not cover it — the preference is
+ * passed in from the one place that asks for it.
  */
-function scrollToAnchor(id: string, lenis: ReturnType<typeof useLenis>) {
-  const reduced = prefersReducedMotion();
+function scrollToAnchor(
+  id: string,
+  lenis: ReturnType<typeof useLenis>,
+  reduced: boolean
+) {
   if (lenis && !reduced) {
     lenis.scrollTo(`#${id}`, { offset: NAV_OFFSET });
     return;
@@ -46,6 +53,7 @@ export default function Navbar() {
   const rootRef = useRef<HTMLElement>(null);
   const magnetRef = useRef<HTMLAnchorElement>(null);
   const lenis = useLenis();
+  const reduced = usePrefersReducedMotion();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -73,16 +81,20 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!rootRef.current) return;
+    if (reduced) return;
     gsap.fromTo(
       rootRef.current,
       { y: -80, opacity: 0 },
       { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
     );
-  }, []);
+  }, [reduced]);
 
   useEffect(() => {
     const magnet = magnetRef.current;
     if (!magnet) return;
+    // The magnet follows the pointer, which is motion the visitor is *doing*,
+    // not motion the page is doing at them. It stays, because it only ever
+    // moves while the pointer moves.
     const xTo = gsap.quickTo(magnet, "x", { duration: 0.4, ease: "power3" });
     const yTo = gsap.quickTo(magnet, "y", { duration: 0.4, ease: "power3" });
     const onMove = (e: MouseEvent) => {
@@ -111,14 +123,14 @@ export default function Navbar() {
   const scrollToSection = (id: string) => {
     setMenuOpen(false);
     if (pathname === "/") {
-      scrollToAnchor(id, lenis);
+      scrollToAnchor(id, lenis, reduced);
       return;
     }
     router.push("/");
     let tries = 0;
     const attempt = () => {
       if (document.getElementById(id)) {
-        scrollToAnchor(id, lenis);
+        scrollToAnchor(id, lenis, reduced);
         return;
       }
       if (tries++ < 40) requestAnimationFrame(attempt);

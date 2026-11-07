@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import Link from "next/link";
 import { MapPin, Tag, Ruler } from "lucide-react";
+import { usePrefersReducedMotion } from "@/shared/design-system";
 
 // Facts mirror the verified published record (demo listing b01: the Karen
 // villa) — real LUXONN numbers, not invented ones. The hero is decorative;
@@ -17,6 +18,7 @@ const FLOATING_CARDS = [
 export default function Hero() {
   const rootRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -34,6 +36,10 @@ export default function Hero() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    // The hero entrance is a four-step timeline. With the preference set the
+    // title, subtext, CTAs and cards are simply at rest on first paint — which
+    // is what the animation was going to end at anyway.
+    if (reduced) return;
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       tl.fromTo(
@@ -61,7 +67,7 @@ export default function Hero() {
         );
     }, root);
     return () => ctx.revert();
-  }, []);
+  }, [reduced]);
 
   return (
     <section
