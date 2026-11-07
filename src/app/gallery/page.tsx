@@ -79,7 +79,7 @@ async function CuratedGalleryLoader() {
   const publishedListings = await fetchPublishedFeatured(8);
 
   const items: ResidenceGalleryItem[] = publishedListings.map((card) => {
-    const loc = [card.area, card.city, card.country].filter(Boolean).join(', ');
+    const loc = [card.area, card.country, card.country].filter(Boolean).join(', ');
     const priceFormatted = formatListingPrice(
       card.priceAmount,
       card.priceCurrency,

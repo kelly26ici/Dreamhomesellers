@@ -65,7 +65,7 @@ export default function PropertyShowcase({
               </p>
               <p className="mt-1 flex items-center gap-2 text-sm text-muted">
                 <MapPin className="h-4 w-4 text-gold" aria-hidden />
-                {[property.area, property.city, property.county]
+                {[property.area, property.county]
                   .filter(Boolean)
                   .join(", ")}
               </p>

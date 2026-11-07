@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
           normalizedMsg.includes('tell me more');
 
         if (isOverviewQuery) {
-          replyText = `You are viewing **${card.title}**, a premier ${card.propertyType} residence located in ${card.area}, ${card.city}.\n\n` +
+          replyText = `You are viewing **${card.title}**, a premier ${card.propertyType} residence located in ${card.area}, ${card.county}.\n\n` +
             (card.description ? `**Architectural Profile:**\n${card.description}\n\n` : '') +
             `**Verified Specifications:**\n` +
             `• **Price:** ${price} (authoritative verified figure)\n` +
@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
           replyText = `I can coordinate a confidential private viewing of **${card.title}**. You can submit your preferred date and contact details in the viewing request form on this page, or let me know what day suits you best.`;
           followUps = ['Schedule for this weekend', 'Contact concierge team'];
         } else {
-          replyText = `I am reviewing the verified architectural facts for **${card.title}** in ${card.area}, ${card.city}. It offers ${card.bedrooms ?? '—'} bedrooms and ${card.bathrooms ?? '—'} bathrooms, listed at ${price}.\n\nHow may I assist you with this residence?`;
+          replyText = `I am reviewing the verified architectural facts for **${card.title}** in ${card.area}, ${card.county}. It offers ${card.bedrooms ?? '—'} bedrooms and ${card.bathrooms ?? '—'} bathrooms, listed at ${price}.\n\nHow may I assist you with this residence?`;
           followUps = ['Tell me about the price', 'What are the amenities?', 'Arrange a viewing'];
         }
 
@@ -249,7 +249,7 @@ export async function POST(req: NextRequest) {
             listingId: card.listingId,
             title: card.title,
             propertyType: card.propertyType,
-            location: `${card.area}, ${card.city}`,
+            location: `${card.area}, ${card.county}`,
             price: card.priceAmount,
             currency: card.priceCurrency,
             pricePeriod: card.pricePeriod,
@@ -282,7 +282,7 @@ export async function POST(req: NextRequest) {
             listingId: c.listingId,
             title: c.title,
             propertyType: c.propertyType,
-            location: `${c.area}, ${c.city}`,
+            location: `${c.area}, ${c.county}`,
             price: c.priceAmount,
             currency: c.priceCurrency,
             pricePeriod: c.pricePeriod,
@@ -312,7 +312,7 @@ export async function POST(req: NextRequest) {
             listingId: c.listingId,
             title: c.title,
             propertyType: c.propertyType,
-            location: `${c.area}, ${c.city}`,
+            location: `${c.area}, ${c.county}`,
             price: c.priceAmount,
             currency: c.priceCurrency,
             pricePeriod: c.pricePeriod,

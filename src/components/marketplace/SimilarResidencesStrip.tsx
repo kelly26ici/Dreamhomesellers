@@ -100,7 +100,7 @@ export default function SimilarResidencesStrip({
                   </p>
                   <p className="mt-1 line-clamp-2 text-sm text-white">{card.title}</p>
                   <p className="mt-1 text-xs text-muted">
-                    {[card.area, card.city].filter(Boolean).join(', ')}
+                    {[card.area, card.county].filter(Boolean).join(', ')}
                   </p>
                 </div>
               </Link>

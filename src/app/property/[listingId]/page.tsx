@@ -89,7 +89,7 @@ async function Detail({
             {card.title}
           </h1>
           <p className="mt-2 text-sm text-muted">
-            {[card.area, card.city, card.county, card.country].filter(Boolean).join(', ')}
+            {[card.area, card.county, card.country].filter(Boolean).join(', ')}
           </p>
         </div>
         <div className="flex flex-col items-end gap-3">

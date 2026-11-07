@@ -61,7 +61,7 @@ const ROWS: ReadonlyArray<{
   { label: 'Type', render: (c) => c.propertyType },
   {
     label: 'Location',
-    render: (c) => [c.area, c.city, c.county].filter(Boolean).join(', '),
+    render: (c) => [c.area, c.county].filter(Boolean).join(', '),
   },
   {
     label: 'Bedrooms',
@@ -213,7 +213,7 @@ export default function SavedPage() {
                     </Link>
                     <p className="mt-1 text-sm text-muted">
                       {formatPrice(card)} ·{' '}
-                      {[card.area, card.city, card.county]
+                      {[card.area, card.county]
                         .filter(Boolean)
                         .join(', ')}
                     </p>
