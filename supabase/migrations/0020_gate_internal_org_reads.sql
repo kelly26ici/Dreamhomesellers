@@ -20,6 +20,41 @@
 -- cannot silently reopen the internal-org leak.
 --
 -- Rollback: the pre-images are the 0001 statements quoted below.
+--
+-- ---------------------------------------------------------------------
+-- WHAT THIS MIGRATION DOES NOT DO -- read before applying
+-- ---------------------------------------------------------------------
+-- 1. It does not make derivative URLs safe. The `listing-derivatives`
+--    bucket is currently PUBLIC, and Supabase documents that downloads
+--    from a public bucket bypass RLS entirely -- objects are fetchable by
+--    URL whatever any policy says. Set the bucket to PRIVATE first, or
+--    this migration's table-level gating is not enforced on the file
+--    path. Supabase recommends changing bucket visibility through the
+--    Storage API rather than by editing storage.* schema directly, so the
+--    bucket change is a separate, manual step and not part of this file.
+--
+-- 2. It does not protect every caller, only anonymous and unrelated
+--    buyers. PostgreSQL policies are permissive and combine with OR, so
+--    the clause added below narrows *these two policies' public-read
+--    branches* and nothing else. listing_org_read still lets an
+--    organization member read its own listings, and the platform-role
+--    policies still let moderators/admins read anything. Those callers
+--    reach the same revisions and media through their own org-read
+--    policies. Anyone who could see this content before this migration
+--    can still see it; the change removes the *public* route to internal
+--    content and keeps the internal-org route closed by restating it.
+--
+-- 3. media_public_read depends on media-table RLS for its filtering.
+--    The derivative policy's buyer branch relies on this policy for
+--    processing_status and moderation_status -- it does not test them
+--    itself. That dependency is intentional (one place decides what is
+--    published media) but it is a dependency: if the media policies
+--    change, revisit the derivative policy in the same change.
+--
+-- Verified while writing this migration: the referenced tables and
+-- columns exist; the is_org_internal(organization_id) references sit
+-- outside the EXISTS subqueries, so organization_id is the revision or
+-- media row being checked rather than the joined listing row.
 -- =====================================================================
 
 BEGIN;
@@ -73,6 +108,9 @@ CREATE POLICY media_public_read ON public.listing_media
       WHERE l.published_revision_id = listing_media.revision_id
         AND l.lifecycle_state = 'published'
     )
+    -- See the header: this narrows the public-read branch only. Org members
+    -- and platform roles reach these rows through their own policies, which
+    -- is intended -- they are allowed to.
     AND NOT public.is_org_internal(organization_id)
   );
 

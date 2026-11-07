@@ -48,6 +48,12 @@ jobs:
       - name: Design tokens (mirror)
         run: npm run test:tokens
 
+      # A migration is applied verbatim by a machine. Prose after COMMIT is
+      # how 0020 shipped unappliable -- and it was found by reading the file,
+      # which is not a check.
+      - name: Migrations (are SQL, and end as SQL)
+        run: npm run verify:migrations
+
       # JS-driven motion cannot be reached by the CSS reduced-motion block, so
       # every file that imports a motion library must ask the question.
       - name: Reduced motion (JS-driven animation)
