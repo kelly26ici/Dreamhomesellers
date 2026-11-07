@@ -77,7 +77,7 @@ async function NewListingLoader() {
 
   if (!user) {
     return (
-      <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+      <div className="mt-10 rounded-lg border border-gold/15 p-8">
         <h2 className="text-2xl font-heading text-foreground">
           Owner sign in required
         </h2>
@@ -109,7 +109,7 @@ async function NewListingLoader() {
 
   if (orgs.length === 0) {
     return (
-      <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+      <div className="mt-10 rounded-lg border border-gold/15 p-8">
         <h2 className="text-2xl font-heading text-foreground">
           Create your organization first
         </h2>

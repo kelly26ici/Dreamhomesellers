@@ -429,7 +429,7 @@ export function ListingDraftForm({
 
   return (
     <>
-      <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border border-gold/30 bg-gradient-to-r from-gold/15 via-gold/5 to-transparent p-4 backdrop-blur-sm">
+      <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border border-gold/30 p-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-gold/40 bg-gold/10 text-gold shadow-sm shadow-gold/20">
             <Sparkles className="h-5 w-5" />

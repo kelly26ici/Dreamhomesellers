@@ -139,7 +139,7 @@ export function CircularGallery({
                 transition: 'opacity 0.25s linear',
               }}
             >
-              <div className="group relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border border-gold/25 bg-surface-1/90 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 hover:border-gold/60">
+              <div className="group relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border border-gold/25 bg-surface-1/90 shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gold/60">
                 {/* Visual Imagery or Branded Architectural Canvas */}
                 <div className="relative aspect-[16/11] w-full overflow-hidden bg-black/60">
                   {resolvedImg ? (
@@ -149,7 +149,7 @@ export function CircularGallery({
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-surface-2 via-surface-1 to-black p-4 text-center">
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4 text-center">
                       <Building2 className="h-8 w-8 text-gold/40" />
                       <span className="font-display text-2xl tracking-widest text-gold/40">
                         LUXONN
@@ -161,7 +161,7 @@ export function CircularGallery({
                   )}
 
                   {/* Property type badge */}
-                  <span className="absolute left-3 top-3 rounded-full border border-gold/40 bg-black/70 px-3 py-0.5 text-[10px] font-semibold tracking-wider text-gold backdrop-blur-md">
+                  <span className="absolute left-3 top-3 rounded-full border border-gold/40 px-3 py-0.5 text-[10px] font-semibold tracking-wider text-gold">
                     {item.propertyType.toUpperCase()}
                   </span>
                 </div>

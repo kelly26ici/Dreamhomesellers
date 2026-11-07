@@ -46,7 +46,7 @@ export function SimonDockedSidebar() {
         <button
           type="button"
           onClick={() => openSimon({ mode: 'docked' })}
-          className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2 border-y border-l border-gold/60 bg-[#090909]/90 px-2 py-4 shadow-[-8px_0_30px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[-8px_0_35px_rgba(212,175,55,0.25)] group cursor-pointer"
+          className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2 border-y border-l border-gold/60 bg-[#090909]/90 px-2 py-4 shadow-[-8px_0_30px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:shadow-[-8px_0_35px_rgba(212,175,55,0.25)] group cursor-pointer"
           aria-label="Open Simon Property Concierge"
         >
           <span className="flex h-7 w-7 items-center justify-center rounded-full border border-gold/50 bg-gold/15 text-gold group-hover:scale-110 transition-transform">
@@ -63,7 +63,7 @@ export function SimonDockedSidebar() {
         <button
           type="button"
           onClick={() => openSimon({ mode: 'docked' })}
-          className="lg:hidden fixed bottom-5 right-5 z-40 flex h-14 items-center gap-2.5 rounded-full border border-gold/70 bg-black/95 px-4 text-gold shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all duration-300 active:scale-95"
+          className="lg:hidden fixed bottom-5 right-5 z-40 flex h-14 items-center gap-2.5 rounded-full border border-gold/70 px-4 text-gold shadow-[0_12px_40px_rgba(0,0,0,0.6)] transition-all duration-300 active:scale-95"
           aria-label="Chat with Simon"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full border border-gold/50 bg-gold/15">
@@ -79,7 +79,7 @@ export function SimonDockedSidebar() {
       {isDocked && (
         <div
           onClick={closeSimon}
-          className="hidden md:block lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
+          className="hidden md:block lg:hidden fixed inset-0 z-50 transition-opacity duration-300"
           aria-hidden="true"
         />
       )}
@@ -96,8 +96,8 @@ export function SimonDockedSidebar() {
             : 'translate-x-0'
         } ${
           isFullscreen
-            ? 'inset-0 w-full h-[100dvh] z-[70] bg-[#090909]/98 backdrop-blur-3xl'
-            : 'w-full md:w-[420px] lg:w-[440px] h-[100dvh] z-[60] border-l border-gold/30 bg-[#090909]/95 backdrop-blur-2xl shadow-[-20px_0_60px_rgba(0,0,0,0.85)]'
+            ? 'inset-0 w-full h-[100dvh] z-[70] bg-canvas'
+            : 'w-full md:w-[420px] lg:w-[440px] h-[100dvh] z-[60] border-l border-hairline bg-canvas shadow-[var(--shadow-float)]'
         }`}
       >
         {/* Same shell as /simon. The rail is part of that shell: it holds the

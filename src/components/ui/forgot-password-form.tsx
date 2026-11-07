@@ -38,7 +38,7 @@ export function ForgotPasswordForm() {
 
   if (status === "sent") {
     return (
-      <div className="w-full max-w-sm space-y-6 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10">
+      <div className="w-full max-w-sm space-y-6 rounded-lg border border-gold/15 p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] md:p-10">
         <h2 className="font-display text-4xl tracking-wide text-white">
           CHECK YOUR EMAIL
         </h2>
@@ -60,7 +60,7 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <div className="w-full max-w-sm space-y-8 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-10">
+    <div className="w-full max-w-sm space-y-8 rounded-lg border border-gold/15 p-8 shadow-[0_8px_40px_rgba(0,0,0,0.45)] md:p-10">
       <div className="text-center">
         <h2 className="font-display text-4xl tracking-wide text-white">
           RESET PASSWORD

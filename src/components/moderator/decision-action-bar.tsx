@@ -58,7 +58,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
   }
 
   return (
-    <div className="rounded-lg border border-gold/20 bg-surface-1/90 p-6 backdrop-blur-md">
+    <div className="rounded-lg border border-gold/20 bg-surface-1/90 p-6">
       <h3 className="font-heading text-lg tracking-wide text-foreground">Moderator Action</h3>
       <p className="mt-1 text-xs text-muted">
         Audited platform decision. Approved submissions publish immediately to buyers.

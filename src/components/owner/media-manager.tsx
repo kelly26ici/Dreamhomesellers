@@ -222,7 +222,7 @@ export function MediaManager({
       {mediaList.length === 0 ? (
         <div
           onClick={() => isDraft && fileInputRef.current?.click()}
-          className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gold/20 bg-surface-2/20 p-12 text-center backdrop-blur-sm transition-all duration-300 ${
+          className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gold/20 bg-surface-2/40 p-12 text-center-sm transition-all duration-300 ${
             isDraft ? 'cursor-pointer hover:border-gold/40 hover:bg-surface-2/30' : ''
           }`}
         >
@@ -248,7 +248,7 @@ export function MediaManager({
                 key={item.mediaId}
                 className={`group relative overflow-hidden rounded-lg border transition-all duration-300 ${
                   item.isFeatured
-                    ? 'border-gold/60 bg-gradient-to-b from-gold/10 via-surface-2/40 to-surface-2/20 shadow-lg shadow-gold/5'
+                    ? 'border-gold/60 bg-surface-2/60'
                     : 'border-white/10 bg-surface-2/30 hover:border-gold/30'
                 }`}
               >
@@ -263,13 +263,13 @@ export function MediaManager({
                   </div>
 
                   {/* Position badge */}
-                  <span className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-[10px] font-mono text-gold backdrop-blur-sm">
+                  <span className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-mono text-gold">
                     {index + 1}
                   </span>
 
                   {/* Featured badge */}
                   {item.isFeatured && (
-                    <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full border border-gold/40 bg-gold/20 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-gold backdrop-blur-md">
+                    <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full border border-gold/40 bg-gold/20 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-gold">
                       <Star className="h-3 w-3 fill-gold" />
                       COVER HERO
                     </span>

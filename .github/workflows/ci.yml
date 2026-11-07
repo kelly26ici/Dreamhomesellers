@@ -54,6 +54,11 @@ jobs:
       - name: Migrations (are SQL, and end as SQL)
         run: npm run verify:migrations
 
+      # Glass and gradients are banned by the design rules. Shadow needs
+      # judgement (a menu and a dialog float) so it is reported, not failed.
+      - name: Design rules (no glass, no gradients)
+        run: npm run verify:design
+
       # JS-driven motion cannot be reached by the CSS reduced-motion block, so
       # every file that imports a motion library must ask the question.
       - name: Reduced motion (JS-driven animation)

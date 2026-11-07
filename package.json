@@ -11,6 +11,7 @@
     "verify:contrast": "node scripts/verify-contrast.mjs",
     "verify:motion": "node scripts/verify-reduced-motion.mjs",
     "verify:migrations": "node scripts/verify-migrations.mjs",
+    "verify:design": "node scripts/verify-design-rules.mjs",
     "test:auth": "node scripts/test-authorization-gates.mjs",
     "test:media": "node scripts/test-media-lifecycle.mjs",
     "test:retrieval": "node scripts/run-retrieval-eval.mjs",
@@ -18,7 +19,7 @@
     "test:outbox": "node scripts/test-outbox-pipeline.mjs",
     "test:draft-assist": "node scripts/test-draft-assistant.mjs",
     "test:privacy": "node scripts/test-preferences-and-privacy.mjs",
-    "test:all": "npm run test:tokens && npm run verify:contrast && npm run verify:motion && npm run verify:migrations && npm run test:auth && npm run test:media && npm run test:retrieval && npm run test:conversation && npm run test:outbox && npm run test:draft-assist && npm run test:privacy"
+    "test:all": "npm run test:tokens && npm run verify:contrast && npm run verify:motion && npm run verify:migrations && npm run verify:design && npm run test:auth && npm run test:media && npm run test:retrieval && npm run test:conversation && npm run test:outbox && npm run test:draft-assist && npm run test:privacy"
   },
   "dependencies": {
     "@assistant-ui/react": "^0.15.31",

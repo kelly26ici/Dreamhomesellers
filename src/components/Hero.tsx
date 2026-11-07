@@ -89,8 +89,8 @@ export default function Hero() {
         />
       </video>
 
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/90 to-transparent" />
+      <div className="pointer-events-none absolute inset-0" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 items-center px-6 pt-24 lg:px-12">
         <div className="flex flex-col gap-8 lg:max-w-[55%]">

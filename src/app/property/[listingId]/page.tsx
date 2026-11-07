@@ -141,7 +141,7 @@ async function Detail({
         </p>
       </section>
 
-      <section aria-label="AI Concierge Guidance" className="mt-8 rounded-lg border border-gold/25 bg-gradient-to-r from-gold/10 via-surface-1 to-black p-6 backdrop-blur-md">
+      <section aria-label="AI Concierge Guidance" className="mt-8 rounded-lg border border-gold/25 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-[10px] tracking-[0.25em] text-gold uppercase">AI RESIDENCE CONCIERGE</p>

@@ -65,7 +65,7 @@ async function ModeratorQueue() {
 
   if (!user) {
     return (
-      <div className="mt-10 rounded-lg border border-gold/15 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 backdrop-blur-md">
+      <div className="mt-10 rounded-lg border border-gold/15 p-8">
         <h2 className="text-2xl font-heading text-foreground">Staff sign in required</h2>
         <p className="mt-2 max-w-md text-sm text-muted">
           Sign in with your staff account to access the listing moderation queue.
@@ -85,7 +85,7 @@ async function ModeratorQueue() {
   const isModerator = await checkCallerIsModerator();
   if (!isModerator) {
     return (
-      <div className="mt-10 rounded-lg border border-red-500/20 bg-surface-1/80 p-8 backdrop-blur-md">
+      <div className="mt-10 rounded-lg border border-red-500/20 bg-surface-1/80 p-8">
         <h2 className="text-2xl font-heading text-foreground">Staff Authorization Required</h2>
         <p className="mt-2 max-w-md text-sm text-muted">
           Your account is signed in but does not hold a platform moderator or admin role.

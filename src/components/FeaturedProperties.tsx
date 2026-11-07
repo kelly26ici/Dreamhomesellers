@@ -93,7 +93,7 @@ export default function FeaturedProperties({
               className="absolute inset-0 z-10"
               aria-label={property.title}
             />
-            <div className="absolute inset-x-0 bottom-0 translate-y-6 bg-gradient-to-t from-black/90 to-transparent p-6 pt-16 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+            <div className="absolute inset-x-0 bottom-0 translate-y-6 p-6 pt-16 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
               <p className="text-xs tracking-[0.2em] text-gold">
                 {formatListingPrice(
                   property.priceAmount,

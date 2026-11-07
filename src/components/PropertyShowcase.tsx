@@ -51,7 +51,7 @@ export default function PropertyShowcase({
               className="absolute inset-0 z-10"
               aria-label={property.title}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <div className="absolute inset-0" />
             <figcaption className="absolute bottom-0 left-0 p-6">
               <p className="text-xs tracking-[0.2em] text-gold">
                 {formatListingPrice(

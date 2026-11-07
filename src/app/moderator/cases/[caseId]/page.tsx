@@ -163,7 +163,7 @@ function CaseReviewView({
         {/* Left Column: Revision Facts */}
         <div className="space-y-6 lg:col-span-2">
           {r ? (
-            <div className="space-y-6 rounded-lg border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
+            <div className="space-y-6 rounded-lg border border-gold/15 bg-surface-2/20 p-6">
               <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-4">
                 <div>
                   <p className="text-[10px] tracking-widest text-gold uppercase">OFFER PRICE</p>
@@ -243,7 +243,7 @@ function CaseReviewView({
           )}
 
           {/* Media Assets Section */}
-          <div className="rounded-lg border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
+          <div className="rounded-lg border border-gold/15 bg-surface-2/20 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] tracking-widest text-gold uppercase">RESIDENCE VISUAL DOSSIER</p>
@@ -300,7 +300,7 @@ function CaseReviewView({
           />
 
           {/* Pre-Checks Card */}
-          <div className="rounded-lg border border-gold/15 bg-surface-2/20 p-6 backdrop-blur-sm">
+          <div className="rounded-lg border border-gold/15 bg-surface-2/20 p-6">
             <h3 className="font-heading text-lg tracking-wide text-foreground">
               Automated Pre-Checks
             </h3>

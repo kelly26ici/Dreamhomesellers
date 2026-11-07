@@ -90,7 +90,7 @@ export default function FilterBar({
   return (
     <section
       aria-label="Search filters"
-      className="border-b border-white/10 bg-black/30 backdrop-blur-sm"
+      className="border-b"
     >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3">
         <select

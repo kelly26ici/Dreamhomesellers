@@ -66,7 +66,7 @@ export function AskSimonButton({
     <button
       type="button"
       onClick={handleOpenSimon}
-      className={`flex items-center justify-center gap-2 rounded-md border border-gold/40 bg-black/60 px-5 py-2.5 text-xs font-medium tracking-[0.15em] text-gold backdrop-blur-md transition-all duration-300 hover:border-gold hover:bg-gold/10 active:scale-[0.98] cursor-pointer ${className}`}
+      className={`flex items-center justify-center gap-2 rounded-md border border-gold/40 bg-surface px-5 py-2.5 text-xs font-medium tracking-[0.15em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 active:scale-[0.98] cursor-pointer ${className}`}
     >
       <MessageCircle className="h-4 w-4 text-gold" />
       <span>ASK SIMON ABOUT THIS RESIDENCE</span>

@@ -65,12 +65,12 @@ export default function VideoSection() {
           sizes="100vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+        <div className="absolute inset-0" />
         <button
           ref={playRef}
           type="button"
           aria-label="Play the LUXONN film"
-          className="relative z-10 flex h-28 w-28 items-center justify-center rounded-full border border-gold/50 bg-black/40 text-gold backdrop-blur-md transition-colors hover:border-gold hover:bg-gold/20"
+          className="relative z-10 flex h-28 w-28 items-center justify-center rounded-full border border-gold/50 text-gold transition-colors hover:border-gold hover:bg-gold/20"
         >
           <Play className="h-10 w-10 fill-gold" aria-hidden />
         </button>
