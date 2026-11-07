@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAuthServerClient } from '@/lib/auth/supabase-server';
 import { checkRateLimit, clientIpFrom } from '@/lib/rate-limit';
+import { simonRequestHeaders } from '@/lib/simon/auth-headers';
 
 export interface AIDraftRequest {
   notes: string;
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
       try {
         const upstream = await fetch(`${simonApiUrl}/api/owner/draft`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: simonRequestHeaders(),
           body: JSON.stringify({ notes, listing_kind: listingKind, user_id: user.id }),
           signal: AbortSignal.timeout(4000),
         });

@@ -10,6 +10,7 @@ import type {
   SimonListingCardRef,
 } from '@/lib/simon/types';
 import { checkRateLimit, clientIpFrom } from '@/lib/rate-limit';
+import { simonRequestHeaders } from '@/lib/simon/auth-headers';
 import {
   applyHeuristicMemories,
   buildSimonPreamble,
@@ -137,9 +138,7 @@ export async function POST(req: NextRequest) {
       try {
         const upstreamRes = await fetch(`${simonApiUrl}/api/chat`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: simonRequestHeaders(),
           body: JSON.stringify({
             message: upstreamMessage,
             conversation_id: conversationId,
