@@ -41,8 +41,8 @@ function block(selector) {
   return out;
 }
 
-const dark = block(":root {");
-const light = block('[data-theme="light"] {');
+const light = block(":root {");
+const dark = block('[data-theme="dark"] {');
 
 /* Colour lives in both theme blocks. Everything else is not this module's. */
 const THEMELESS = [
@@ -56,7 +56,7 @@ const THEMELESS = [
 /* Every var() the TypeScript mirror hands out. */
 const mirrored = [...ts.matchAll(/"var\((--[\w-]+)\)"/g)].map((m) => m[1].slice(2));
 
-check(mirrored.length >= 15, `expected at least 15 mirrored tokens, found ${mirrored.length}`);
+check(mirrored.length >= 12, `expected at least 12 mirrored tokens, found ${mirrored.length}`);
 
 for (const name of mirrored) {
   check(name in dark, `${name} is missing from the :root block of tokens.css`);

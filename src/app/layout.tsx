@@ -35,12 +35,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${bebas.variable} ${inter.variable} h-full antialiased`}
     >
       <head>
-        {/* Reconcile the stored theme before first paint. Dark is the default
-            the server renders; this runs before the CSS is painted so a
-            light-preference visitor never sees a dark flash. */}
+        {/* Reconcile the stored theme before first paint. Light is the primary
+            ground the server renders; this runs before the CSS is painted so a
+            dark-preference visitor never sees a light flash. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("luxonn:theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem("luxonn:theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`,
           }}
         />
       </head>

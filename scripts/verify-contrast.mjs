@@ -28,7 +28,7 @@ const AA_LARGE = 3.0;
 
 /**
  * Tokens used as text or meaningful foreground. `on` tokens are only ever
- * painted onto their own background (on-accent onto accent, on-danger onto
+ * painted onto their own background (on-brand onto brand, on-danger onto
  * danger), so pairing them against every surface is meaningless -- and
  * measuring a colour against itself is noise, not signal.
  */
@@ -38,8 +38,7 @@ const FOREGROUNDS = [
   { name: "text-muted", min: AA_BODY },
   /* The accent is text 170 times and a border 147 times, so it is measured
      at the body bar, not the UI bar — those call sites are copy, not chrome. */
-  { name: "gold", min: AA_BODY },
-  { name: "gold-quiet", min: AA_BODY },
+  { name: "brand", min: AA_BODY },
   { name: "danger", min: AA_LARGE },
 ];
 
@@ -48,11 +47,11 @@ const BACKGROUNDS = ["canvas", "surface", "surface-raised"];
 
 /**
  * Text painted onto a coloured ground. Only the `on-*` tokens ever sit on a
- * coloured ground — regular text on accent is not a pair this system uses, and
- * measuring it produces failures that describe no real screen.
+ * coloured ground — regular text on the accent is not a pair this system uses,
+ * and measuring it produces failures that describe no real screen.
  */
 const PAIRED = [
-  { fg: "on-gold", bg: "gold", min: AA_BODY },
+  { fg: "on-brand", bg: "brand", min: AA_BODY },
   { fg: "on-danger", bg: "danger", min: AA_BODY },
 ];
 
@@ -60,12 +59,14 @@ function parseTokens(css) {
   const themes = {};
   // Split on the selectors that define a theme block.
   const blocks = css.split(/(?=:root\b|\[data-theme=|@media\s*\(prefers-color-scheme)/);
-  let currentTheme = "dark";
+  // `:root` is the PRIMARY theme (light); `[data-theme=...]` re-states the other.
+  let currentTheme = "light";
   for (const block of blocks) {
-    if (/\[data-theme="light"\]/.test(block)) currentTheme = "light";
-    else if (/\[data-theme="dark"\]/.test(block)) currentTheme = "dark";
+    if (/\[data-theme="dark"\]/.test(block)) currentTheme = "dark";
+    else if (/\[data-theme="light"\]/.test(block)) currentTheme = "light";
+    else if (/prefers-color-scheme:\s*dark/.test(block)) currentTheme = "dark";
     else if (/prefers-color-scheme:\s*light/.test(block)) currentTheme = "light";
-    else if (/^:root/.test(block)) currentTheme = "dark";
+    else if (/^:root/.test(block)) currentTheme = "light";
 
     const decls = block.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g);
     for (const [, name, value] of decls) {
@@ -121,7 +122,6 @@ const themes = parseTokens(css);
 
 let failures = 0;
 console.log(`contrast gate — ${TOKENS_PATH}\n`);
-
 for (const [themeName, theme] of Object.entries(themes)) {
   const results = [];
   const measure = (fgName, bgName, min) => {

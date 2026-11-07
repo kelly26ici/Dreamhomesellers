@@ -54,4 +54,6 @@ prompt.txt
 properties-grid.png
 simon-iframe-check.png
 
-# playwright-cli snapshots and console logs are local verification artifacts.playwright-cli/
+
+# playwright-cli snapshots and console logs are local verification artifacts
+.playwright-cli/

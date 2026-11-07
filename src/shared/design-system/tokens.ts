@@ -1,21 +1,21 @@
 /**
- * The typed mirror of tokens.css — colour only.
+ * The typed mirror of tokens.css.
  *
- * This file exists for one reason: a palette that can only be reached through
- * CSS custom properties cannot be used from a canvas, a gradient argument, a
- * chart, or an inline style, and the moment someone pastes a hex into one of
- * those the token system is over. So the names are mirrored here and
+ * This exists for one reason: a palette reachable only through CSS custom
+ * properties cannot be used from a canvas, a gradient argument, a chart, or
+ * an inline style, and the moment someone pastes a hex into one of those the
+ * token system is over. So the names are mirrored here and
  * `scripts/test-design-tokens.mjs` parses the CSS every CI run and fails if
  * any of them drifts.
  *
- * Spacing, radius, motion, and the type scale are deliberately NOT mirrored.
- * They are single-sourced in globals.css next to the rationale that pins them
- * (ADR-018), and copying them here would create a second definition of the
- * same fact. A token is not a module because it moved; it is one because
- * there is exactly one source for it.
+ * Colour only. Spacing, radius, motion and the type scale stay in globals.css
+ * with the rationale that pins them; copying them here would create a second
+ * definition of the same fact.
  *
- * Use these names always as `var(...)`, so a theme switch is one attribute
- * change and never a re-render of hardcoded colour.
+ * There is deliberately no `goldQuiet`, no `glassBg`, no `gradientGold`: a
+ * second accent tier, a glass tint and a gradient were all banned by the
+ * design rules this palette was chosen against, so they were removed rather
+ * than left as unused tokens that read like an invitation.
  */
 
 export const TOKENS = {
@@ -29,12 +29,11 @@ export const TOKENS = {
   textBody: "var(--text-body)",
   textMuted: "var(--text-muted)",
 
-  /* the accent: one hue, two tiers */
-  gold: "var(--gold)",
-  goldQuiet: "var(--gold-quiet)",
-  onGold: "var(--on-gold)",
+  /* the one accent */
+  brand: "var(--brand)",
+  onBrand: "var(--on-brand)",
 
-  /* separation */
+  /* separation — form fields and table rules, never surface-to-surface */
   hairline: "var(--hairline)",
   hairlineStrong: "var(--hairline-strong)",
 
@@ -42,14 +41,8 @@ export const TOKENS = {
   danger: "var(--danger)",
   onDanger: "var(--on-danger)",
 
-  /* glassmorphism (ADR-002) */
-  glassBg: "var(--glass-bg)",
-  glassBorder: "var(--glass-border)",
-  glassBlur: "var(--glass-blur)",
-
-  /* gradients (ADR-002) */
-  gradientGold: "var(--gradient-gold)",
-  gradientVeil: "var(--gradient-veil)",
+  /* the single permitted shadow: menus and dialogs */
+  shadowFloat: "var(--shadow-float)",
 } as const;
 
 export type TokenName = keyof typeof TOKENS;

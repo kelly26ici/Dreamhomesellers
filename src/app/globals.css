@@ -10,37 +10,40 @@
 
 /* Semantic aliases onto the token set. The names are what components and the
    vendored assistant-ui layer say; the values are the tokens. Both themes are
-   covered by the same lines, because a custom property that points at another
+   covered by the same lines, because a custom property pointing at another
    custom property resolves against whichever theme is currently in scope. */
 :root {
   --background: var(--canvas);
   --surface-2: var(--surface-raised);
-  --champagne: var(--gold-quiet);
   --foreground: var(--text-title);
   --muted: var(--text-muted);
 
-  /* Semantic tokens consumed by the assistant-ui component layer. They are
-     LUXONN's palette, not shadcn's defaults, so the shell keeps the house
-     dark/champagne language while using the components verbatim. */
+  /* Legacy gold pair, now aliases for the one accent. They are kept because
+     roughly 400 class names still say `text-gold` / `border-gold`; they are
+     NOT two accents, and nothing should add a use of either name. */
+  --gold: var(--brand);
+  --champagne: var(--brand);
+
+  /* Semantic tokens consumed by the assistant-ui component layer. */
   --card: var(--surface);
   --card-foreground: var(--text-title);
   --popover: var(--surface);
   --popover-foreground: var(--text-title);
-  --primary: var(--gold);
-  --primary-foreground: var(--on-gold);
+  --primary: var(--brand);
+  --primary-foreground: var(--on-brand);
   --secondary: var(--surface-raised);
-  --secondary-foreground: var(--gold-quiet);
+  --secondary-foreground: var(--brand);
   --muted-foreground: var(--text-muted);
   /* `--accent` is the shadcn hover *ground*, not the brand accent. The brand
-     accent is `--gold`. The old file used the same name for both meanings and
-     the clash was one careless edit away from turning the brand green. */
+     accent is `--brand`. The old file used the same name for both meanings and
+     the clash was one careless edit away from repainting the product. */
   --accent: var(--surface-raised);
-  --accent-foreground: var(--gold-quiet);
+  --accent-foreground: var(--brand);
   --destructive: var(--danger);
   --destructive-foreground: var(--on-danger);
   --border: var(--hairline);
-  --input: var(--hairline-strong);
-  --ring: var(--gold);
+  --input: var(--hairline);
+  --ring: var(--brand);
   --radius: 0.5rem;
 }
 
@@ -132,15 +135,16 @@ body {
 }
 
 ::selection {
-  background: var(--gold);
-  color: var(--on-gold);
+  background: var(--brand);
+  color: var(--on-brand);
 }
 
+/* Flat surface, no blur, no border-as-decoration. This class is used in
+   13 places and used to be a frosted panel; it is now a plain raised tone,
+   which is what the design rules allow. Replace the class at those call
+   sites when the components are rebuilt. */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
+  background: var(--surface-raised);
 }
 
 /* Simon streaming caret (ADR-021): the old inline gold caret, rebuilt as a
