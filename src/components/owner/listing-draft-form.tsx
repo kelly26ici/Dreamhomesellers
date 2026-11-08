@@ -584,7 +584,7 @@ export function ListingDraftForm({
               <label htmlFor="price-amount" className={labelClass}>
                 PRICE
               </label>
-              <div className="mt-2 flex rounded-md border border-gold/20 bg-surface-2/50 focus-within:border-gold/50">
+              <div className="mt-2 flex rounded-md bg-surface-2/50 focus-within:border-gold/50">
                 <span className="flex items-center border-r border-gold/20 px-3 text-xs tracking-widest text-muted">
                   {state.priceCurrency}
                 </span>
@@ -659,7 +659,7 @@ export function ListingDraftForm({
             </button>
 
             {showAdvanced && (
-              <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-surface-2/20 p-4 sm:p-5">
+              <div className="mt-4 space-y-4 rounded-lg bg-surface-2/20 p-4 sm:p-5">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label htmlFor="county" className={labelClass}>

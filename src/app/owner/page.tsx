@@ -70,7 +70,7 @@ function PortalSkeleton() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="h-24 w-full animate-pulse rounded-lg border border-gold/10 bg-surface-2/40"
+          className="h-24 w-full animate-pulse rounded-lg bg-surface-2/40"
         />
       ))}
     </div>
@@ -206,7 +206,7 @@ function ListingsOverview({
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-lg border border-gold/10 bg-surface-2/30 p-10 text-center">
+        <div className="mt-6 rounded-lg bg-surface-2/30 p-10 text-center">
           <p className="text-sm text-muted">
             Your first draft is one form away. Listings go through moderation
             before they appear on the public site.
@@ -225,7 +225,7 @@ function ListingsOverview({
 
 function ListingRow({ item }: { item: OwnerListingSummary }) {
   return (
-    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-gold/10 bg-surface-2/30 px-5 py-4">
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg bg-surface-2/30 px-5 py-4">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">
           {item.published.title ?? item.listingId}

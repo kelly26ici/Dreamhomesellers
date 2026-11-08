@@ -21,7 +21,7 @@ export default function ListingMedia({
 
   if (withImagery.length === 0) {
     return (
-      <div className="flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-lg border border-white/10 bg-surface-2 text-center">
+      <div className="flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-lg bg-surface-2 text-center">
         <span
           aria-hidden
           className="font-display text-5xl tracking-wide text-gold/40"

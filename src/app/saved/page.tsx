@@ -202,7 +202,7 @@ export default function SavedPage() {
               return (
                 <div
                   key={card.listingId}
-                  className="flex flex-col gap-3 rounded-lg border border-white/10 bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-lg bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <Link
@@ -318,7 +318,7 @@ export default function SavedPage() {
           aria-label="Loading saved listings"
           className="mx-auto max-w-7xl px-4 py-16"
         >
-          <div className="h-40 animate-pulse rounded-lg border border-white/10 bg-surface" />
+          <div className="h-40 animate-pulse rounded-lg bg-surface" />
         </div>
       )}
     </main>

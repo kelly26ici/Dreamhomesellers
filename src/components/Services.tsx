@@ -82,7 +82,7 @@ export default function Services() {
           <article
             key={item.title}
             data-services="card"
-            className="group relative overflow-hidden border border-white/10 bg-surface p-8 transition-colors duration-500 hover:border-gold/40"
+            className="group relative overflow-hidden bg-surface p-8 transition-colors duration-500 hover:border-gold/40"
           >
             <div className="pointer-events-none absolute -inset-20 opacity-0 transition-opacity duration-700 group-hover:opacity-100">
               <div className="absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-gold/20 blur-[80px]" />

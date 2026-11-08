@@ -45,8 +45,8 @@ export default function CaseReviewPage({ params }: CaseReviewPageProps) {
 function CaseSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading case" className="mt-8 space-y-4">
-      <div className="h-12 w-1/2 animate-pulse rounded-lg border border-gold/10 bg-surface-2/40" />
-      <div className="h-64 w-full animate-pulse rounded-lg border border-gold/10 bg-surface-2/40" />
+      <div className="h-12 w-1/2 animate-pulse rounded-lg bg-surface-2/40" />
+      <div className="h-64 w-full animate-pulse rounded-lg bg-surface-2/40" />
     </div>
   );
 }
@@ -62,7 +62,7 @@ async function CaseReviewLoader({ params }: CaseReviewPageProps) {
 
   if (!user) {
     return (
-      <div className="mt-10 rounded-lg border border-gold/15 bg-surface-1/80 p-8">
+      <div className="mt-10 rounded-lg bg-surface p-8">
         <h2 className="text-2xl font-heading text-foreground">Staff sign in required</h2>
         <p className="mt-2 text-sm text-muted">Sign in to review moderation cases.</p>
         <div className="mt-6">
@@ -163,7 +163,7 @@ function CaseReviewView({
         {/* Left Column: Revision Facts */}
         <div className="space-y-6 lg:col-span-2">
           {r ? (
-            <div className="space-y-6 rounded-lg border border-gold/15 bg-surface-2/20 p-6">
+            <div className="space-y-6 rounded-lg bg-surface-2/20 p-6">
               <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-4">
                 <div>
                   <p className="text-[10px] tracking-widest text-gold uppercase">OFFER PRICE</p>
@@ -237,13 +237,13 @@ function CaseReviewView({
               )}
             </div>
           ) : (
-            <div className="rounded-lg border border-white/10 bg-surface-2/20 p-8 text-center text-sm text-muted">
+            <div className="rounded-lg bg-surface-2/20 p-8 text-center text-sm text-muted">
               No revision snapshot attached to this case.
             </div>
           )}
 
           {/* Media Assets Section */}
-          <div className="rounded-lg border border-gold/15 bg-surface-2/20 p-6">
+          <div className="rounded-lg bg-surface-2/20 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] tracking-widest text-gold uppercase">RESIDENCE VISUAL DOSSIER</p>
@@ -300,7 +300,7 @@ function CaseReviewView({
           />
 
           {/* Pre-Checks Card */}
-          <div className="rounded-lg border border-gold/15 bg-surface-2/20 p-6">
+          <div className="rounded-lg bg-surface-2/20 p-6">
             <h3 className="font-heading text-lg tracking-wide text-foreground">
               Automated Pre-Checks
             </h3>
@@ -335,7 +335,7 @@ function CaseReviewView({
 
           {/* Prior Decisions */}
           {decisionHistory.length > 0 && (
-            <div className="rounded-lg border border-white/10 bg-surface-2/20 p-6">
+            <div className="rounded-lg bg-surface-2/20 p-6">
               <h3 className="font-heading text-base tracking-wide text-foreground">
                 Decision History
               </h3>

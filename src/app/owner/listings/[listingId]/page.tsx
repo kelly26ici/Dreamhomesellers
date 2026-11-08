@@ -66,7 +66,7 @@ function DetailSkeleton() {
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="h-16 w-full animate-pulse rounded-lg border border-gold/10 bg-surface-2/40"
+          className="h-16 w-full animate-pulse rounded-lg bg-surface-2/40"
         />
       ))}
     </div>
@@ -187,7 +187,7 @@ function DetailView({
         </span>
       </div>
 
-      <dl className="grid grid-cols-1 gap-x-8 gap-y-4 rounded-lg border border-gold/10 bg-surface-2/30 p-6 sm:grid-cols-2">
+      <dl className="grid grid-cols-1 gap-x-8 gap-y-4 rounded-lg bg-surface-2/30 p-6 sm:grid-cols-2">
         <Fact label="Kind" value={detail.listingKind} />
         <Fact label="Type" value={detail.propertyType} />
         <Fact

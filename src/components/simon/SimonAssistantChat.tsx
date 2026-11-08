@@ -114,7 +114,7 @@ function ListingCardsPart(props: DataMessagePartProps) {
           <Link
             key={card.listingId}
             href={`/property/${card.listingId}`}
-            className="group flex items-center justify-between gap-3 rounded-lg border border-gold/30 bg-surface-2/60 p-3 transition-all hover:border-gold hover:bg-surface-2"
+            className="group flex items-center justify-between gap-3 rounded-lg bg-surface-2/60 p-3 transition-all hover:border-gold hover:bg-surface-2"
           >
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-gold/30 bg-gold/10 text-gold">

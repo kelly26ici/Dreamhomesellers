@@ -21,7 +21,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
 
   if (!isCaseOpen) {
     return (
-      <div className="rounded-lg border border-white/10 bg-surface-2/40 p-4 text-center">
+      <div className="rounded-lg bg-surface-2/40 p-4 text-center">
         <p className="text-xs tracking-widest text-muted">CASE IS RESOLVED — DECISIONS LOCKED</p>
       </div>
     );
@@ -58,7 +58,7 @@ export function DecisionActionBar({ caseId, isCaseOpen }: DecisionActionBarProps
   }
 
   return (
-    <div className="rounded-lg border border-gold/20 bg-surface-1/90 p-6">
+    <div className="rounded-lg bg-surface p-6">
       <h3 className="font-heading text-lg tracking-wide text-foreground">Moderator Action</h3>
       <p className="mt-1 text-xs text-muted">
         Audited platform decision. Approved submissions publish immediately to buyers.

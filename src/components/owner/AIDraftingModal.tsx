@@ -59,9 +59,9 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-lg border border-gold/30 bg-surface text-foreground shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-lg bg-surface text-foreground shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gold/15 px-6 py-4 bg-surface-2/40">
+        <div className="flex items-center justify-between border-b px-6 py-4 bg-surface-2/40">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-gold" />
             <h2 className="text-lg font-heading tracking-wide text-foreground">
@@ -103,7 +103,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
                       key={i}
                       type="button"
                       onClick={() => setNotes(example)}
-                      className="text-left text-xs rounded-md border border-white/10 bg-surface-2/30 px-3 py-1.5 text-muted hover:border-gold/40 hover:text-champagne transition-all"
+                      className="text-left text-xs rounded-md bg-surface-2/30 px-3 py-1.5 text-muted hover:border-gold/40 hover:text-champagne transition-all"
                     >
                       {example.slice(0, 48)}...
                     </button>
@@ -181,7 +181,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
 
                 <div className="pt-2 border-t border-white/5">
                   <span className="text-xs text-muted block mb-1">Architectural Prose:</span>
-                  <p className="text-xs text-muted leading-relaxed whitespace-pre-line bg-surface-2/20 p-3 rounded-lg border border-white/5">
+                  <p className="text-xs text-muted leading-relaxed whitespace-pre-line bg-surface-2/20 p-3 rounded-lg">
                     {preview.description}
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export function AIDraftingModal({ isOpen, onClose, onApply }: AIDraftingModalPro
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-3 border-t border-gold/15 px-6 py-4 bg-surface-2/40">
+        <div className="flex items-center justify-end gap-3 border-t px-6 py-4 bg-surface-2/40">
           <button
             type="button"
             onClick={onClose}

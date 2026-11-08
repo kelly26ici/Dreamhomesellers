@@ -103,7 +103,7 @@ function GridSkeleton() {
         {Array.from({ length: 6 }, (_, i) => (
           <div
             key={i}
-            className="h-80 animate-pulse rounded-lg border border-white/10 bg-surface"
+            className="h-80 animate-pulse rounded-lg bg-surface"
           />
         ))}
       </div>

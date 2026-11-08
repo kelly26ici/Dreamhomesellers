@@ -132,7 +132,7 @@ export default function Hero() {
             <div
               key={card.label}
               data-hero="card"
-              className="glass flex w-64 items-center gap-4 p-4"
+              className="photo-scrim flex w-64 items-center gap-4 p-4"
             >
               <card.icon className="h-6 w-6 shrink-0 text-gold" aria-hidden />
               <div>

@@ -59,7 +59,7 @@ function FormSkeleton() {
       {[0, 1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className="h-12 w-full animate-pulse rounded-lg border border-gold/10 bg-surface-2/40"
+          className="h-12 w-full animate-pulse rounded-lg bg-surface-2/40"
         />
       ))}
     </div>

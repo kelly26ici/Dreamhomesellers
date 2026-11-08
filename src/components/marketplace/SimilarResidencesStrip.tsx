@@ -81,7 +81,7 @@ export default function SimilarResidencesStrip({
                 key={card.listingId}
                 href={`/property/${card.listingId}`}
                 aria-label={`View ${card.title}`}
-                className="absolute overflow-hidden rounded-lg border bg-surface/70 shadow-2xl"
+                className="absolute overflow-hidden rounded-lg bg-surface/70 shadow-2xl"
                 style={{
                   width: CARD_W,
                   height: CARD_H,

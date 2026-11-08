@@ -48,7 +48,7 @@ function QueueSkeleton() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="h-24 w-full animate-pulse rounded-lg border border-gold/10 bg-surface-2/40"
+          className="h-24 w-full animate-pulse rounded-lg bg-surface-2/40"
         />
       ))}
     </div>
@@ -121,7 +121,7 @@ async function ModeratorQueue() {
       </div>
 
       {cases.items.length === 0 ? (
-        <div className="mt-6 rounded-lg border border-gold/10 bg-surface-2/30 p-12 text-center">
+        <div className="mt-6 rounded-lg bg-surface-2/30 p-12 text-center">
           <p className="text-sm text-muted">
             All submitted listings have been reviewed. New owner submissions will appear here.
           </p>
@@ -139,7 +139,7 @@ async function ModeratorQueue() {
 
 function CaseCard({ item }: { readonly item: ModeratorCaseSummary }) {
   return (
-    <li className="flex flex-col gap-4 rounded-lg border border-gold/15 bg-surface-2/30 p-6 transition-colors hover:border-gold/30 sm:flex-row sm:items-center sm:justify-between">
+    <li className="flex flex-col gap-4 rounded-lg bg-surface-2/30 p-6 transition-colors hover:border-gold/30 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs text-champagne">

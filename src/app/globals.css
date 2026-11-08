@@ -147,6 +147,39 @@ body {
   background: var(--surface-raised);
 }
 
+/* The ONE sanctioned exception to "no glass": text sitting on a photograph.
+ *
+ * The house rules ban backdrop blur panels, and they allow exactly one thing
+ * in its place -- "a neutral scrim under text on a photo is the one
+ * exception". These three hero cards are text over a photograph, and a flat
+ * opaque card over a photograph reads as a sticker, which is worse than what
+ * the blur used to do. So this is a flat translucent scrim: no blur, no
+ * border, one darkening layer, and the text on top stays readable.
+ *
+ * It is deliberately NOT blur. Blur was the banned part; a scrim that just
+ * darkens is not. */
+.photo-scrim {
+  background: rgb(11 14 12 / 72%);
+}
+
+/* The scrim is a dark island in a light theme, so the theme's own text tokens
+   are wrong on it and were measured wrong: text-muted (#5b635c) sits at
+   roughly 2.8:1 on this ground, and text-gold resolves to the light-theme
+   brand (#175c45) which is nearly invisible. Both are overridden here to
+   light ink, because the ground is dark in whichever theme the page is in.
+   The value keeps the fuller ink and the label steps down from it. */
+.photo-scrim p {
+  color: rgb(236 239 237 / 78%);
+}
+
+.photo-scrim p.font-medium {
+  color: #ecefed;
+}
+
+.photo-scrim svg {
+  color: #6bab8c;
+}
+
 /* Simon streaming caret (ADR-021): the old inline gold caret, rebuilt as a
    pseudo-element on the last markdown block of a running concierge message.
    .simon-streaming is set on the text wrapper while the entry is running,
