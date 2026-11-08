@@ -33,7 +33,7 @@ export function SubmitForReviewButton({ revisionId }: { revisionId: string }) {
   const [confirming, setConfirming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [caseReference, setCaseReference] = useState<string | null>(null);
+  const [published, setPublished] = useState(false);
 
   async function handleConfirm() {
     if (submitting) return;
@@ -41,7 +41,7 @@ export function SubmitForReviewButton({ revisionId }: { revisionId: string }) {
     setError(null);
 
     const result = await submitRevisionForReview(revisionId);
-    if (!result.ok || result.kind !== 'revision_submitted') {
+    if (!result.ok || result.kind !== 'revision_published') {
       setSubmitting(false);
       setError(
         result.ok
@@ -53,15 +53,15 @@ export function SubmitForReviewButton({ revisionId }: { revisionId: string }) {
       return;
     }
 
-    setCaseReference(result.caseReference);
+    setPublished(true);
     setSubmitting(false);
     router.refresh();
   }
 
-  if (caseReference !== null) {
+  if (published) {
     return (
       <p className="text-sm text-emerald-300" role="status">
-        Submitted — moderation case {caseReference}
+        Published — it is live in the marketplace now.
       </p>
     );
   }

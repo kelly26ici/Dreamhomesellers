@@ -84,12 +84,10 @@ export interface RevisionUpdated {
   readonly revisionId: string;
 }
 
-export interface RevisionSubmitted {
+export interface RevisionPublished {
   readonly ok: true;
-  readonly kind: 'revision_submitted';
+  readonly kind: 'revision_published';
   readonly revisionId: string;
-  /** Case reference from the moderation case the submit opened. */
-  readonly caseReference: string | null;
 }
 
 export interface ListingWithdrawn {
@@ -102,7 +100,7 @@ export type WriteResult =
   | DraftCreated
   | RevisionCreated
   | RevisionUpdated
-  | RevisionSubmitted
+  | RevisionPublished
   | ListingWithdrawn
   | OwnerRpcError;
 
@@ -115,7 +113,8 @@ export type WriteResult =
  * jsonb_build_object calls): create_listing_draft → organization_id,
  * property_id, listing_id, revision_id; create_revision_draft → listing_id,
  * revision_id; update_draft_revision → revision_id; submit_revision_for_review
- * → revision_id, case_reference; withdraw_listing → listing_id. Each carries
+ * → revision_id, listing_id, published_at (0021: it publishes, it no longer
+ * opens a moderation case); withdraw_listing → listing_id. Each carries
  * ok:true. Some additionally return message (idempotent replays).
  */
 async function callWriteRpc(
@@ -299,9 +298,8 @@ export async function submitRevisionForReview(
 
   return {
     ok: true,
-    kind: 'revision_submitted',
+    kind: 'revision_published',
     revisionId,
-    caseReference: nullableStr(result.data, 'case_reference'),
   };
 }
 
